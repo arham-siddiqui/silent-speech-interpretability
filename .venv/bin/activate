@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/kaho/Desktop/NTAB silent speech/silentSpeech/.venv"
+VIRTUAL_ENV="/Users/kaho/NTAB_software/silentSpeech/.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
