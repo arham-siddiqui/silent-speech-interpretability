@@ -1,3 +1,6 @@
+# virtual environment
+.venv/
+
 # Python cache
 __pycache__/
 *.pyc
@@ -22,3 +25,12 @@ logs/
 Thumbs.db
 .vscode/
 .idea/
+
+
+
+# generated features
+features/audio/
+
+
+
+
