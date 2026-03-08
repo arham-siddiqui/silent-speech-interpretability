@@ -194,10 +194,10 @@ def plot_pca(features, frame_idx=0):
     plt.axis("equal")
     plt.show()
 
+#change this to local RVTALL path
 video_dir = "src/data/rvtall/processed_cut_data/kinect_processed/1/sentences1/videos/video_0/landmarkers_cv"
 
 features = extract_features_from_video(video_dir)
-
 
 #lip landmark geometry
 plot_lip_landmarks(features, frame_idx=5)
@@ -219,3 +219,4 @@ plot_curvature(features, frame_idx=10)
 
 #PCA shape representation
 plot_pca(features, frame_idx=10)
+
