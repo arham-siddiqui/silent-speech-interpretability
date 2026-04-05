@@ -107,16 +107,31 @@ class KinectMouthDataset(Dataset):
 
         for participant in participant_dirs:
             p_path = os.path.join(root, participant)
-            category_dirs = sorted([
+
+            category_dirs = sorted([    
                 d for d in os.listdir(p_path)
                 if os.path.isdir(os.path.join(p_path, d))
             ])
+
             for category in category_dirs:
                 if not self._wanted(category):
                     continue
-                pngs = _get_mouth_frames(os.path.join(p_path, category))
-                if pngs:
-                    raw.append((pngs, category))
+
+                category_path = os.path.join(p_path, category)
+                videos_dir = os.path.join(category_path, "videos")
+
+                if not os.path.isdir(videos_dir):
+                    continue
+
+                for vid in sorted(os.listdir(videos_dir)):
+                    vid_path = os.path.join(videos_dir, vid)
+
+                    if not os.path.isdir(vid_path):
+                        continue
+
+                    pngs = _get_mouth_frames(vid_path)
+                    if pngs:
+                        raw.append((pngs, category))
 
         if self.label_map is None:
             all_categories = sorted(set(cat for _, cat in raw))
@@ -128,11 +143,8 @@ class KinectMouthDataset(Dataset):
                 self.samples.append((pngs, label))
 
         print(f"[Dataset] {len(self.samples)} samples | "
-              f"{len(self.label_map)} classes: {list(self.label_map.keys())}")
-                    
-
-
-    
+            f"{len(self.label_map)} classes: {list(self.label_map.keys())}")
+        
     def __len__(self):
         return len(self.samples)
 
