@@ -647,14 +647,11 @@ if __name__ == "__main__":
 model stats
 
 Final validation accuracy: 0.760
-
-validation set:
 accuracy | f1-score: 0.76, support: 795
 macro avg | Precision: 0.77, Recall: 0.77, f1-score: 0.76, support: 795
 weighted avg | Precision: 0.78, Recall: 0.76, f1-score: 0.76, support: 795
 
-test set:
-
+Test accuracy (unseen users ['19', '20']): 0.762
 accuracy | f1-score: 0.76, support: 530
 macro avg | Precision: 0.77, Recall: 0.77, f1-score: 0.76, support: 530
 weighted avg | Precision: 0.77, Recall: 0.76, f1-score: 0.76, support: 530

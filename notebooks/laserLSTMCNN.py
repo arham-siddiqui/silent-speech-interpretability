@@ -1,16 +1,16 @@
 """
 laserLSTMCNN.py
 ================
-Laser Signal STFT + BiLSTM Encoder for Silent Speech Decoding
-==============================================================
+Laser Signal 1D CNN + BiLSTM Encoder for Silent Speech Decoding
+===============================================================
 
 WHAT THIS FILE DOES
 -------------------
 1. Scans the laser_processed dataset directory and builds a list of all samples.
    Each sample = one .npy file = one raw 1D laser signal, labeled by group_name
    (e.g. "sentences1", "vowel3", "word7").
-2. Trains a BiLSTM that takes log-magnitude STFT features as input and outputs a
-   128-dim embedding + a classification prediction.
+2. Trains a 1D CNN + Bidirectional LSTM that takes raw laser signals as input and
+   outputs a 128-dim embedding + a classification prediction.
 3. After training, runs inference on every sample and saves embeddings to an NPZ
    file — this is what you feed into the fusion layer later.
 
@@ -19,25 +19,31 @@ ARCHITECTURE DECISIONS
 - ONE SAMPLE = ONE .npy file = one utterance recording by one user.
   Multiple files per group/user are treated as separate samples (free data).
 
-- PREPROCESSING: raw signal (T,) → z-score normalize → short-time Fourier
-  transform → log-magnitude spectrogram of shape (T', N_FREQ).
-  This is significantly better than feeding raw samples because the laser signal
-  is a vibration signal: the discriminative information lives in the spectral
-  shape and its evolution over time, not in raw amplitude values.
-  With FRAME_LEN=256, HOP_LEN=64: T' ≈ T/64 (range ~40–150 frames), N_FREQ=129.
+- INPUT: raw 1D laser signal of shape (T,), T ~ 2600–9800 samples.
+  Each signal is z-score normalized per-sample before processing.
 
-- BILSTM: 2 layers, hidden=128 per direction → 256-dim final hidden state.
-  Input is LayerNorm'd STFT features. T' is already small (~40–150) so no
-  temporal CNN is needed for downsampling.
+- WHY CNN NOT STFT: the CNN learns its own temporal feature extraction from raw
+  samples, which empirically outperforms hand-crafted STFT on this data. Without
+  knowing the laser sensor's sampling rate we can't tune STFT window parameters,
+  whereas the CNN adapts its receptive field to the actual signal structure.
+
+- CNN: 3 strided Conv1d layers reduce temporal dim by 4×3×3 = 36×, producing a
+  sequence of 128-dim feature vectors of length T' ≈ T/36 (~74–273 steps).
+  Padding = kernel//2 so output lengths are easy to compute exactly.
+
+- BILSTM: 2 layers, hidden=128 per direction → 256-dim final hidden state
+  (concat of forward + backward last-layer hidden states).
+  pack_padded_sequence is used with the CNN output lengths so padding frames
+  are never processed by the LSTM recurrence.
 
 - PROJECTION: Linear(256 → 128) + LayerNorm → raw 128-dim embedding.
 
 - CLASSIFICATION HEAD: Linear(128 → num_classes), used during training only.
-  Classification operates on the RAW embedding (not L2-normalized) so
-  gradients flow cleanly through the full network.
+  Crucially, classification operates on the RAW embedding (not L2-normalized)
+  so gradients flow cleanly through the full network.
 
 - L2 NORMALIZATION: applied ONLY to the returned fusion embedding, not before
-  the classifier.
+  the classifier. Normalizing before the classifier kills gradient magnitude.
 
 - SPLIT: by user (users 17–18 val, 19–20 test) or random (USE_RANDOM_SPLIT=True).
   Use random split first to confirm the model can learn, then switch to
@@ -45,7 +51,7 @@ ARCHITECTURE DECISIONS
 
 OUTPUTS
 -------
-- laser_lstm_model.pt      : trained model weights
+- laser_cnn_lstm_model.pt  : trained model weights
 - laser_embeddings.npz     : embeddings for every sample, ready for fusion
   Keys: embeddings (N,128), labels (N,), user_ids (N,),
         group_names (N,), sample_names (N,)
@@ -70,11 +76,11 @@ from sklearn.metrics import classification_report
 
 ROOT = "src/data/RVTALL/Processed_cut_data/laser_processed/"
 
-# STFT feature extraction
-# FRAME_LEN=256, HOP_LEN=64 → 75% overlap, ~40–150 frames per utterance
-FRAME_LEN = 256
-HOP_LEN   = 64
-N_FREQ    = FRAME_LEN // 2 + 1   # 129 frequency bins
+# CNN architecture: 3 layers reduce temporal dim by 4×3×3 = 36×
+# Padding = kernel//2 so output length ≈ input_length / stride
+CNN_CHANNELS = [32, 64, 128]   # output channels per layer
+CNN_KERNELS  = [15,  9,   7]   # kernel sizes
+CNN_STRIDES  = [ 4,  3,   3]   # strides
 
 # LSTM
 HIDDEN_SIZE   = 128   # per direction; 256 total after bidirectional concat
@@ -94,59 +100,30 @@ TEST_USERS       = ["19", "20"]
 USE_RANDOM_SPLIT = True   # True = random 75/15/10 (debug); False = user-based
 
 # Output paths
-MODEL_PATH      = "laser_lstm_model.pt"
+MODEL_PATH      = "laser_cnn_lstm_model.pt"
 EMBEDDINGS_PATH = "laser_embeddings.npz"
 LABEL_MAP_PATH  = "laser_label_map.json"
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {DEVICE}")
 
-_HAMMING_CACHE = {}
-
-def _hamming(n):
-    if n not in _HAMMING_CACHE:
-        _HAMMING_CACHE[n] = np.hamming(n)
-    return _HAMMING_CACHE[n]
-
 
 # ============================================================
 # DATA LOADING
 # ============================================================
 
-def load_laser_features(path):
+def load_laser_signal(path):
     """
-    Load one .npy laser file and convert to log-magnitude STFT features.
-
-    Steps:
-      1. Load raw signal, flatten to 1D float32
-      2. Z-score normalize the raw signal (per-sample)
-      3. Apply Hamming-windowed STFT with FRAME_LEN/HOP_LEN
-      4. Take log1p of magnitude (log compression)
-
-    Returns float32 array of shape (T', N_FREQ=129), or None if too short.
+    Load one .npy laser file and z-score normalize it.
+    Returns a float32 1D array of shape (T,).
     """
-    sig = np.load(path).astype(np.float64).flatten()
-
-    # Per-sample z-score normalization
+    sig = np.load(path).astype(np.float32).flatten()
     std = sig.std()
     if std > 1e-8:
         sig = (sig - sig.mean()) / std
     else:
         sig = sig - sig.mean()
-
-    window = _hamming(FRAME_LEN)
-    frames = []
-    for start in range(0, len(sig) - FRAME_LEN, HOP_LEN):
-        frame = sig[start:start + FRAME_LEN] * window
-        mag   = np.abs(np.fft.rfft(frame))   # (N_FREQ,)
-        frames.append(mag)
-
-    if len(frames) < 5:
-        return None
-
-    S = np.array(frames, dtype=np.float32)  # (T', N_FREQ)
-    S = np.log1p(S)                         # log-magnitude compression
-    return S
+    return sig
 
 
 def build_sample_list(root):
@@ -203,25 +180,25 @@ def build_label_map(samples):
 class LaserDataset(Dataset):
     """
     Each item returns:
-        feat   : (T', N_FREQ) float32 tensor — log-magnitude STFT features
-        length : int — number of frames T'
+        sig    : (T,) float32 tensor — z-score normalized laser signal
+        length : int scalar
         label  : int class index
         meta   : dict for bookkeeping
     """
     def __init__(self, samples, label_map, augment=False):
         self.augment = augment
-        self.items   = []   # (feat_array, label_int, meta_dict)
+        self.items   = []   # (sig_array, label_int, meta_dict)
 
         skipped = 0
         for s in samples:
-            feat = load_laser_features(s["path"])
-            if feat is None:
+            sig = load_laser_signal(s["path"])
+            if len(sig) < 100:
                 skipped += 1
                 continue
             label = label_map[s["label_str"]]
             meta  = {k: s[k] for k in
                      ["user_id", "group_name", "sample_name", "path", "label_str"]}
-            self.items.append((feat, label, meta))
+            self.items.append((sig, label, meta))
 
         print(f"  Loaded {len(self.items)} samples ({skipped} skipped).")
 
@@ -229,33 +206,28 @@ class LaserDataset(Dataset):
         return len(self.items)
 
     def __getitem__(self, idx):
-        feat, label, meta = self.items[idx]
+        sig, label, meta = self.items[idx]
 
         if self.augment:
-            T = len(feat)
-            # 1. Random temporal crop: keep 80–100% of frames
-            if T > 10:
+            T = len(sig)
+            # 1. Random temporal crop: keep 80–100% of the signal
+            if T > 200:
                 keep  = int(np.random.uniform(0.8, 1.0) * T)
                 start = np.random.randint(0, T - keep + 1)
-                feat  = feat[start:start + keep]
+                sig   = sig[start:start + keep]
+            # 2. Small additive Gaussian noise
+            sig = sig + np.random.normal(0, 0.01, sig.shape).astype(np.float32)
+            # 3. Random amplitude scaling
+            sig = sig * float(np.random.uniform(0.9, 1.1))
 
-            # 2. Small additive noise on log-magnitude features
-            feat = feat + np.random.normal(0, 0.01, feat.shape).astype(np.float32)
-
-            # 3. Random frequency masking: zero out up to 10% of freq bins
-            if np.random.rand() < 0.5:
-                f_start = np.random.randint(0, N_FREQ)
-                f_width = np.random.randint(1, max(2, N_FREQ // 10))
-                feat[:, f_start:f_start + f_width] = 0.0
-
-        return torch.from_numpy(feat.astype(np.float32)), label, meta
+        return torch.from_numpy(sig.astype(np.float32)), label, meta
 
 
 def collate_fn(batch):
-    """Pad variable-length (T', N_FREQ) feature sequences in a batch."""
-    feats, labels, metas = zip(*batch)
-    lengths = torch.tensor([len(f) for f in feats], dtype=torch.long)
-    padded  = pad_sequence(feats, batch_first=True)  # (B, T_max', N_FREQ)
+    """Pad variable-length 1D signals in a batch."""
+    sigs, labels, metas = zip(*batch)
+    lengths = torch.tensor([len(s) for s in sigs], dtype=torch.long)
+    padded  = pad_sequence(sigs, batch_first=True)   # (B, T_max)
     labels  = torch.tensor(labels, dtype=torch.long)
     return padded, lengths, labels, list(metas)
 
@@ -264,36 +236,48 @@ def collate_fn(batch):
 # MODEL
 # ============================================================
 
-class LaserLSTMEncoder(nn.Module):
+class LaserCNNLSTMEncoder(nn.Module):
     """
-    BiLSTM encoder over log-magnitude STFT features → 128-dim embedding.
+    1D CNN + BiLSTM encoder for raw laser signals → 128-dim embedding.
 
-    Architecture:
-        Input (B, T', N_FREQ=129)
-          → LayerNorm(N_FREQ)
-          → BiLSTM (2 layers, hidden=128 per direction)
-          → last hidden state concat → (B, 256)
-          → Dropout
-          → Linear(256 → 128) + LayerNorm   ← raw embedding
-          → classifier(raw embedding)        ← training loss
-          → L2 normalize embedding           ← fusion output
+    Forward returns (logits, embedding_normed):
+      - logits          : (B, num_classes) — used for training loss
+      - embedding_normed: (B, 128) L2-normalized — used for fusion
 
-    Classification uses the raw (un-normalized) embedding so gradients flow
-    cleanly through the full network. L2 norm is only for the fusion output.
+    Classification is done on the RAW (pre-norm) embedding so gradients
+    flow cleanly through the full network.
     """
 
     def __init__(self, num_classes,
-                 input_size=N_FREQ,
-                 hidden_size=HIDDEN_SIZE,
-                 num_layers=NUM_LAYERS,
-                 embedding_dim=EMBEDDING_DIM,
-                 dropout=DROPOUT):
+                 cnn_channels=None, cnn_kernels=None, cnn_strides=None,
+                 hidden_size=HIDDEN_SIZE, num_layers=NUM_LAYERS,
+                 embedding_dim=EMBEDDING_DIM, dropout=DROPOUT):
         super().__init__()
 
-        self.input_norm = nn.LayerNorm(input_size)
+        cnn_channels = cnn_channels or CNN_CHANNELS
+        cnn_kernels  = cnn_kernels  or CNN_KERNELS
+        cnn_strides  = cnn_strides  or CNN_STRIDES
 
+        # Store for output-length computation
+        self._cnn_kernels  = cnn_kernels
+        self._cnn_strides  = cnn_strides
+        self._cnn_paddings = [k // 2 for k in cnn_kernels]
+
+        # 1D CNN: Conv → BatchNorm → ReLU, stacked
+        layers, in_ch = [], 1
+        for out_ch, k, s, p in zip(cnn_channels, cnn_kernels,
+                                   cnn_strides, self._cnn_paddings):
+            layers += [
+                nn.Conv1d(in_ch, out_ch, kernel_size=k, stride=s, padding=p),
+                nn.BatchNorm1d(out_ch),
+                nn.ReLU(inplace=True),
+            ]
+            in_ch = out_ch
+        self.cnn = nn.Sequential(*layers)
+
+        # BiLSTM
         self.lstm = nn.LSTM(
-            input_size=input_size,
+            input_size=cnn_channels[-1],   # 128
             hidden_size=hidden_size,
             num_layers=num_layers,
             batch_first=True,
@@ -303,6 +287,7 @@ class LaserLSTMEncoder(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
+        # 256 = hidden_size * 2 directions
         self.embed_proj = nn.Sequential(
             nn.Linear(hidden_size * 2, embedding_dim),
             nn.LayerNorm(embedding_dim),
@@ -310,18 +295,28 @@ class LaserLSTMEncoder(nn.Module):
 
         self.classifier = nn.Linear(embedding_dim, num_classes)
 
+    def _cnn_out_lengths(self, lengths):
+        """Compute sequence lengths after all Conv1d layers."""
+        L = lengths.float()
+        for k, s, p in zip(self._cnn_kernels, self._cnn_strides, self._cnn_paddings):
+            L = torch.floor((L + 2 * p - k) / s + 1)
+        return L.long().clamp(min=1)
+
     def forward(self, x, lengths):
         """
-        x       : (B, T_max', N_FREQ) padded STFT feature sequences
-        lengths : (B,) actual number of frames
-        Returns:
-            logits          : (B, num_classes)
-            embedding_normed: (B, 128) L2-normalized — for fusion
+        x       : (B, T_max) padded raw signals
+        lengths : (B,) actual signal lengths before padding
         """
-        x = self.input_norm(x)
+        # CNN feature extraction
+        x = x.unsqueeze(1)       # (B, 1, T_max)
+        x = self.cnn(x)          # (B, 128, T')
+        x = x.permute(0, 2, 1)  # (B, T', 128)
 
+        cnn_lengths = self._cnn_out_lengths(lengths)
+
+        # BiLSTM with packing to skip padding frames
         packed = pack_padded_sequence(
-            x, lengths.cpu(), batch_first=True, enforce_sorted=False
+            x, cnn_lengths.cpu(), batch_first=True, enforce_sorted=False
         )
         _, (h_n, _) = self.lstm(packed)
         # h_n: (num_layers*2, B, hidden_size) — take last layer, both dirs
@@ -447,12 +442,12 @@ def extract_all_embeddings(model, all_samples, label_map):
     skipped = 0
 
     for s in all_samples:
-        feat = load_laser_features(s["path"])
-        if feat is None:
+        sig = load_laser_signal(s["path"])
+        if len(sig) < 100:
             skipped += 1
             continue
-        x      = torch.from_numpy(feat).unsqueeze(0).to(DEVICE)          # (1, T', N_FREQ)
-        length = torch.tensor([len(feat)], dtype=torch.long).to(DEVICE)
+        x      = torch.from_numpy(sig).unsqueeze(0).to(DEVICE)           # (1, T)
+        length = torch.tensor([len(sig)], dtype=torch.long).to(DEVICE)
         emb    = model.encode(x, length).squeeze(0).cpu().numpy()         # (128,)
 
         embeddings.append(emb)
@@ -532,7 +527,7 @@ def main():
                               collate_fn=collate_fn, num_workers=0)
 
     # 4. Build model
-    model = LaserLSTMEncoder(num_classes=num_classes).to(DEVICE)
+    model = LaserCNNLSTMEncoder(num_classes=num_classes).to(DEVICE)
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"\nModel parameters: {total_params:,}")
@@ -577,3 +572,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+model stats
+
+Final validation accuracy: 0.301
+accuracy | f1-score: 0.30, support: 763
+macro avg | Precision: 0.29, Recall: 0.30, f1-score: 0.28, support: 763
+weighted avg | Precision: 0.30, Recall: 0.30, f1-score: 0.29, support: 763
+
+Test accuracy (unseen users ['19', '20']): 0.290
+accuracy | f1-score: 0.29, support: 510
+macro avg | Precision: 0.29, Recall: 0.29, f1-score: 0.27, support: 510
+weighted avg | Precision: 0.31, Recall: 0.29, f1-score: 0.28, support: 510
+"""
