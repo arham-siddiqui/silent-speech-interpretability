@@ -643,4 +643,11 @@ def main():
 if __name__ == "__main__":
     main()
 
-#update
+"""
+model stats
+
+Final validation accuracy: 0.760
+accuracy | f1-score: 0.76, support: 795
+macro avg | Precision: 0.77, Recall: 0.77, f1-score: 0.76, support: 795
+weighted avg | Precision: 0.78, Recall: 0.76, f1-score: 0.76, support: 795
+"""
