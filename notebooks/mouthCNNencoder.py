@@ -74,8 +74,9 @@ def load_csv(path):
     embed_cols = [f"embed_{i}" for i in range(512)]
     X = df[embed_cols].values.astype(np.float32)        # (N, 512)
 
-    labels_raw  = df["label_name"].values               # e.g. "word1"
+    labels_raw  = df["label_name"].values               # e.g. "sentences1"
     users       = df["participant"].astype(str).values
+    video_names = df["video_name"].astype(str).values
 
     unique_labels = sorted(set(labels_raw))
     label_map     = {lbl: i for i, lbl in enumerate(unique_labels)}
@@ -84,7 +85,7 @@ def load_csv(path):
     print(f"  {len(df)} samples  |  {len(unique_labels)} classes  |  "
           f"feature dim: {X.shape[1]}")
     print(f"  Classes: {unique_labels}")
-    return X, y, users, labels_raw, label_map
+    return X, y, users, labels_raw, video_names, label_map
 
 
 def make_loaders(X, y, seed=42):
@@ -221,9 +222,12 @@ def train(model, train_loader, val_loader, label_map):
     )
     print(f"\nFinal validation accuracy: {final_val_acc:.3f}")
     target_names = [idx_to_label[i] for i in sorted(idx_to_label)]
+    val_report = classification_report(val_labels, val_preds,
+                                       target_names=target_names,
+                                       zero_division=0, output_dict=True)
     print(classification_report(val_labels, val_preds,
                                 target_names=target_names, zero_division=0))
-    return model
+    return model, final_val_acc, val_report
 
 
 # ============================================================
@@ -231,7 +235,7 @@ def train(model, train_loader, val_loader, label_map):
 # ============================================================
 
 def main():
-    X, y, users, label_names, label_map = load_csv(CSV_PATH)
+    X, y, users, label_names, video_names, label_map = load_csv(CSV_PATH)
     num_classes = len(label_map)
 
     with open(LABEL_MAP_PATH, "w") as f:
@@ -251,7 +255,7 @@ def main():
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable parameters: {trainable:,}\n")
 
-    model = train(model, train_loader, val_loader, label_map)
+    model, val_acc, val_report = train(model, train_loader, val_loader, label_map)
 
     # Test evaluation
     criterion = nn.CrossEntropyLoss()
@@ -261,8 +265,25 @@ def main():
     print(f"\nTest accuracy: {test_acc:.3f}")
     idx_to_label = {v: k for k, v in label_map.items()}
     target_names = [idx_to_label[i] for i in sorted(idx_to_label)]
+    test_report = classification_report(test_labels_arr, test_preds,
+                                        target_names=target_names,
+                                        zero_division=0, output_dict=True)
     print(classification_report(test_labels_arr, test_preds,
                                 target_names=target_names, zero_division=0))
+
+    results = {
+        "num_classes": num_classes,
+        "n_samples": len(X),
+        "split": {"train": int(0.80 * len(X)), "val": int(0.10 * len(X))},
+        "val_accuracy": round(val_acc, 4),
+        "test_accuracy": round(test_acc, 4),
+        "val_report": val_report,
+        "test_report": test_report,
+    }
+    results_path = MODEL_PATH.replace(".pt", "_results.json")
+    with open(results_path, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"\nResults saved to {results_path}")
 
     # Extract embeddings for all samples
     model.eval()
@@ -280,6 +301,7 @@ def main():
         labels=y,
         users=users,
         label_names=label_names,
+        video_names=video_names,
     )
 
     print(f"\nEmbeddings saved to {EMBEDDINGS_PATH}  shape: {all_embs.shape}")

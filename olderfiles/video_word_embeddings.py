@@ -15,7 +15,7 @@ ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=ce
 
 ROOT = "src/data/RVTALL/Processed_cut_data/kinect_processed"
 OUTPUT_CSV = "mouth_frame_embeddings.csv"
-INCLUDE_PREFIXES = ["word"]   # change to ["vowel"] or ["sentences"] if needed
+INCLUDE_PREFIXES = ["sentences", "vowel"]   # words already extracted
 IMG_SIZE = 96
 BATCH_SIZE = 32
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -34,26 +34,45 @@ def wanted(category_name, include_prefixes):
     return any(category_name.startswith(p) for p in include_prefixes)
 
 
+def numeric_participant_key(name):
+    """Sort participants numerically: 1,2,3...20 not 1,10,11...2."""
+    import re
+    nums = re.findall(r"\d+", name)
+    return int(nums[0]) if nums else 0
+
+
+def category_sort_key(name):
+    """Sort categories: sentences1-10 then vowel1-5 (matching lip NPZ order)."""
+    import re
+    for i, prefix in enumerate(["sentences", "vowel", "word"]):
+        if name.startswith(prefix):
+            nums = re.findall(r"\d+", name)
+            return (i, int(nums[0]) if nums else 0)
+    return (99, 0)
+
+
 def get_samples(root, include_prefixes):
     """
     Returns a list of dicts, one per video sample.
-    Each sample corresponds to:
-    root/participant/category/videos/video_x/mouths/*.png
+    Participants sorted numerically (1,2,...,20).
+    Categories sorted as sentences1-10, vowel1-5 to match lip NPZ order.
+    Handles participant 1 → video_* naming, others → video_proc_* naming.
     """
+    import glob as _glob
     samples = []
 
-    participant_dirs = sorted([
-        d for d in os.listdir(root)
-        if os.path.isdir(os.path.join(root, d))
-    ])
+    participant_dirs = sorted(
+        [d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))],
+        key=numeric_participant_key
+    )
 
     for participant in participant_dirs:
         p_path = os.path.join(root, participant)
 
-        category_dirs = sorted([
-            d for d in os.listdir(p_path)
-            if os.path.isdir(os.path.join(p_path, d))
-        ])
+        category_dirs = sorted(
+            [d for d in os.listdir(p_path) if os.path.isdir(os.path.join(p_path, d))],
+            key=category_sort_key
+        )
 
         for category in category_dirs:
             if not wanted(category, include_prefixes):
@@ -63,8 +82,19 @@ def get_samples(root, include_prefixes):
             if not os.path.isdir(videos_dir):
                 continue
 
-            for video_name in sorted(os.listdir(videos_dir)):
-                video_path = os.path.join(videos_dir, video_name)
+            # Participant 1 uses video_N style; 2-20 use video_proc_N style
+            if participant == "1":
+                video_dirs = sorted(
+                    _glob.glob(os.path.join(videos_dir, "video_[0-9]*")),
+                    key=lambda p: numeric_participant_key(os.path.basename(p))
+                )
+            else:
+                video_dirs = sorted(
+                    _glob.glob(os.path.join(videos_dir, "video_proc_*")),
+                    key=lambda p: numeric_participant_key(os.path.basename(p))
+                )
+
+            for video_path in video_dirs:
                 if not os.path.isdir(video_path):
                     continue
 
@@ -84,7 +114,7 @@ def get_samples(root, include_prefixes):
                 samples.append({
                     "participant": participant,
                     "label_name": category,
-                    "video_name": video_name,
+                    "video_name": os.path.basename(video_path),
                     "mouths_dir": mouths_dir,
                     "frame_paths": pngs,
                 })
@@ -143,17 +173,9 @@ def main():
 
     embedding_dim = 512
 
-    with open(OUTPUT_CSV, "w", newline="") as f:
+    # APPEND — words already written; do not re-write header
+    with open(OUTPUT_CSV, "a", newline="") as f:
         writer = csv.writer(f)
-
-        header = [
-            "participant",
-            "label_name",
-            "video_name",
-            "mouths_dir",
-            "num_frames",
-        ] + [f"embed_{i}" for i in range(embedding_dim)]
-        writer.writerow(header)
 
         for idx, sample in enumerate(samples):
             emb = extract_video_embedding(
@@ -174,9 +196,12 @@ def main():
             writer.writerow(row)
 
             if (idx + 1) % 50 == 0 or idx == len(samples) - 1:
-                print(f"Processed {idx + 1}/{len(samples)}")
+                import time as _time
+                print(f"[{_time.strftime('%H:%M:%S')}] Processed {idx + 1}/{len(samples)} "
+                      f"({sample['participant']}/{sample['label_name']}/{sample['video_name']})",
+                      flush=True)
 
-    print(f"Saved embeddings to {OUTPUT_CSV}")
+    print(f"\nAppended {len(samples)} rows to {OUTPUT_CSV}")
 
 
 if __name__ == "__main__":
