@@ -91,8 +91,9 @@ ROOT = "src/data/RVTALL/Processed_cut_data/radar_processed/"
 # Fixed range dimension of the RTM
 N_RANGE_BINS = 513
 
-# 2D CNN: each layer strides by 2 along range only, keeping time axis intact
-# Range reduction: 513 → 257 → 129 → 65 → 33 → mean-pool → 1
+# 2D CNN: first 3 layers stride=(2,2) in both range+time; last layer stride=(2,1)
+# Range: 513 → 257 → 129 → 65 → 33 → max-pool → 1
+# Time:  T   → T/2 → T/4 → T/8 → T/8  (~36 avg steps into LSTM vs 287 before)
 CNN_CHANNELS = [16, 32, 64, 128]   # output channels per layer
 
 # LSTM
@@ -132,8 +133,11 @@ def load_radar_rtm(path):
     Steps:
       1. Load raw (513, T) matrix
       2. log1p compression — handles the 5→2.35M dynamic range
-      3. Per-sample z-score normalization
-      4. Transpose to (T, 513) so time is dim-0 for pad_sequence
+      3. Detrend: subtract each range bin's temporal mean to remove the static
+         reflectivity component (which is ~0.93+ correlated across all classes
+         and therefore carries zero discriminative information)
+      4. Per-sample z-score normalization
+      5. Transpose to (T, 513) so time is dim-0 for pad_sequence
 
     Returns float32 array of shape (T, 513), or None if T < 10.
     """
@@ -142,13 +146,13 @@ def load_radar_rtm(path):
     # Log compression
     rtm = np.log1p(rtm)
 
+    # Detrend: remove each bin's temporal mean (static reflectivity = not discriminative)
+    rtm = rtm - rtm.mean(axis=1, keepdims=True)
+
     # Per-sample z-score
-    mean = rtm.mean()
-    std  = rtm.std()
+    std = rtm.std()
     if std > 1e-8:
-        rtm = (rtm - mean) / std
-    else:
-        rtm = rtm - mean
+        rtm = rtm / std
 
     rtm = rtm.T   # (T, 513)
 
@@ -293,9 +297,10 @@ class RadarCNNLSTMEncoder(nn.Module):
     Architecture:
         Input (B, T_max, 513)
           → permute + unsqueeze → (B, 1, 513, T_max)
-          → 4× Conv2d(stride=(2,1)) + BN + ReLU   range: 513→257→129→65→33
-          → mean over range dim → (B, 128, T_max)
-          → permute → (B, T_max, 128)
+          → Conv2d(stride=(2,2)) × 3 + BN + ReLU   range: 513→257→129→65, time: T→T/2→T/4→T/8
+          → Conv2d(stride=(2,1)) × 1 + BN + ReLU   range: 65→33,          time: T/8 (no change)
+          → max over range dim → (B, 128, T/8)  [max not mean — focuses on active bins]
+          → permute → (B, T/8, 128)
           → BiLSTM (2 layers, hidden=128/dir) with pack_padded_sequence
           → last hidden concat → (B, 256)
           → Dropout
@@ -303,9 +308,15 @@ class RadarCNNLSTMEncoder(nn.Module):
           → classifier(raw embedding)     ← training loss
           → L2 normalize                  ← fusion output
 
-    Stride is applied ONLY along the range axis; the time axis is untouched
-    so the LSTM sees the full temporal resolution of the RTM.
+    Key design choices vs. original:
+      - stride=(2,2) in the first 3 layers reduces LSTM input from ~287 to ~36
+        steps on average, making temporal patterns much easier to learn.
+      - max-pool over range (not mean) focuses on the most activated range bins
+        rather than averaging signal with uninformative background bins.
     """
+
+    # Time-axis strides per CNN layer (for length tracking)
+    TIME_STRIDES = [2, 2, 2, 1]
 
     def __init__(self, num_classes,
                  cnn_channels=None,
@@ -317,21 +328,22 @@ class RadarCNNLSTMEncoder(nn.Module):
 
         cnn_channels = cnn_channels or CNN_CHANNELS
 
-        # 2D CNN: stride=(2,1) means stride-2 in range, stride-1 in time
+        # Layers 0-2: stride=(2,2) — compress both range and time
+        # Layer 3:    stride=(2,1) — compress range only (keep remaining time)
         layers, in_ch = [], 1
-        for out_ch in cnn_channels:
+        for i, out_ch in enumerate(cnn_channels):
+            t_stride = self.TIME_STRIDES[i]
             layers += [
                 nn.Conv2d(in_ch, out_ch,
-                          kernel_size=(3, 1),
-                          stride=(2, 1),
-                          padding=(1, 0)),
+                          kernel_size=(3, 3),
+                          stride=(2, t_stride),
+                          padding=(1, 1)),
                 nn.BatchNorm2d(out_ch),
                 nn.ReLU(inplace=True),
             ]
             in_ch = out_ch
         self.cnn = nn.Sequential(*layers)
-        # After 4 stride-2 layers: 513→257→129→65→33 range bins remaining
-        # We then mean-pool over range to get (B, 128, T)
+        # After CNN: range 513→33, time T→T/8 (approx)
 
         self.lstm = nn.LSTM(
             input_size=cnn_channels[-1],   # 128
@@ -351,6 +363,15 @@ class RadarCNNLSTMEncoder(nn.Module):
 
         self.classifier = nn.Linear(embedding_dim, num_classes)
 
+    def _time_out_lengths(self, lengths):
+        """Compute time-axis output lengths after all CNN layers."""
+        L = lengths.float()
+        for t_stride in self.TIME_STRIDES:
+            if t_stride > 1:
+                # floor((L + 2*1 - 3) / stride) + 1 = floor((L-1)/stride) + 1
+                L = torch.floor((L - 1) / t_stride) + 1
+        return L.long().clamp(min=1)
+
     def forward(self, x, lengths):
         """
         x       : (B, T_max, 513) padded RTMs
@@ -359,13 +380,14 @@ class RadarCNNLSTMEncoder(nn.Module):
         # Rearrange for 2D CNN: (B, 1, 513, T_max)
         x = x.permute(0, 2, 1).unsqueeze(1)
 
-        x = self.cnn(x)            # (B, 128, R', T_max) where R'=33
-        x = x.mean(dim=2)          # mean over range → (B, 128, T_max)
-        x = x.permute(0, 2, 1)    # (B, T_max, 128) for LSTM
+        x = self.cnn(x)            # (B, 128, R'=33, T')
+        x = x.amax(dim=2)          # max over range → (B, 128, T') [not mean]
+        x = x.permute(0, 2, 1)    # (B, T', 128) for LSTM
 
-        # BiLSTM — lengths unchanged (CNN has no temporal stride)
+        # BiLSTM — pass downsampled time lengths
+        cnn_lengths = self._time_out_lengths(lengths)
         packed = pack_padded_sequence(
-            x, lengths.cpu(), batch_first=True, enforce_sorted=False
+            x, cnn_lengths.cpu(), batch_first=True, enforce_sorted=False
         )
         _, (h_n, _) = self.lstm(packed)
         # h_n: (num_layers*2, B, hidden_size) — last layer, both dirs
@@ -621,3 +643,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+model stats
+
+Final validation accuracy: 0.187
+accuracy | f1-score: 0.19, support: 743
+macro avg | Precision: 0.21, Recall: 0.20, f1-score: 0.19, support: 743
+weighted avg | Precision: 0.20, Recall: 0.19, f1-score: 0.18, support: 743
+
+Test accuracy (unseen users ['19', '20']): 0.183
+accuracy | f1-score: 0.18, support: 496
+macro avg | Precision: 0.19, Recall: 0.19, f1-score: 0.18, support: 496
+weighted avg | Precision: 0.19, Recall: 0.18, f1-score: 0.17, support: 496
+"""
