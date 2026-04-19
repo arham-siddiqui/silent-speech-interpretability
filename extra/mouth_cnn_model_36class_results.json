@@ -1,0 +1,400 @@
+{
+  "num_classes": 30,
+  "n_samples": 5421,
+  "split": {
+    "train": 4336,
+    "val": 542
+  },
+  "val_accuracy": 0.524,
+  "test_accuracy": 0.5341,
+  "val_report": {
+    "sentences1": {
+      "precision": 0.45454545454545453,
+      "recall": 0.2777777777777778,
+      "f1-score": 0.3448275862068966,
+      "support": 18.0
+    },
+    "sentences10": {
+      "precision": 0.6875,
+      "recall": 0.6111111111111112,
+      "f1-score": 0.6470588235294118,
+      "support": 18.0
+    },
+    "sentences2": {
+      "precision": 0.42857142857142855,
+      "recall": 0.21428571428571427,
+      "f1-score": 0.2857142857142857,
+      "support": 14.0
+    },
+    "sentences3": {
+      "precision": 0.46153846153846156,
+      "recall": 0.35294117647058826,
+      "f1-score": 0.4,
+      "support": 17.0
+    },
+    "sentences4": {
+      "precision": 0.30434782608695654,
+      "recall": 0.5833333333333334,
+      "f1-score": 0.4,
+      "support": 12.0
+    },
+    "sentences5": {
+      "precision": 0.23076923076923078,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.2727272727272727,
+      "support": 9.0
+    },
+    "sentences6": {
+      "precision": 0.25,
+      "recall": 0.14285714285714285,
+      "f1-score": 0.18181818181818182,
+      "support": 14.0
+    },
+    "sentences7": {
+      "precision": 0.42105263157894735,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.5161290322580645,
+      "support": 12.0
+    },
+    "sentences8": {
+      "precision": 0.5555555555555556,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.4166666666666667,
+      "support": 15.0
+    },
+    "sentences9": {
+      "precision": 0.8571428571428571,
+      "recall": 0.35294117647058826,
+      "f1-score": 0.5,
+      "support": 17.0
+    },
+    "vowel1": {
+      "precision": 0.8947368421052632,
+      "recall": 0.7727272727272727,
+      "f1-score": 0.8292682926829268,
+      "support": 22.0
+    },
+    "vowel2": {
+      "precision": 0.6206896551724138,
+      "recall": 0.75,
+      "f1-score": 0.6792452830188679,
+      "support": 24.0
+    },
+    "vowel3": {
+      "precision": 0.6923076923076923,
+      "recall": 0.6428571428571429,
+      "f1-score": 0.6666666666666666,
+      "support": 14.0
+    },
+    "vowel4": {
+      "precision": 0.6470588235294118,
+      "recall": 0.8148148148148148,
+      "f1-score": 0.7213114754098361,
+      "support": 27.0
+    },
+    "vowel5": {
+      "precision": 0.6,
+      "recall": 0.8333333333333334,
+      "f1-score": 0.6976744186046512,
+      "support": 18.0
+    },
+    "word1": {
+      "precision": 0.36363636363636365,
+      "recall": 0.26666666666666666,
+      "f1-score": 0.3076923076923077,
+      "support": 15.0
+    },
+    "word10": {
+      "precision": 0.5,
+      "recall": 0.5384615384615384,
+      "f1-score": 0.5185185185185185,
+      "support": 13.0
+    },
+    "word11": {
+      "precision": 0.5652173913043478,
+      "recall": 0.65,
+      "f1-score": 0.6046511627906976,
+      "support": 20.0
+    },
+    "word12": {
+      "precision": 0.19047619047619047,
+      "recall": 0.3076923076923077,
+      "f1-score": 0.23529411764705882,
+      "support": 13.0
+    },
+    "word13": {
+      "precision": 0.43478260869565216,
+      "recall": 0.5555555555555556,
+      "f1-score": 0.4878048780487805,
+      "support": 18.0
+    },
+    "word14": {
+      "precision": 0.7142857142857143,
+      "recall": 0.5357142857142857,
+      "f1-score": 0.6122448979591837,
+      "support": 28.0
+    },
+    "word15": {
+      "precision": 0.5333333333333333,
+      "recall": 0.4,
+      "f1-score": 0.45714285714285713,
+      "support": 20.0
+    },
+    "word2": {
+      "precision": 0.625,
+      "recall": 0.46875,
+      "f1-score": 0.5357142857142857,
+      "support": 32.0
+    },
+    "word3": {
+      "precision": 0.5384615384615384,
+      "recall": 0.4375,
+      "f1-score": 0.4827586206896552,
+      "support": 16.0
+    },
+    "word4": {
+      "precision": 0.631578947368421,
+      "recall": 0.4444444444444444,
+      "f1-score": 0.5217391304347826,
+      "support": 27.0
+    },
+    "word5": {
+      "precision": 0.2857142857142857,
+      "recall": 0.8,
+      "f1-score": 0.42105263157894735,
+      "support": 10.0
+    },
+    "word6": {
+      "precision": 0.4482758620689655,
+      "recall": 0.6842105263157895,
+      "f1-score": 0.5416666666666666,
+      "support": 19.0
+    },
+    "word7": {
+      "precision": 0.5454545454545454,
+      "recall": 0.5,
+      "f1-score": 0.5217391304347826,
+      "support": 24.0
+    },
+    "word8": {
+      "precision": 0.6,
+      "recall": 0.5454545454545454,
+      "f1-score": 0.5714285714285714,
+      "support": 22.0
+    },
+    "word9": {
+      "precision": 0.5384615384615384,
+      "recall": 0.5,
+      "f1-score": 0.5185185185185185,
+      "support": 14.0
+    },
+    "accuracy": 0.5239852398523985,
+    "macro avg": {
+      "precision": 0.5206831592721524,
+      "recall": 0.5105587733225763,
+      "f1-score": 0.4965691426856447,
+      "support": 542.0
+    },
+    "weighted avg": {
+      "precision": 0.5520899061252222,
+      "recall": 0.5239852398523985,
+      "f1-score": 0.5215736558473487,
+      "support": 542.0
+    }
+  },
+  "test_report": {
+    "sentences1": {
+      "precision": 0.5882352941176471,
+      "recall": 0.625,
+      "f1-score": 0.6060606060606061,
+      "support": 16.0
+    },
+    "sentences10": {
+      "precision": 0.5384615384615384,
+      "recall": 0.4375,
+      "f1-score": 0.4827586206896552,
+      "support": 16.0
+    },
+    "sentences2": {
+      "precision": 0.6875,
+      "recall": 0.44,
+      "f1-score": 0.5365853658536586,
+      "support": 25.0
+    },
+    "sentences3": {
+      "precision": 0.3333333333333333,
+      "recall": 0.1875,
+      "f1-score": 0.24,
+      "support": 16.0
+    },
+    "sentences4": {
+      "precision": 0.38095238095238093,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.48484848484848486,
+      "support": 12.0
+    },
+    "sentences5": {
+      "precision": 0.46153846153846156,
+      "recall": 0.3157894736842105,
+      "f1-score": 0.375,
+      "support": 19.0
+    },
+    "sentences6": {
+      "precision": 0.2857142857142857,
+      "recall": 0.4444444444444444,
+      "f1-score": 0.34782608695652173,
+      "support": 9.0
+    },
+    "sentences7": {
+      "precision": 0.5333333333333333,
+      "recall": 0.7619047619047619,
+      "f1-score": 0.6274509803921569,
+      "support": 21.0
+    },
+    "sentences8": {
+      "precision": 0.4,
+      "recall": 0.4,
+      "f1-score": 0.4,
+      "support": 10.0
+    },
+    "sentences9": {
+      "precision": 0.7142857142857143,
+      "recall": 0.23809523809523808,
+      "f1-score": 0.35714285714285715,
+      "support": 21.0
+    },
+    "vowel1": {
+      "precision": 0.8,
+      "recall": 0.631578947368421,
+      "f1-score": 0.7058823529411765,
+      "support": 19.0
+    },
+    "vowel2": {
+      "precision": 0.625,
+      "recall": 0.625,
+      "f1-score": 0.625,
+      "support": 16.0
+    },
+    "vowel3": {
+      "precision": 0.625,
+      "recall": 0.8333333333333334,
+      "f1-score": 0.7142857142857143,
+      "support": 18.0
+    },
+    "vowel4": {
+      "precision": 0.5862068965517241,
+      "recall": 0.7391304347826086,
+      "f1-score": 0.6538461538461539,
+      "support": 23.0
+    },
+    "vowel5": {
+      "precision": 0.36363636363636365,
+      "recall": 0.42105263157894735,
+      "f1-score": 0.3902439024390244,
+      "support": 19.0
+    },
+    "word1": {
+      "precision": 0.5882352941176471,
+      "recall": 0.45454545454545453,
+      "f1-score": 0.5128205128205128,
+      "support": 22.0
+    },
+    "word10": {
+      "precision": 0.6,
+      "recall": 0.5625,
+      "f1-score": 0.5806451612903226,
+      "support": 16.0
+    },
+    "word11": {
+      "precision": 0.6428571428571429,
+      "recall": 0.5625,
+      "f1-score": 0.6,
+      "support": 16.0
+    },
+    "word12": {
+      "precision": 0.38095238095238093,
+      "recall": 0.32,
+      "f1-score": 0.34782608695652173,
+      "support": 25.0
+    },
+    "word13": {
+      "precision": 0.35294117647058826,
+      "recall": 0.42857142857142855,
+      "f1-score": 0.3870967741935484,
+      "support": 14.0
+    },
+    "word14": {
+      "precision": 0.6071428571428571,
+      "recall": 0.8095238095238095,
+      "f1-score": 0.6938775510204082,
+      "support": 21.0
+    },
+    "word15": {
+      "precision": 0.42857142857142855,
+      "recall": 0.5217391304347826,
+      "f1-score": 0.47058823529411764,
+      "support": 23.0
+    },
+    "word2": {
+      "precision": 0.5454545454545454,
+      "recall": 0.6,
+      "f1-score": 0.5714285714285714,
+      "support": 10.0
+    },
+    "word3": {
+      "precision": 0.625,
+      "recall": 0.47619047619047616,
+      "f1-score": 0.5405405405405406,
+      "support": 21.0
+    },
+    "word4": {
+      "precision": 0.5,
+      "recall": 0.2,
+      "f1-score": 0.2857142857142857,
+      "support": 15.0
+    },
+    "word5": {
+      "precision": 0.5483870967741935,
+      "recall": 0.8095238095238095,
+      "f1-score": 0.6538461538461539,
+      "support": 21.0
+    },
+    "word6": {
+      "precision": 0.5263157894736842,
+      "recall": 0.7407407407407407,
+      "f1-score": 0.6153846153846154,
+      "support": 27.0
+    },
+    "word7": {
+      "precision": 0.7857142857142857,
+      "recall": 0.5238095238095238,
+      "f1-score": 0.6285714285714286,
+      "support": 21.0
+    },
+    "word8": {
+      "precision": 0.5625,
+      "recall": 0.4090909090909091,
+      "f1-score": 0.47368421052631576,
+      "support": 22.0
+    },
+    "word9": {
+      "precision": 0.4666666666666667,
+      "recall": 0.7777777777777778,
+      "f1-score": 0.5833333333333334,
+      "support": 9.0
+    },
+    "accuracy": 0.5340699815837937,
+    "macro avg": {
+      "precision": 0.5361312088706734,
+      "recall": 0.5321169664022448,
+      "f1-score": 0.5164096195458895,
+      "support": 543.0
+    },
+    "weighted avg": {
+      "precision": 0.5493225423699907,
+      "recall": 0.5340699815837937,
+      "f1-score": 0.5237545651911534,
+      "support": 543.0
+    }
+  }
+}
