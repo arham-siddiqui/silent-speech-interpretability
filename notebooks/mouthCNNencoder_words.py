@@ -46,9 +46,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # ============================================================
 
 CSV_PATH        = "mouth_frame_embeddings.csv"
-MODEL_PATH      = "mouth_cnn_model.pt"
-EMBEDDINGS_PATH = "mouth_frame_embeddings_trained.npz"
-LABEL_MAP_PATH  = "mouth_cnn_label_map.json"
+MODEL_PATH      = "mouth_cnn_model_words.pt"
+EMBEDDINGS_PATH = "mouth_frame_embeddings_trained_words.npz"
+LABEL_MAP_PATH  = "mouth_cnn_label_map_words.json"
 
 EMBEDDING_DIM  = 128
 FRAME_FEAT_DIM = 256
@@ -73,6 +73,7 @@ TEST_USERS = ["19", "20"]
 def load_csv(path):
     print(f"Loading {path}...")
     df = pd.read_csv(path)
+    df = df[df["label_name"].str.startswith("word")].reset_index(drop=True)
 
     embed_cols = [f"embed_{i}" for i in range(512)]
     X = df[embed_cols].values.astype(np.float32)        # (N, 512)
