@@ -647,13 +647,13 @@ if __name__ == "__main__":
 """
 model stats
 
-Final validation accuracy: 0.760
-accuracy | f1-score: 0.76, support: 795
-macro avg | Precision: 0.77, Recall: 0.77, f1-score: 0.76, support: 795
-weighted avg | Precision: 0.78, Recall: 0.76, f1-score: 0.76, support: 795
+Final validation accuracy: 0.213
+accuracy | f1-score: 0.21, support: 506
+macro avg | Precision: 0.24, Recall: 0.23, f1-score: 0.18, support: 506
+weighted avg | Precision: 0.22, Recall: 0.21, f1-score: 0.17, support: 506
 
 Test accuracy (unseen users ['19', '20']): 0.762
-accuracy | f1-score: 0.76, support: 530
-macro avg | Precision: 0.77, Recall: 0.77, f1-score: 0.76, support: 530
-weighted avg | Precision: 0.77, Recall: 0.76, f1-score: 0.76, support: 530
+accuracy | f1-score: 0.14, support: 540
+macro avg | Precision: 0.18, Recall: 0.15, f1-score: 0.12, support: 540
+weighted avg | Precision: 0.17, Recall: 0.14, f1-score: 0.11, support: 540
 """
