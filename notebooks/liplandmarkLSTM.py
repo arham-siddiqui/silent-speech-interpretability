@@ -97,7 +97,7 @@ TEST_USERS    = ["19", "20"]
 
 # Set True to use random 75/15/10 split for debugging (confirms model can learn).
 # Set False to use the user-based split for speaker-independent evaluation.
-USE_RANDOM_SPLIT = True
+USE_RANDOM_SPLIT = False
 
 # Set True to train separate models per group type (sentences/vowels/words)
 # Set False (recommended) to train one unified model across all utterances
@@ -607,7 +607,8 @@ def main():
         _, test_acc, test_preds, test_labels = eval_epoch(
             model, test_loader, criterion
         )
-        print(f"\nTest accuracy (unseen users {TEST_USERS}): {test_acc:.3f}")
+        split_label = f"unseen users {TEST_USERS}" if not USE_RANDOM_SPLIT else "random test split (NOT speaker-disjoint)"
+        print(f"\nTest accuracy ({split_label}): {test_acc:.3f}")
         idx_to_label = {v: k for k, v in label_map.items()}
         target_names = [idx_to_label[i] for i in sorted(idx_to_label)]
         print(classification_report(
