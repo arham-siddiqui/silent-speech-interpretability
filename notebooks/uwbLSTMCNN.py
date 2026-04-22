@@ -625,3 +625,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+model stats
+
+Final validation accuracy: 0.161
+accuracy | f1-score: 0.16, support: 540
+macro avg | Precision: 0.21, Recall: 0.17, f1-score: 0.16, support: 540
+weighted avg | Precision: 0.21, Recall: 0.16, f1-score: 0.16, support: 540
+
+Test accuracy (unseen users ['19', '20']): 0.224
+accuracy | f1-score: 0.22, support: 540
+macro avg | Precision: 0.25, Recall: 0.22, f1-score: 0.20, support: 540
+weighted avg | Precision: 0.25, Recall: 0.22, f1-score: 0.20, support: 540
+"""

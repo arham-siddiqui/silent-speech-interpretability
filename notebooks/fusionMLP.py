@@ -69,8 +69,14 @@ NPZ_FILES = {
     "lip":   "lip_embeddings.npz",
     "laser": "laser_embeddings.npz",
     "radar": "radar_embeddings.npz",
-    # "mmwave": "mmwave_embeddings.npz",   # ← uncomment when available
-    # "modality5": "modality5_embeddings.npz",
+    "uwb":   "uwb_embeddings.npz",
+    "mouth": "mouth_frame_embeddings_trained_36class.npz",
+}
+
+# Some NPZs use non-standard key names. Map modality → (user_key, group_key).
+# Defaults are "user_ids" and "group_names"; override here if different.
+NPZ_KEY_MAP = {
+    "mouth": ("users", "label_names"),
 }
 
 # Speaker-independent split (same convention as per-modality scripts)
@@ -125,10 +131,13 @@ def load_and_align(npz_files: dict):
             raise FileNotFoundError(f"NPZ not found: {path}")
         d = np.load(path, allow_pickle=True)
 
+        # Resolve field names (some NPZs use non-standard keys)
+        user_key, group_key = NPZ_KEY_MAP.get(name, ("user_ids", "group_names"))
+
         # Group embeddings by (user_id, group_name)
         groups_raw = defaultdict(list)
-        user_ids   = d["user_ids"].astype(str)
-        grp_names  = d["group_names"].astype(str)
+        user_ids   = d[user_key].astype(str)
+        grp_names  = d[group_key].astype(str)
         embs       = d["embeddings"]  # (N, 128)
 
         for i in range(len(embs)):
