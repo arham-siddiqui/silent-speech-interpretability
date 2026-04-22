@@ -85,17 +85,18 @@ TEST_USERS = ["19", "20"]
 # Model
 EMBEDDING_DIM = 128
 N_HEADS       = 4     # attention heads (128 / 4 = 32 per head)
-N_LAYERS      = 2     # transformer encoder layers
-DROPOUT       = 0.3
+N_LAYERS      = 1     # 1 layer — fewer params, less memorization
+DROPOUT       = 0.5   # heavy dropout to fight overfitting
 
 # Training
 BATCH_SIZE         = 64
 LR                 = 3e-4
 EPOCHS             = 200
 PATIENCE           = 30
-WEIGHT_DECAY       = 1e-2
-MODALITY_DROP_PROB = 0.20   # prob of zeroing one random modality per train sample
-EMBED_NOISE_STD    = 0.01
+WEIGHT_DECAY       = 0.05   # strong L2 regularization
+MODALITY_DROP_PROB = 0.30   # prob of zeroing one random modality per train sample
+EMBED_NOISE_STD    = 0.03   # more jitter to prevent memorizing exact embedding coords
+MIXUP_ALPHA        = 0.3    # beta distribution param for mixup interpolation
 
 # Output paths
 MODEL_PATH      = "fusion_model.pt"
@@ -283,10 +284,10 @@ class TransformerFusionLayer(nn.Module):
             d_model, n_heads, dropout=dropout, batch_first=True
         )
         self.ff = nn.Sequential(
-            nn.Linear(d_model, d_model * 4),
+            nn.Linear(d_model, d_model * 2),   # narrower FFN → fewer params
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(d_model * 4, d_model),
+            nn.Linear(d_model * 2, d_model),
             nn.Dropout(dropout),
         )
 
@@ -345,13 +346,13 @@ class TransformerFusion(nn.Module):
         ])
         self.final_norm = nn.LayerNorm(embedding_dim)
 
-        # Classifier MLP on mean-pooled output
+        # Classifier MLP on mean-pooled output — kept small to reduce memorization
         self.classifier = nn.Sequential(
-            nn.Linear(embedding_dim, 256),
-            nn.LayerNorm(256),
+            nn.Linear(embedding_dim, embedding_dim),
+            nn.LayerNorm(embedding_dim),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(256, num_classes),
+            nn.Linear(embedding_dim, num_classes),
         )
 
     def _encode(self, x: torch.Tensor, return_weights: bool = False):
@@ -404,6 +405,27 @@ class TransformerFusion(nn.Module):
 
 
 # ============================================================
+# MIXUP AUGMENTATION
+# ============================================================
+
+def mixup_batch(x: torch.Tensor, y: torch.Tensor, alpha: float = 0.3):
+    """
+    Interpolate pairs of samples in embedding space.
+    Returns mixed x and both labels (y_a, y_b) with mixing coefficient lam.
+    """
+    if alpha <= 0:
+        return x, y, y, 1.0
+    lam = float(np.random.beta(alpha, alpha))
+    idx = torch.randperm(x.size(0), device=x.device)
+    x_mix = lam * x + (1.0 - lam) * x[idx]
+    return x_mix, y, y[idx], lam
+
+
+def mixup_criterion(criterion, pred, y_a, y_b, lam):
+    return lam * criterion(pred, y_a) + (1.0 - lam) * criterion(pred, y_b)
+
+
+# ============================================================
 # TRAINING
 # ============================================================
 
@@ -412,14 +434,17 @@ def train_epoch(model, loader, optimizer, criterion):
     total_loss, correct, total = 0.0, 0, 0
     for x, y in loader:
         x, y = x.to(DEVICE), y.to(DEVICE)
+        x, y_a, y_b, lam = mixup_batch(x, y, alpha=MIXUP_ALPHA)
         optimizer.zero_grad()
         logits, _ = model(x)
-        loss = criterion(logits, y)
+        loss = mixup_criterion(criterion, logits, y_a, y_b, lam)
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
         optimizer.step()
         total_loss += loss.item() * len(y)
-        correct    += (logits.argmax(1) == y).sum().item()
+        # Accuracy uses the dominant label (lam ≥ 0.5 after beta sampling)
+        dominant_y = y_a if lam >= 0.5 else y_b
+        correct    += (logits.argmax(1) == dominant_y).sum().item()
         total      += len(y)
     return total_loss / total, correct / total
 
@@ -445,9 +470,13 @@ def eval_epoch(model, loader, criterion):
 
 
 def run_training(model, train_loader, val_loader):
-    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.15)
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
+    # ReduceLROnPlateau halves LR when val_acc plateaus — better than cosine for
+    # overfitting regimes because it responds to actual generalization, not epoch count
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="max", factor=0.5, patience=10, min_lr=1e-5
+    )
 
     best_val_acc = 0.0
     patience_ctr = 0
@@ -459,11 +488,13 @@ def run_training(model, train_loader, val_loader):
     for epoch in range(1, EPOCHS + 1):
         tr_loss, tr_acc = train_epoch(model, train_loader, optimizer, criterion)
         val_loss, val_acc, _, _, _ = eval_epoch(model, val_loader, criterion)
-        scheduler.step()
+        scheduler.step(val_acc)
 
+        lr_now = optimizer.param_groups[0]["lr"]
         print(f"Epoch {epoch:3d}/{EPOCHS} | "
               f"Train loss {tr_loss:.4f} acc {tr_acc:.3f} | "
-              f"Val loss {val_loss:.4f} acc {val_acc:.3f}")
+              f"Val loss {val_loss:.4f} acc {val_acc:.3f} | "
+              f"LR {lr_now:.2e}")
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
