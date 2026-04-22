@@ -678,6 +678,14 @@ model stats
 
 Final validation accuracy: 0.492
 
+Mean cross-modal attention weight per modality:
+  Modality      Overall   sentences       vowel        word
+  lip             0.235       0.215       0.219       0.254
+  laser           0.133       0.104       0.210       0.126
+  radar           0.066       0.093       0.068       0.048
+  uwb             0.401       0.464       0.243       0.412
+  mouth           0.165       0.125       0.259       0.161
+
 Test accuracy (users ['19', '20']): 0.550
 accuracy | f1-score: 0.55, support: 60
 macro avg | Precision: 0.66, Recall: 0.55, f1-score: 0.56, support: 60
