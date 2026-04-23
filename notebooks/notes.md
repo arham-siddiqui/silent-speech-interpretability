@@ -181,26 +181,24 @@ A tiny MLP (~43K params) that learns per-sample modality weights, trained with L
 during training. In practice it barely beat the no-training methods — the val set is only
 59 samples, which is too small to train a reliable gate.
 
-### Results
+### Results (with original v1 encoders)
 
 | Method | Val | Test |
 |--------|-----|------|
 | fusionMLP (Transformer) | ~40% | — |
-| Equal-weight | 61.0% | 76.7% |
-| Borda count | 67.8% | 75.0% |
-| **Consistency-weighted** | **66.1%** | **78.3%** |
-| Trained gate | 59.3% | 73.3% |
+| Equal-weight | 55.9% | 58.3% |
+| Borda count | 52.5% | 61.7% |
+| Consistency-weighted | 57.6% | 58.3% |
+| Trained gate | 54.2% | 58.3% |
 
-**Best result: 78.3% test accuracy** (consistency-weighted, no learned parameters).
+Best at this stage: ~58–62% test. Better than the Transformer, but limited by encoder quality.
 
 ---
 
-## Phase 4: Improving the Encoders — v2 Models
+## Phase 4: Improving the Lip Encoder — `liplandmarkLSTM_v2.py`
 
-The fusion ceiling was limited by encoder quality. The original lip and UWB encoders
-overfit to training speakers, performing poorly on unseen val/test speakers.
-
-### `liplandmarkLSTM_v2.py` — three improvements
+The fusion ceiling was being held down by the lip encoder specifically — it was overfitting
+to training speakers and producing poor embeddings on unseen speakers. Three changes:
 
 1. **Temporal attention pooling**: instead of taking only the final BiLSTM hidden state,
    learn a weighted average over all timesteps. Focuses on peak articulation frames
@@ -214,18 +212,20 @@ overfit to training speakers, performing poorly on unseen val/test speakers.
    Gradient Reversal Layer. The encoder is penalized for encoding speaker identity,
    forcing it to produce speaker-agnostic embeddings.
 
-**Result: lip encoder went from ~15% → 42.8% test accuracy** (speaker-disjoint).
+**Lip encoder result: 14.6% → 42.8% test accuracy** (speaker-disjoint, +28 points).
 
-### `uwbLSTMCNN_v2.py` — improvements + bug fix
+### Impact on fusion
 
-- Added residual 2D CNN blocks (ResBlock2D) for better feature extraction
-- Added temporal attention pooling and DANN head (same as lip v2)
-- Improved preprocessing: per-antenna per-bin z-score normalization + ±3σ clipping
-- **Fixed a critical bug**: `_time_out_lengths()` was computing CNN output lengths using
-  range strides instead of time strides, causing the packed LSTM to crash with
-  `RuntimeError: start + length exceeds dimension size`
-- Training was killed early (checkpoint at ~60% of epochs) to save time, so UWB v2
-  results are partial
+Re-running fusionGate.py with the v2 lip embeddings produced a large jump:
+
+| Method | Val (v1 lip) | Test (v1 lip) | Val (v2 lip) | Test (v2 lip) |
+|--------|-------------|--------------|-------------|--------------|
+| Equal-weight | 55.9% | 58.3% | 61.0% | 76.7% |
+| Borda count | 52.5% | 61.7% | 67.8% | 75.0% |
+| **Consistency-weighted** | 57.6% | 58.3% | **66.1%** | **78.3%** |
+| Trained gate | 54.2% | 58.3% | 59.3% | 73.3% |
+
+**~+20 percentage point improvement in test accuracy** from the lip encoder upgrade alone.
 
 ### `fusionE2E.py` — joint fine-tuning (attempted)
 
@@ -234,9 +234,7 @@ optimized to complement the other 4 modalities rather than just lip classificati
 
 **What happened**: the gate collapsed — it assigned ~90% weight to lip and ignored
 everything else. Backprop only flows through the lip encoder (the others are frozen NPZs),
-so the gate learns to just trust the one encoder that's actually updating.
-
-The resulting `lip_embeddings_e2e.npz` is used by fusionGate.py but offers minimal
+so the gate learns to just trust the one encoder that's actually updating. Minimal
 improvement over the v2 embeddings.
 
 ---
@@ -248,7 +246,7 @@ Lip landmarks  → BiLSTM v2 (DANN + SupCon + Attn.) → 128-dim ─┐
 Radar (mmWave) → 2D CNN encoder (frozen)            → 128-dim  │
 Laser          → 1D CNN/LSTM encoder (frozen)       → 128-dim  ├→ Consistency-weighted
 Mouth (video)  → CNN encoder (frozen)               → 128-dim  │   prototype fusion → prediction
-UWB radar      → CNN/LSTM v2 (DANN + Attn.)         → 128-dim ─┘
+UWB radar      → 1D CNN/LSTM encoder (frozen)       → 128-dim ─┘
 ```
 
 Classification via per-class prototype cosine similarity, no learned fusion head.
