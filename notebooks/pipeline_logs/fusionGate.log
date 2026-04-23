@@ -1,0 +1,105 @@
+Device: cpu
+Loading embeddings...
+  lip         : 539 (user, group) pairs, 4551 total reps — lip_embeddings_e2e.npz
+  laser       : 590 (user, group) pairs, 5091 total reps — laser_embeddings.npz
+  radar       : 553 (user, group) pairs, 4956 total reps — radar_embeddings.npz
+  uwb         : 596 (user, group) pairs, 5255 total reps — uwb_embeddings_v2.npz
+  mouth       : 596 (user, group) pairs, 5421 total reps — mouth_frame_embeddings_trained_36class.npz
+
+Building aligned splits...
+
+  Intersection: 539 (user, group) pairs
+
+30 classes | 5 modalities: ['lip', 'laser', 'radar', 'uwb', 'mouth']
+Chance accuracy: 1/30 = 0.033
+Train: 3509  Val:   59  Test:   60
+
+============================================================
+BASELINES (no learned parameters)
+============================================================
+  Equal-weight     Val: 0.610  Test: 0.767
+  Borda count      Val: 0.678  Test: 0.750
+  Consistency-wt   Val: 0.661  Test: 0.783
+
+  → Best no-training baseline: Borda count (val 0.678)
+
+Per-modality nearest-centroid (no fusion):
+  lip          Val: 0.390  lip          Test: 0.583
+  laser        Val: 0.373  laser        Test: 0.450
+  radar        Val: 0.525  radar        Test: 0.400
+  uwb          Val: 0.390  uwb          Test: 0.167
+  mouth        Val: 0.356  mouth        Test: 0.467
+
+============================================================
+Gate network parameters: 42,629  (prototypes are fixed buffers, not parameters)
+============================================================
+LOSO training speakers: ['1', '10', '12', '13', '14', '15', '16', '2', '3', '4', '5', '6', '7', '8', '9']
+
+============================================================
+TRAINING GATED FUSION  (LOSO prototypes during training)
+============================================================
+Epoch   1/300 | Train 0.985 | Val 0.593 | LR 1.00e-03
+  ✓ New best val acc: 0.593
+Epoch   2/300 | Train 0.984 | Val 0.576 | LR 1.00e-03
+Epoch   3/300 | Train 0.985 | Val 0.542 | LR 1.00e-03
+Epoch   4/300 | Train 0.982 | Val 0.542 | LR 1.00e-03
+Epoch   5/300 | Train 0.981 | Val 0.492 | LR 1.00e-03
+Epoch  10/300 | Train 0.971 | Val 0.356 | LR 1.00e-03
+Epoch  20/300 | Train 0.954 | Val 0.322 | LR 5.00e-04
+Epoch  30/300 | Train 0.957 | Val 0.322 | LR 5.00e-04
+Epoch  40/300 | Train 0.954 | Val 0.322 | LR 2.50e-04
+  Early stopping at epoch 41. Best val: 0.593
+
+Test accuracy (users ['19', '20']): 0.733
+              precision    recall  f1-score   support
+
+  sentences1       1.00      1.00      1.00         2
+ sentences10       0.50      0.50      0.50         2
+  sentences2       1.00      1.00      1.00         2
+  sentences3       0.40      1.00      0.57         2
+  sentences4       0.67      1.00      0.80         2
+  sentences5       1.00      0.50      0.67         2
+  sentences6       0.67      1.00      0.80         2
+  sentences7       1.00      0.50      0.67         2
+  sentences8       1.00      0.50      0.67         2
+  sentences9       0.00      0.00      0.00         2
+      vowel1       1.00      0.50      0.67         2
+      vowel2       1.00      0.50      0.67         2
+      vowel3       0.67      1.00      0.80         2
+      vowel4       1.00      1.00      1.00         2
+      vowel5       1.00      0.50      0.67         2
+       word1       0.40      1.00      0.57         2
+      word10       0.50      1.00      0.67         2
+      word11       1.00      0.50      0.67         2
+      word12       0.00      0.00      0.00         2
+      word13       1.00      1.00      1.00         2
+      word14       1.00      0.50      0.67         2
+      word15       1.00      1.00      1.00         2
+       word2       1.00      1.00      1.00         2
+       word3       1.00      0.50      0.67         2
+       word4       0.50      1.00      0.67         2
+       word5       1.00      1.00      1.00         2
+       word6       1.00      0.50      0.67         2
+       word7       0.50      1.00      0.67         2
+       word8       1.00      1.00      1.00         2
+       word9       1.00      0.50      0.67         2
+
+    accuracy                           0.73        60
+   macro avg       0.79      0.73      0.71        60
+weighted avg       0.79      0.73      0.71        60
+
+Val accuracy: 0.593
+
+Mean gate weight per modality:
+  Modality      Overall   sentences       vowel        word
+  lip             0.212       0.200       0.213       0.219
+  laser           0.197       0.180       0.203       0.206
+  radar           0.196       0.203       0.194       0.193
+  uwb             0.214       0.237       0.200       0.204
+  mouth           0.181       0.179       0.191       0.179
+Gate weight heatmap saved: /Users/arhamsiddiqui/Desktop/silentSpeech/fusion_gate_attention.png
+
+Fused embeddings saved to /Users/arhamsiddiqui/Desktop/silentSpeech/fusion_gate_embeddings.npz
+  equal-weight probs shape: (539, 30)
+  borda_ranks shape:        (539, 30)
+  gate_weights shape:       (539, 5)

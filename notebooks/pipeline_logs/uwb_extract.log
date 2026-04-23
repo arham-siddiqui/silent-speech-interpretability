@@ -1,0 +1,10 @@
+Device: cpu
+Device: cpu
+Found 5269 paired UWB samples.
+Found 5269 samples
+Loading checkpoint: /Users/arhamsiddiqui/Desktop/silentSpeech/uwb_cnn_lstm_model_v2.pt
+Extracting embeddings for all samples...
+
+Extracting embeddings for all samples...
+  Extracted 5255 embeddings (14 skipped).
+Saved /Users/arhamsiddiqui/Desktop/silentSpeech/uwb_embeddings_v2.npz  shape=(5255, 128)

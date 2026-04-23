@@ -83,11 +83,17 @@ except ImportError:
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+def _pick(v2, v1):
+    return v2 if os.path.exists(v2) else v1
+
 NPZ_FILES = {
-    "lip":   os.path.join(_ROOT, "lip_embeddings.npz"),
+    "lip":   _pick(os.path.join(_ROOT, "lip_embeddings_e2e.npz"),
+                   _pick(os.path.join(_ROOT, "lip_embeddings_v2.npz"),
+                         os.path.join(_ROOT, "lip_embeddings.npz"))),
     "laser": os.path.join(_ROOT, "laser_embeddings.npz"),
     "radar": os.path.join(_ROOT, "radar_embeddings.npz"),
-    "uwb":   os.path.join(_ROOT, "uwb_embeddings.npz"),
+    "uwb":   _pick(os.path.join(_ROOT, "uwb_embeddings_v2.npz"),
+                   os.path.join(_ROOT, "uwb_embeddings.npz")),
     "mouth": os.path.join(_ROOT, "mouth_frame_embeddings_trained_36class.npz"),
 }
 
@@ -899,17 +905,30 @@ if __name__ == "__main__":
     main()
 
 """
-model stats
+=============================================================
+RESULTS  (speaker-disjoint: train=users 1-16, val=17-18, test=19-20)
+Data: 3509 train | 59 val | 60 test  (intersection of all 5 modalities)
+30 classes, chance = 3.3%
+Embeddings: lip_embeddings_e2e.npz, uwb_embeddings_v2.npz (others v1)
+=============================================================
 
-Final validation accuracy: 0.542
+Per-modality nearest-centroid (no fusion):
+  radar        val 52.5%   test 40.0%
+  lip  (E2E)   val 39.0%   test 58.3%
+  uwb  (v2)    val 39.0%   test 16.7%
+  laser        val 37.3%   test 45.0%
+  mouth        val 35.6%   test 46.7%
 
-Mean gate weight per modality:
-  Modality      Overall   sentences       vowel        word
-  lip             0.219       0.229       0.214       0.215
-  laser           0.207       0.207       0.212       0.206
-  radar           0.188       0.182       0.184       0.194
-  uwb             0.211       0.228       0.206       0.202
-  mouth           0.174       0.154       0.183       0.184
+Fusion (no learned parameters):
+  Consistency-weighted   val 66.1%   test 78.3%   ← best test
+  Borda count            val 67.8%   test 75.0%   ← best val
+  Equal-weight           val 61.0%   test 76.7%
+
+Fusion (trained gate, LOSO prototypes):
+  Gated fusion           val 59.3%   test 73.3%
+
+Best result: 78.3% test accuracy (consistency-weighted fusion)
+=============================================================
 
 Test accuracy (users ['19', '20']): 0.533
 accuracy | f1-score: 0.53, support: 60
