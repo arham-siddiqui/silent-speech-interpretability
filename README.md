@@ -1,116 +1,261 @@
-# ssi_multimodal_alpha (universal, portable)
+# Silent Speech Decoding — Project Overview
 
-**Purpose:** A portable alpha codebase for silent speech / multimodal experimentation with:
-- A **universal RVTALL loader** that understands the *Processed sliced data* layout from the Figshare release and
-  gracefully detects raw folders when present (index only).
-- A **portable path layer** (`src/utils/paths.py`) so configs can use *relative* paths and team members only set `SSI_BASE` if desired.
-- Minimal training scripts (contrastive / ASR placeholder) that operate on the loader.
-- Small validation utilities to confirm your local data layout.
-
-## 0) Portability convention
-- Project root is auto-inferred from `src/utils/paths.py`.
-- Optionally set an environment variable: `SSI_BASE=/absolute/path/to/ssi_multimodal_alpha`.
-- **Configs must use relative paths** like `data/RVTALL/Processed_sliced_data` and `outputs/...`.
-
-## 1) Place and unzip the RVTALL zips (Windows Git Bash)
-You downloaded:
-- `Processed_sliced_data.zip`
-- `Code.zip` (contains `RVTALL-Preprocess-main` and MATLAB scripts)
-
-From your shell in the repo root:
-```bash
-# ensure base
-pwd  # should be .../ssi_multimodal_alpha
-
-# make dataset area
-mkdir -p data/RVTALL
-
-# move zips from Downloads (Git Bash path ~ maps to C:\Users\<you>)
-mv ~/Downloads/Processed_sliced_data.zip data/RVTALL/ || true
-mv ~/Downloads/Code.zip                 data/RVTALL/ || true
-
-# unzip (use one that exists on your system; Git Bash often has `tar`)
-cd data/RVTALL
-# Option A: tar (works on many Git Bash installs)
-tar -xf Processed_sliced_data.zip || true
-tar -xf Code.zip || true
-
-# Option B: unzip (if installed)
-# unzip Processed_sliced_data.zip
-# unzip Code.zip
-
-# You should now see:
-#   data/RVTALL/Processed_sliced_data/
-#   data/RVTALL/RVTALL-Preprocess-main/
-```
-
-Validation:
-```bash
-cd ../../../
-python -m src.scripts.validate_rvtall --base data/RVTALL
-```
-
-## 2) Configs
-- **RVTALL contrastive**: `src/configs/rvtall_contrastive.yaml`
-  - `data.root: data/RVTALL/Processed_sliced_data`
-  - `data.modalities: [video, mmwave, uwb, laser, audio]`
-- **Inner speech (EEG+fMRI)** is included as a placeholder config.
-
-## 3) Quick run
-```bash
-# (optional) set explicit base for portability
-export SSI_BASE=$(pwd)
-
-# sanity check
-python -m src.training.print_paths --config src/configs/rvtall_contrastive.yaml
-
-# small contrastive loop (on a tiny subset)
-python -m src.training.train_contrastive --config src/configs/rvtall_contrastive.yaml
-```
-
-## 4) Colab notes
-In Colab:
-```python
-!git clone https://github.com/arham-siddiqui/silentSpeech.git
-%cd silentSpeech
-!pip -q install -r requirements.txt
-
-import os
-os.environ["SSI_BASE"] = os.getcwd()
-
-!python -m src.scripts.validate_rvtall --base data/RVTALL
-!python -m src.training.train_contrastive --config src/configs/rvtall_contrastive.yaml
-```
-
-## 5) Universal loader
-- Implemented in `src/data/rvtall_auto.py`.
-- Detects `Processed_sliced_data/` and enumerates samples by `<SetID>/<CorpusType>/*/audios/audio_proc_<idx>.wav`.
-- For each `<idx>` it joins across modalities:
-  - `radar_processed/<SetID>/<CorpusType>/sample_<idx>.npy`
-  - `uwb_processed/<SetID>/<CorpusType>/sample_<idx>.npy`
-  - `laser_processed/<SetID>/<CorpusType>/sample_<idx>.npy`
-  - `kinect_processed/.../videos/video_proc_<idx>/mouth/*.png` (frames)
-  - `kinect_processed/.../landmarkers/land_proc_<idx>.*` (if present)
-- Returns fixed-size tensors per modality (resize/sampling) to keep DataLoader collate happy.
-
-> If only raw folders exist, the loader will **index paths** and raise a clear message that raw signal decoding is not implemented yet.
-
-## 6) Git repair (your earlier error)
-If `~/ntab/software/mri` has its own `.git` that conflicts with `speechdecoding/ssi_multimodal_alpha`, run:
-```bash
-cd ~/ntab/software/mri
-rm -rf .git                   # remove parent .git
-
-cd ~/ntab/software/mri/speechdecoding/ssi_multimodal_alpha
-git init
-git add .
-git commit -m "portable universal alpha"
-git branch -M main
-git remote add origin https://github.com/arham-siddiqui/silentSpeech.git
-git push -u origin main
-```
-(See `scripts/git_fix_parent_repo.sh` for a copy.)
+**Goal**: Decode silent speech (intended but unvocalized utterances) across 30 classes —
+5 vowels, 15 words, 10 sentences — using five sensor modalities simultaneously.
+No microphone. No vocalization. Speaker-independent generalization required.
 
 ---
 
-**License**: research use only.  Contributions welcome.
+## 1. Dataset — RVTALL
+
+**Paper**: https://www.nature.com/articles/s41597-023-02793-w
+
+20 participants each performed 5 vowels, 15 words, and 10 sentences (30 classes total),
+recorded simultaneously across six sensor modalities:
+
+| Modality | Sensor | Signal type |
+|----------|--------|-------------|
+| Lip landmarks | Kinect + dlib | 68 facial keypoints per frame |
+| Mouth video | Kinect RGB | Cropped mouth region frames |
+| UWB radar | 7.5 GHz CIR | Range-time matrix, 2 antennas |
+| mmWave radar | 77 GHz FMCW | Range-Doppler map |
+| Laser speckle | 1D photodiode | Raw time-series signal |
+| Audio | Microphone | Not used (silent speech task) |
+
+**Train/val/test split — by speaker, not by sample:**
+- Train: users 1–16 (16 speakers)
+- Val: users 17–18 (2 speakers, never seen during training)
+- Test: users 19–20 (2 speakers, never seen during training)
+
+This is called a **speaker-disjoint** evaluation. It is deliberately hard — the model
+must generalize to entirely new people, not just new recordings of familiar voices.
+Chance accuracy = 1/30 = **3.3%**.
+
+---
+
+## 2. Encoders
+
+Each modality gets its own dedicated encoder that compresses a variable-length
+sensor recording into a fixed **128-dimensional embedding vector**. All encoders
+are trained independently with a classification head (128 → 30 classes) that is
+discarded after training — only the 128-dim embedding is kept for fusion.
+
+This is called **late fusion**: each sensor is processed fully before anything is combined.
+
+---
+
+### 2a. Lip Landmark Encoder — `liplandmarkLSTM.py` / `liplandmarkLSTM_v2.py`
+
+**Input**: Each frame, extract the 20 lip landmarks (indices 48–68 of dlib's 68-point
+face model), normalize to be speaker/scale invariant, concatenate with per-frame
+velocity → **(T, 80)** sequence.
+
+**v1 Architecture**:
+```
+Input (T, 80) → LayerNorm → BiLSTM (2 layers, 256 hidden)
+→ last hidden state (512,) → Dropout → Linear(512→128) + LayerNorm → L2 normalize
+```
+
+**v2 Improvements** (`liplandmarkLSTM_v2.py`):
+
+The v1 encoder overfit to training speakers — it learned speaker-specific lip shapes
+rather than utterance-level articulation patterns. Three changes fixed this:
+
+1. **Temporal attention pooling** — instead of using only the last hidden state, learn a
+   weighted average over all LSTM timesteps. Focuses on the most phonetically
+   informative frames rather than the tail of the sequence.
+
+2. **Supervised Contrastive Loss (SupCon)** — in addition to cross-entropy, a contrastive
+   loss pulls embeddings of the same utterance type together *across different speakers*.
+   This directly optimizes for speaker-invariant clustering in embedding space.
+
+3. **Domain Adversarial Training (DANN)** — a speaker-ID classifier is attached via a
+   Gradient Reversal Layer. The encoder is penalized for encoding who is speaking,
+   forcing it to be speaker-agnostic.
+
+**Accuracy (speaker-disjoint test set)**:
+
+| Version | Test Accuracy |
+|---------|--------------|
+| Lip v1 | 14.6% |
+| Lip v2 (DANN + SupCon + Attn.) | **42.8%** |
+
+---
+
+### 2b. Mouth Video Encoder
+
+**Input**: Cropped mouth-region PNG frames → ResNet18 backbone (pretrained ImageNet)
+→ 512-dim → MLP head → 128-dim embedding.
+
+**Test accuracy**: ~46.7% (speaker-disjoint)
+
+---
+
+### 2c. UWB Radar Encoder — `uwbLSTMCNN.py` / `uwbLSTMCNN_v2.py`
+
+**Input**: Range-time matrix from 2 antennas, shape (T, 2, 205). Each antenna captures
+how radio reflections change over time as articulators (tongue, jaw, lips) move.
+
+**Architecture**: 2D CNN over the range-time map → max-pool over range → BiLSTM over
+time → 128-dim embedding.
+
+**v2** added residual CNN blocks, temporal attention, DANN, and improved preprocessing
+(per-bin z-score normalization + ±3σ clipping). Training was killed early due to time
+constraints, so v2 results are partial. The v1 checkpoint is used in the final system.
+
+**Test accuracy**: ~21.3% (speaker-disjoint, v1)
+
+---
+
+### 2d. mmWave Radar Encoder
+
+**Input**: Range-Doppler maps (2D frequency-domain representation) — captures jaw/tongue
+motion as Doppler shift patterns.
+
+**Architecture**: 2D CNN → global pool → 128-dim embedding.
+
+**Test accuracy**: ~40.0% (speaker-disjoint)
+
+---
+
+### 2e. Laser Speckle Encoder
+
+**Input**: 1D raw photodiode signal over time — captures vocal fold vibration micro-motion.
+
+**Architecture**: 1D strided CNN → BiLSTM → 128-dim embedding.
+
+**Test accuracy**: ~45.0% (speaker-disjoint)
+
+---
+
+## 3. Embeddings
+
+After training, each encoder is run over the full dataset (all 20 speakers) in inference
+mode to extract embeddings. These are saved as `.npz` files:
+
+| File | Source | Shape |
+|------|--------|-------|
+| `lip_embeddings_v2.npz` | Lip v2 encoder | (5300, 128) |
+| `mouth_frame_embeddings_trained_36class.npz` | Mouth encoder | (5421, 128) |
+| `uwb_embeddings.npz` | UWB v1 encoder | (5255, 128) |
+| `radar_embeddings.npz` | mmWave encoder | (4956, 128) |
+| `laser_embeddings.npz` | Laser encoder | (5091, 128) |
+
+Each NPZ contains: `embeddings` (N, 128), `labels` (N,), `user_ids` (N,), `group_names` (N,).
+
+The fusion layer never sees raw sensor data — it works entirely from these pre-computed
+128-dim vectors. This means fusion can be developed and evaluated without re-running
+the expensive encoder training.
+
+---
+
+## 4. Fusion Approaches
+
+The central challenge: how to combine 5 independent 128-dim votes into a single
+class prediction. We tried two fundamentally different approaches.
+
+---
+
+### 4a. Transformer Fusion — `fusionMLP.py` (abandoned)
+
+Concatenate all 5 embeddings → 640-dim → Transformer encoder (~440K parameters)
+→ classification head.
+
+**Why it failed**: 440K parameters memorizing 3500 training samples across only 16 speakers.
+The model learned *who is speaking* rather than *what they said*, because speaker identity
+leaks through the embeddings. On unseen val speakers: **~40% accuracy**.
+
+---
+
+### 4b. Prototype-based Fusion — `fusionGate.py` (final system)
+
+**Core idea**: for each class and each modality, compute the mean training embedding
+(the *prototype*). At test time, measure cosine similarity of a test embedding to all
+30 class prototypes — this gives a probability distribution over classes from that modality
+(its "vote"). No learned parameters in the classification step = no overfitting.
+
+Three ways to combine the 5 votes:
+
+**Equal-weight** — average the 5 probability vectors directly. Every modality counts equally.
+
+**Borda count** — convert each modality's probability vector to a ranking (1st–30th place),
+sum ranks across modalities. Class with lowest total rank wins. Resistant to one
+overconfident-but-wrong modality dominating.
+
+**Consistency-weighted** — for each test sample, weight each modality by how much it
+agrees with the other four. If 4 modalities predict "word3" but lip predicts "word7",
+lip is automatically down-weighted for that sample. Weights computed on-the-fly per
+sample — no training required.
+
+**Trained gate** — a small MLP (~43K params) that learns modality weights from training
+data using LOSO (Leave-One-Speaker-Out) prototypes. In practice barely beat the
+no-training methods due to the tiny 59-sample validation set.
+
+---
+
+### 4c. End-to-End Joint Fine-tuning — `fusionE2E.py` (attempted)
+
+Re-train the lip encoder jointly with the fusion loss, so its embeddings optimize for
+complementing the other modalities rather than just lip classification alone.
+
+**What happened**: the gate collapsed to ~90% weight on lip, ignoring all other modalities.
+Since only the lip encoder receives gradients (the others are frozen NPZ files), the gate
+learned to trust the only encoder that was actually updating. Minimal improvement over v2.
+
+---
+
+## 5. Accuracy Results
+
+**Evaluation**: speaker-disjoint, 30 classes, chance = 3.3%.
+Data: 3509 train / 59 val / 60 test samples (intersection of all 5 modalities).
+
+### Individual modality accuracy (nearest-centroid, test set)
+
+| Modality | Test Accuracy |
+|----------|--------------|
+| Lip v2 (DANN + SupCon + Attn.) | 42.8% |
+| Mouth | 46.7% |
+| Laser | 45.0% |
+| mmWave radar | 40.0% |
+| UWB radar | 21.3% |
+
+### Fusion accuracy — progression
+
+| Method | Val (v1 lip) | Test (v1 lip) | Val (v2 lip) | Test (v2 lip) |
+|--------|-------------|--------------|-------------|--------------|
+| Transformer (fusionMLP) | ~40% | — | — | — |
+| Equal-weight | 55.9% | 58.3% | 61.0% | 76.7% |
+| Borda count | 52.5% | 61.7% | 67.8% | 75.0% |
+| **Consistency-weighted** | 57.6% | 58.3% | **66.1%** | **78.3%** |
+| Trained gate | 54.2% | 58.3% | 59.3% | 73.3% |
+
+**Best result: 78.3% test accuracy** — consistency-weighted prototype fusion with v2 lip encoder.
+
+The +20 point jump from v1→v2 lip demonstrates the key insight: in late-fusion systems,
+**encoder quality is the binding constraint**. The fusion method matters far less than
+how well the individual encoders generalize across speakers.
+
+---
+
+## 6. Future Directions
+
+**Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
+UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
+accuracy further.
+
+**Apply DANN + SupCon to all encoders** — we only improved the lip encoder. Applying the
+same speaker-invariance techniques to mouth, radar, and laser should raise all individual
+modality ceilings and therefore the fusion ceiling.
+
+**Larger speaker cohort** — the trained gate underperformed because 59 val samples is
+not enough to learn reliable modality weights. More speakers would enable proper
+gating to outperform the no-training baselines.
+
+**Phoneme-level decoding** — move from closed-set 30-class word/sentence classification
+toward continuous phoneme-level decoding, enabling open-vocabulary silent speech.
+
+**Temporal alignment** — modalities currently operate independently with no cross-modal
+synchronization. Learned alignment (e.g. cross-attention between modality streams) could
+allow the fusion layer to attend to the right time window in each sensor.
+
+**Speaker cross-validation** - the current evaluation holds out a fixed pair of test speakers (users 19–20), yielding a test set of only 60 samples. This makes accuracy estimates noisy and potentially unrepresentative of true generalization. A k-fold cross-validation over speakers — rotating which users are held out across folds and averaging results — would produce a statistically robust accuracy estimate while still maintaining strict speaker independence. With 20 speakers, a 5-fold scheme (4 test speakers per fold) would increase the effective test set to 150+ samples per evaluation and give a far more reliable measure of how well the system generalizes.
