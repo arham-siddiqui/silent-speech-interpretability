@@ -257,3 +257,5 @@ toward continuous phoneme-level decoding, enabling open-vocabulary silent speech
 **Temporal alignment** — modalities currently operate independently with no cross-modal
 synchronization. Learned alignment (e.g. cross-attention between modality streams) could
 allow the fusion layer to attend to the right time window in each sensor.
+
+**Speaker cross-validation** - the current evaluation holds out a fixed pair of test speakers (users 19–20), yielding a test set of only 60 samples. This makes accuracy estimates noisy and potentially unrepresentative of true generalization. A k-fold cross-validation over speakers — rotating which users are held out across folds and averaging results — would produce a statistically robust accuracy estimate while still maintaining strict speaker independence. With 20 speakers, a 5-fold scheme (4 test speakers per fold) would increase the effective test set to 150+ samples per evaluation and give a far more reliable measure of how well the system generalizes.
