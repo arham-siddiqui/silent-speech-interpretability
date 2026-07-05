@@ -1,0 +1,2 @@
+interpretability:
+  probe_layers: all

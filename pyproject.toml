@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "silent-speech-interpretability"
+version = "0.1.0"
+description = "Interpretable contactless / microphone-free speech decoding research utilities."
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "pyyaml",
+  "torch",
+  "scipy",
+  "Pillow",
+]
+
+[tool.setuptools.packages.find]
+include = ["silent_speech_interpretability*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

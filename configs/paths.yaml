@@ -1,0 +1,3 @@
+data:
+  manifest_path: artifacts/manifest.csv
+  embeddings_dir: artifacts/embeddings

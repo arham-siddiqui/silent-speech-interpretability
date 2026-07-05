@@ -1,0 +1,11 @@
+modalities:
+  lip:
+    enabled: true
+  mouth:
+    enabled: true
+  uwb:
+    enabled: true
+  mmwave:
+    enabled: true
+  laser:
+    enabled: true

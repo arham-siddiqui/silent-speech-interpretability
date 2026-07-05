@@ -1,0 +1,75 @@
+project:
+  name: silent-speech-interpretability
+  seed: 42
+  device: auto
+data:
+  manifest_path: artifacts/manifest.csv
+  intersection_manifest_path: artifacts/manifest_intersection.csv
+  embeddings_dir: artifacts/embeddings
+  teacher_targets_dir: artifacts/teacher_targets
+  activations_dir: artifacts/activations
+  results_dir: reports/results
+  figures_dir: reports/figures/generated
+classes:
+  num_classes: 30
+splits:
+  strategy: speaker_kfold
+  num_folds: 5
+  fixed_train_speakers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  fixed_val_speakers: [17, 18]
+  fixed_test_speakers: [19, 20]
+modalities:
+  lip:
+    enabled: true
+    embedding_dim: 128
+  mouth:
+    enabled: true
+    embedding_dim: 128
+  uwb:
+    enabled: true
+    embedding_dim: 128
+  mmwave:
+    enabled: true
+    embedding_dim: 128
+  laser:
+    enabled: true
+    embedding_dim: 128
+fusion:
+  methods:
+    - equal_weight
+    - borda
+    - consistency_weighted
+    - learned_gate
+  temperature: 0.07
+teacher_targets:
+  use_audio_teachers: true
+  sparc:
+    enabled: true
+    optional: true
+  sylber:
+    enabled: true
+    optional: true
+  ssl:
+    enabled: true
+    models:
+      - hubert-base
+      - wav2vec2-base
+student:
+  bottleneck_dim: 64
+  hidden_dim: 256
+  loss_weights:
+    ce: 1.0
+    articulatory_mse: 1.0
+    contrastive: 0.2
+    dann: 0.1
+interpretability:
+  probe_layers: all
+  sae:
+    expansion_factor: 8
+    l1_coeff: 0.0001
+    steps: 5000
+  causal:
+    ablation_values:
+      - zero
+      - mean
+    top_k_features: 50
