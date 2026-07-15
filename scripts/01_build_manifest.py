@@ -13,6 +13,7 @@ from silent_speech_interpretability.configs import load_config
 from silent_speech_interpretability.data.manifest import (
     build_intersection_manifest,
     build_manifest,
+    enforce_quality_gates,
     resolve_embedding_paths,
     write_dataset_audit,
 )
@@ -22,6 +23,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default=None)
     parser.add_argument("--override", action="append", default=[])
+    parser.add_argument("--enforce-gates", action="store_true", help="Fail if dataset quality gates are not satisfied.")
     args = parser.parse_args()
 
     config = load_config(args.config, args.override)
@@ -49,6 +51,9 @@ def main() -> None:
         print(f"Strict embedding intersection: {alignment['strict_intersection_group_count']} groups")
         print(f"Label mismatches: {alignment['label_mismatch_count']}")
         print(f"User ID mismatches: {alignment['user_id_mismatch_count']}")
+    if args.enforce_gates:
+        enforce_quality_gates(audit, config.get("quality_gates", {}))
+        print("Quality gates passed")
 
 
 if __name__ == "__main__":

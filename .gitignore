@@ -11,7 +11,7 @@ venv/
 env/
 
 # Data
-data/
+/data/
 datasets/
 raw_data/
 processed_data/
@@ -39,6 +39,7 @@ reports/results/
 reports/figures/generated/
 logs/
 features/audio/
+configs/*.local.yaml
 
 # OS / IDE
 .DS_Store

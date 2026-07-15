@@ -16,6 +16,12 @@ data:
   activations_dir: artifacts/activations
   results_dir: reports/results
   figures_dir: reports/figures/generated
+quality_gates:
+  allow_synthetic: true
+  min_modalities: 5
+  min_strict_intersection: 1
+  fail_on_label_mismatch: true
+  fail_on_user_id_mismatch: true
 classes:
   num_classes: 30
 splits:

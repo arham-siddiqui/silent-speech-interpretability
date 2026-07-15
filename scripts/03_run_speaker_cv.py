@@ -13,6 +13,13 @@ import numpy as np
 import pandas as pd
 
 from silent_speech_interpretability.configs import load_config
+from silent_speech_interpretability.data.embeddings import (
+    common_pairs,
+    load_embedding_repetitions,
+    mean_eval_arrays,
+    repetition_training_arrays,
+    validate_pair_labels,
+)
 from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
 from silent_speech_interpretability.data.synthetic import MODALITIES
 from silent_speech_interpretability.data.splits import make_speaker_kfold_splits, save_split_json
@@ -23,17 +30,6 @@ from silent_speech_interpretability.models.fusion import (
     consistency_weighted_fusion,
     equal_weight_fusion,
 )
-
-
-def _load_modality(path: Path) -> dict[str, np.ndarray | dict[str, int]]:
-    with np.load(path, allow_pickle=True) as data:
-        payload = {key: data[key] for key in ("embeddings", "labels", "user_ids", "group_names")}
-    payload["embeddings"] = payload["embeddings"].astype(np.float32)
-    payload["labels"] = payload["labels"].astype(np.int64)
-    payload["user_ids"] = payload["user_ids"].astype(np.int64)
-    payload["group_names"] = payload["group_names"].astype(str)
-    payload["index"] = {group_name: i for i, group_name in enumerate(payload["group_names"])}
-    return payload
 
 
 def _ensure_embeddings(config: dict) -> dict[str, Path]:
@@ -47,28 +43,6 @@ def _enabled_modalities(config: dict, paths: dict[str, Path]) -> list[str]:
         if modality in paths and config["modalities"].get(modality, {}).get("enabled", True):
             enabled.append(modality)
     return enabled
-
-
-def _groups_for_speakers(payload: dict[str, np.ndarray], speakers: list[int]) -> set[str]:
-    mask = np.isin(payload["user_ids"].astype(int), speakers)
-    return set(payload["group_names"][mask].astype(str))
-
-
-def _indices_for_groups(payload: dict[str, np.ndarray | dict[str, int]], groups: list[str]) -> np.ndarray:
-    index = payload["index"]
-    return np.array([index[group] for group in groups], dtype=np.int64)
-
-
-def _validate_labels(payloads: dict[str, dict], groups: list[str], modalities: list[str]) -> np.ndarray:
-    reference = payloads[modalities[0]]
-    ref_idx = _indices_for_groups(reference, groups)
-    labels = reference["labels"][ref_idx].astype(np.int64)
-    for modality in modalities[1:]:
-        idx = _indices_for_groups(payloads[modality], groups)
-        other = payloads[modality]["labels"][idx].astype(np.int64)
-        if not np.array_equal(labels, other):
-            raise ValueError(f"Label mismatch across modalities for fold groups involving {modality!r}.")
-    return labels
 
 
 def _probs_on_class_axis(classifier: PrototypeClassifier, embeddings: np.ndarray, class_axis: np.ndarray) -> np.ndarray:
@@ -147,7 +121,7 @@ def main() -> None:
 
     config = load_config(args.config, args.override)
     paths = _ensure_embeddings(config)
-    payloads = {modality: _load_modality(path) for modality, path in paths.items()}
+    payloads = {modality: load_embedding_repetitions(path) for modality, path in paths.items()}
     modalities = _enabled_modalities(config, paths)
     if not modalities:
         raise RuntimeError("No enabled embedding modalities were found.")
@@ -156,37 +130,32 @@ def main() -> None:
     folds = make_speaker_kfold_splits(manifest, config["splits"]["num_folds"], config["project"]["seed"])
     save_split_json(folds, "artifacts/splits/speaker_kfold_5.json")
 
-    labels_union = sorted({int(label) for payload in payloads.values() for label in payload["labels"]})
+    labels_union = sorted({int(label) for payload in payloads.values() for label in payload["labels"].values()})
     configured_classes = int(config["classes"]["num_classes"])
     class_axis = np.array(sorted(set(range(configured_classes)) | set(labels_union)), dtype=np.int64)
     fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
     rows = []
 
     for fold in folds:
-        train_groups = sorted(
-            set.intersection(*[_groups_for_speakers(payloads[modality], fold["train_speakers"]) for modality in modalities])
-        )
-        val_groups = sorted(
-            set.intersection(*[_groups_for_speakers(payloads[modality], fold["val_speakers"]) for modality in modalities])
-        )
-        test_groups = sorted(
-            set.intersection(*[_groups_for_speakers(payloads[modality], fold["test_speakers"]) for modality in modalities])
-        )
-        if not train_groups or not test_groups:
+        common_payloads = {modality: payloads[modality] for modality in modalities}
+        train_pairs = common_pairs(common_payloads, fold["train_speakers"])
+        val_pairs = common_pairs(common_payloads, fold["val_speakers"])
+        test_pairs = common_pairs(common_payloads, fold["test_speakers"])
+        if not train_pairs or not test_pairs:
             print(f"Skipping fold {fold['fold']} because strict multimodal intersection is empty.")
             continue
 
-        y_true = _validate_labels(payloads, test_groups, modalities)
+        y_true = validate_pair_labels(common_payloads, test_pairs)
         probabilities = {}
         for modality in modalities:
             payload = payloads[modality]
-            train_idx = _indices_for_groups(payload, train_groups)
-            test_idx = _indices_for_groups(payload, test_groups)
+            train_x, train_y = repetition_training_arrays(payload, train_pairs)
+            test_x, _ = mean_eval_arrays(payload, test_pairs)
             classifier = PrototypeClassifier(config["fusion"]["temperature"]).fit(
-                payload["embeddings"][train_idx],
-                payload["labels"][train_idx],
+                train_x,
+                train_y,
             )
-            probs = _probs_on_class_axis(classifier, payload["embeddings"][test_idx], class_axis)
+            probs = _probs_on_class_axis(classifier, test_x, class_axis)
             predictions = class_axis[np.argmax(probs, axis=1)]
             probabilities[modality] = probs
             rows.append(
@@ -196,8 +165,8 @@ def main() -> None:
                     modality=modality,
                     y_true=y_true,
                     y_pred=predictions,
-                    num_train=len(train_groups),
-                    num_val=len(val_groups),
+                    num_train=len(train_pairs),
+                    num_val=len(val_pairs),
                 )
             )
 
@@ -218,8 +187,8 @@ def main() -> None:
                     modality="fusion",
                     y_true=y_true,
                     y_pred=predictions,
-                    num_train=len(train_groups),
-                    num_val=len(val_groups),
+                    num_train=len(train_pairs),
+                    num_val=len(val_pairs),
                 )
             )
 

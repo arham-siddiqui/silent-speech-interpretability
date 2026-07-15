@@ -12,5 +12,8 @@ baseline:
 cv:
 	python3 scripts/03_run_speaker_cv.py --config configs/defaults.yaml
 
+report:
+	python3 scripts/04_make_baseline_report.py --config configs/defaults.yaml
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py

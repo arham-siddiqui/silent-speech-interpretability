@@ -14,6 +14,14 @@ import numpy as np
 import pandas as pd
 
 from silent_speech_interpretability.configs import load_config
+from silent_speech_interpretability.data.embeddings import (
+    common_pairs,
+    load_embedding_repetitions,
+    mean_eval_arrays,
+    modality_pairs,
+    repetition_training_arrays,
+    validate_pair_labels,
+)
 from silent_speech_interpretability.data.manifest import resolve_embedding_paths
 from silent_speech_interpretability.data.synthetic import MODALITIES
 from silent_speech_interpretability.evals.metrics import accuracy, bootstrap_accuracy_ci, macro_f1
@@ -25,18 +33,20 @@ from silent_speech_interpretability.models.fusion import (
 )
 
 
-def _load_modality(path: Path) -> dict[str, np.ndarray]:
-    with np.load(path, allow_pickle=True) as data:
-        return {key: data[key] for key in ("embeddings", "labels", "user_ids", "group_names")}
-
-
 def _ensure_embeddings(config: dict) -> dict[str, Path]:
     paths, _sources = resolve_embedding_paths(config["data"], [config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
     return paths
 
 
-def _split_indices(user_ids: np.ndarray, speakers: list[int]) -> np.ndarray:
-    return np.flatnonzero(np.isin(user_ids.astype(int), speakers))
+def _probs_on_class_axis(classifier: PrototypeClassifier, embeddings: np.ndarray, class_axis: np.ndarray) -> np.ndarray:
+    raw = classifier.predict_proba(embeddings)
+    aligned = np.zeros((raw.shape[0], len(class_axis)), dtype=np.float32)
+    class_to_column = {int(cls): i for i, cls in enumerate(class_axis)}
+    for raw_column, cls in enumerate(classifier.classes_):
+        if int(cls) in class_to_column:
+            aligned[:, class_to_column[int(cls)]] = raw[:, raw_column]
+    row_sums = aligned.sum(axis=1, keepdims=True)
+    return aligned / (row_sums + 1e-8)
 
 
 def _evaluate_predictions(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
@@ -54,32 +64,52 @@ def main() -> None:
     results_dir.mkdir(parents=True, exist_ok=True)
     paths = _ensure_embeddings(config)
     methods = [m for m in config["fusion"]["methods"] if m != "learned_gate"]
+    payloads = {modality: load_embedding_repetitions(path) for modality, path in paths.items()}
+    modalities = [modality for modality in MODALITIES if modality in payloads]
+    labels_union = sorted({int(label) for payload in payloads.values() for label in payload["labels"].values()})
+    class_axis = np.array(sorted(set(range(int(config["classes"]["num_classes"]))) | set(labels_union)), dtype=np.int64)
 
     per_modality_rows = []
-    probabilities = {}
-    y_true_ref = None
-    user_ids_ref = None
+    prediction_rows = []
 
-    for modality in MODALITIES:
-        if modality not in paths:
-            continue
-        payload = _load_modality(paths[modality])
-        train_idx = _split_indices(payload["user_ids"], config["splits"]["fixed_train_speakers"])
-        test_idx = _split_indices(payload["user_ids"], config["splits"]["fixed_test_speakers"])
-        clf = PrototypeClassifier(config["fusion"]["temperature"]).fit(payload["embeddings"][train_idx], payload["labels"][train_idx])
-        probs = clf.predict_proba(payload["embeddings"][test_idx])
+    for modality in modalities:
+        payload = payloads[modality]
+        train_pairs = modality_pairs(payload, config["splits"]["fixed_train_speakers"])
+        test_pairs = modality_pairs(payload, config["splits"]["fixed_test_speakers"])
+        train_x, train_y = repetition_training_arrays(payload, train_pairs)
+        test_x, y_true = mean_eval_arrays(payload, test_pairs)
+        clf = PrototypeClassifier(config["fusion"]["temperature"]).fit(train_x, train_y)
+        probs = clf.predict_proba(test_x)
         preds = clf.classes_[np.argmax(probs, axis=1)]
-        y_true = payload["labels"][test_idx]
-        probabilities[modality] = probs
-        y_true_ref = y_true if y_true_ref is None else y_true_ref
-        user_ids_ref = payload["user_ids"][test_idx] if user_ids_ref is None else user_ids_ref
-        row = {"method": "prototype", "modality": modality, "num_train": len(train_idx), "num_test": len(test_idx)}
+        row = {"method": "prototype", "modality": modality, "num_train": len(train_x), "num_test": len(test_pairs)}
         row.update(_evaluate_predictions(y_true, preds))
         per_modality_rows.append(row)
+        prediction_rows.extend(
+            {
+                "method": "prototype",
+                "modality": modality,
+                "sample_id": f"{pair[0]}::{pair[1]}",
+                "y_true": int(true),
+                "y_pred": int(pred),
+            }
+            for pair, true, pred in zip(test_pairs, y_true, preds)
+        )
 
     fusion_rows = []
     ci_payload = {}
-    if probabilities and y_true_ref is not None:
+    if modalities:
+        common_payloads = {modality: payloads[modality] for modality in modalities}
+        train_pairs = common_pairs(common_payloads, config["splits"]["fixed_train_speakers"])
+        test_pairs = common_pairs(common_payloads, config["splits"]["fixed_test_speakers"])
+        probabilities = {}
+        y_true_ref = validate_pair_labels(common_payloads, test_pairs)
+        for modality in modalities:
+            payload = payloads[modality]
+            train_x, train_y = repetition_training_arrays(payload, train_pairs)
+            test_x, _ = mean_eval_arrays(payload, test_pairs)
+            clf = PrototypeClassifier(config["fusion"]["temperature"]).fit(train_x, train_y)
+            probabilities[modality] = _probs_on_class_axis(clf, test_x, class_axis)
+
         for method in methods:
             if method == "equal_weight":
                 fused = equal_weight_fusion(probabilities)
@@ -89,14 +119,25 @@ def main() -> None:
                 fused, _weights = consistency_weighted_fusion(probabilities)
             else:
                 continue
-            preds = np.argmax(fused, axis=1)
-            row = {"method": method, "modality": "fusion", "num_train": None, "num_test": len(y_true_ref)}
+            preds = class_axis[np.argmax(fused, axis=1)]
+            row = {"method": method, "modality": "fusion", "num_train": len(train_pairs), "num_test": len(test_pairs)}
             row.update(_evaluate_predictions(y_true_ref, preds))
             fusion_rows.append(row)
             ci_payload[method] = bootstrap_accuracy_ci(y_true_ref, preds, n_boot=300)
+            prediction_rows.extend(
+                {
+                    "method": method,
+                    "modality": "fusion",
+                    "sample_id": f"{pair[0]}::{pair[1]}",
+                    "y_true": int(true),
+                    "y_pred": int(pred),
+                }
+                for pair, true, pred in zip(test_pairs, y_true_ref, preds)
+            )
 
     pd.DataFrame(per_modality_rows).to_csv(results_dir / "per_modality_results.csv", index=False)
     pd.DataFrame(fusion_rows).to_csv(results_dir / "fixed_split_results.csv", index=False)
+    pd.DataFrame(prediction_rows).to_csv(results_dir / "fixed_split_predictions.csv", index=False)
     (results_dir / "bootstrap_ci.json").write_text(json.dumps(ci_payload, indent=2), encoding="utf-8")
     print(pd.DataFrame(per_modality_rows + fusion_rows).to_string(index=False))
 
