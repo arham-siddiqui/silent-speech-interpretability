@@ -30,6 +30,12 @@ splits:
   fixed_train_speakers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
   fixed_val_speakers: [17, 18]
   fixed_test_speakers: [19, 20]
+evaluation:
+  # These precomputed embeddings were produced by encoders trained under the
+  # original fixed split. CV over them is fusion-layer CV, not encoder CV.
+  embedding_encoder_train_speakers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  embedding_encoder_val_speakers: [17, 18]
+  embedding_encoder_test_speakers: [19, 20]
 modalities:
   lip:
     enabled: true

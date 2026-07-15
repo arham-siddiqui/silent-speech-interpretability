@@ -39,6 +39,8 @@ Best fixed-split method: `borda` at accuracy 0.767.
 
 ## 5-Fold Speaker-Disjoint CV
 
+Sanity note: 0/5 CV folds are encoder-disjoint for these precomputed embeddings. Treat this table as fusion-layer CV unless encoders are retrained inside each fold.
+
 | method               | modality | mean  | std   | count |
 | -------------------- | -------- | ----- | ----- | ----- |
 | borda                | fusion   | 0.922 | 0.040 | 5     |
@@ -64,3 +66,4 @@ Best CV method: `consistency_weighted` / `fusion` at mean accuracy 0.931.
 - Audio is not used in this baseline inference path.
 - Fusion metrics use the strict multimodal intersection.
 - Individual modality fixed-split metrics use each modality's available test pairs.
+- Current CV uses precomputed embeddings, so it is not full encoder-disjoint CV unless encoders are retrained per fold.

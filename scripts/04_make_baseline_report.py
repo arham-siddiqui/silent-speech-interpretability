@@ -93,6 +93,8 @@ def main() -> None:
     cv_summary = pd.read_csv(results_dir / "speaker_cv_summary.csv")
     comparison_path = results_dir / "baseline_comparison.csv"
     comparison = pd.read_csv(comparison_path) if comparison_path.exists() else pd.DataFrame()
+    sanity_path = results_dir / "evaluation_sanity_audit.json"
+    sanity = json.loads(sanity_path.read_text(encoding="utf-8")) if sanity_path.exists() else {}
 
     _plot_outputs(results_dir, figures_dir)
 
@@ -136,6 +138,14 @@ def main() -> None:
         "",
         "## 5-Fold Speaker-Disjoint CV",
         "",
+        (
+            f"Sanity note: {sanity.get('num_encoder_disjoint_cv_folds', 'n/a')}/"
+            f"{sanity.get('num_cv_folds', 'n/a')} CV folds are encoder-disjoint for these precomputed embeddings. "
+            "Treat this table as fusion-layer CV unless encoders are retrained inside each fold."
+        )
+        if sanity
+        else "Sanity note: run `scripts/06_evaluation_sanity_audit.py` before interpreting CV.",
+        "",
         _markdown_table(cv_summary, ["method", "modality", "mean", "std", "count"]),
         "",
         f"Best CV method: `{best_cv['method']}` / `{best_cv['modality']}` at mean accuracy {best_cv['mean']:.3f}.",
@@ -152,6 +162,7 @@ def main() -> None:
         "- Audio is not used in this baseline inference path.",
         "- Fusion metrics use the strict multimodal intersection.",
         "- Individual modality fixed-split metrics use each modality's available test pairs.",
+        "- Current CV uses precomputed embeddings, so it is not full encoder-disjoint CV unless encoders are retrained per fold.",
         "",
     ]
     output = reports_dir / "baseline_report.md"

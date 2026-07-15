@@ -64,7 +64,10 @@ def _metric_row(
     y_pred: np.ndarray,
     num_train: int,
     num_val: int,
+    encoder_train_speakers: set[int],
 ) -> dict[str, object]:
+    test_speakers = {int(speaker) for speaker in fold["test_speakers"]}
+    seen_test_speakers = sorted(test_speakers & encoder_train_speakers)
     return {
         "fold": fold["fold"],
         "method": method,
@@ -75,6 +78,9 @@ def _metric_row(
         "num_val": num_val,
         "num_test": len(y_true),
         "test_speakers": ",".join(map(str, fold["test_speakers"])),
+        "encoder_seen_test_speakers": ",".join(map(str, seen_test_speakers)),
+        "num_encoder_seen_test_speakers": len(seen_test_speakers),
+        "encoder_disjoint_test": len(seen_test_speakers) == 0,
     }
 
 
@@ -134,6 +140,7 @@ def main() -> None:
     configured_classes = int(config["classes"]["num_classes"])
     class_axis = np.array(sorted(set(range(configured_classes)) | set(labels_union)), dtype=np.int64)
     fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
+    encoder_train_speakers = {int(speaker) for speaker in config.get("evaluation", {}).get("embedding_encoder_train_speakers", [])}
     rows = []
 
     for fold in folds:
@@ -167,6 +174,7 @@ def main() -> None:
                     y_pred=predictions,
                     num_train=len(train_pairs),
                     num_val=len(val_pairs),
+                    encoder_train_speakers=encoder_train_speakers,
                 )
             )
 
@@ -189,6 +197,7 @@ def main() -> None:
                     y_pred=predictions,
                     num_train=len(train_pairs),
                     num_val=len(val_pairs),
+                    encoder_train_speakers=encoder_train_speakers,
                 )
             )
 

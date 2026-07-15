@@ -18,5 +18,8 @@ report:
 compare:
 	python3 scripts/05_compare_legacy_baseline.py --config configs/defaults.yaml
 
+sanity:
+	python3 scripts/06_evaluation_sanity_audit.py --config configs/defaults.yaml
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py
