@@ -6,6 +6,12 @@ data:
   manifest_path: artifacts/manifest.csv
   intersection_manifest_path: artifacts/manifest_intersection.csv
   embeddings_dir: artifacts/embeddings
+  embedding_paths:
+    lip:
+    mouth:
+    uwb:
+    mmwave:
+    laser:
   teacher_targets_dir: artifacts/teacher_targets
   activations_dir: artifacts/activations
   results_dir: reports/results

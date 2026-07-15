@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 
 from silent_speech_interpretability.configs import load_config
-from silent_speech_interpretability.data.manifest import build_manifest, discover_embedding_paths
-from silent_speech_interpretability.data.synthetic import MODALITIES, make_synthetic_embeddings, make_synthetic_manifest
+from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
+from silent_speech_interpretability.data.synthetic import MODALITIES
 from silent_speech_interpretability.data.splits import make_speaker_kfold_splits, save_split_json
 from silent_speech_interpretability.evals.metrics import accuracy, macro_f1
 from silent_speech_interpretability.models.fusion import (
@@ -37,11 +37,8 @@ def _load_modality(path: Path) -> dict[str, np.ndarray | dict[str, int]]:
 
 
 def _ensure_embeddings(config: dict) -> dict[str, Path]:
-    paths = discover_embedding_paths([config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
-    if paths:
-        return paths
-    manifest = make_synthetic_manifest()
-    return make_synthetic_embeddings(config["data"]["embeddings_dir"], manifest)
+    paths, _sources = resolve_embedding_paths(config["data"], [config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
+    return paths
 
 
 def _enabled_modalities(config: dict, paths: dict[str, Path]) -> list[str]:

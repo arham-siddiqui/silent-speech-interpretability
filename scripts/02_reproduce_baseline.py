@@ -14,8 +14,8 @@ import numpy as np
 import pandas as pd
 
 from silent_speech_interpretability.configs import load_config
-from silent_speech_interpretability.data.manifest import discover_embedding_paths
-from silent_speech_interpretability.data.synthetic import MODALITIES, make_synthetic_embeddings, make_synthetic_manifest
+from silent_speech_interpretability.data.manifest import resolve_embedding_paths
+from silent_speech_interpretability.data.synthetic import MODALITIES
 from silent_speech_interpretability.evals.metrics import accuracy, bootstrap_accuracy_ci, macro_f1
 from silent_speech_interpretability.models.fusion import (
     PrototypeClassifier,
@@ -31,11 +31,8 @@ def _load_modality(path: Path) -> dict[str, np.ndarray]:
 
 
 def _ensure_embeddings(config: dict) -> dict[str, Path]:
-    paths = discover_embedding_paths([config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
-    if paths:
-        return paths
-    manifest = make_synthetic_manifest()
-    return make_synthetic_embeddings(config["data"]["embeddings_dir"], manifest)
+    paths, _sources = resolve_embedding_paths(config["data"], [config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
+    return paths
 
 
 def _split_indices(user_ids: np.ndarray, speakers: list[int]) -> np.ndarray:

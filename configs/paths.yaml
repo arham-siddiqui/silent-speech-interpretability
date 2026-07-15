@@ -1,3 +1,9 @@
 data:
   manifest_path: artifacts/manifest.csv
   embeddings_dir: artifacts/embeddings
+  embedding_paths:
+    lip:
+    mouth:
+    uwb:
+    mmwave:
+    laser:

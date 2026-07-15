@@ -13,7 +13,7 @@ from silent_speech_interpretability.configs import load_config
 from silent_speech_interpretability.data.manifest import (
     build_intersection_manifest,
     build_manifest,
-    discover_embedding_paths,
+    resolve_embedding_paths,
     write_dataset_audit,
 )
 
@@ -25,7 +25,10 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_config(args.config, args.override)
-    embedding_paths = discover_embedding_paths([config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
+    embedding_paths, path_sources = resolve_embedding_paths(
+        config["data"],
+        [config["data"]["embeddings_dir"], ".", "extra", "notebooks"],
+    )
     manifest = build_manifest(embedding_paths, synthetic_if_missing=True)
     intersection = build_intersection_manifest(manifest)
 
@@ -36,11 +39,16 @@ def main() -> None:
     intersection.to_csv(intersection_path, index=False)
 
     audit_path = Path(config["data"]["results_dir"]) / "dataset_audit.json"
-    audit = write_dataset_audit(manifest, audit_path)
+    audit = write_dataset_audit(manifest, audit_path, embedding_paths, path_sources)
     print(f"Wrote {manifest_path} ({len(manifest)} rows)")
     print(f"Wrote {intersection_path} ({len(intersection)} rows)")
     print(f"Wrote {audit_path}")
     print(f"Counts by modality: {audit['modality_counts']}")
+    if "alignment" in audit:
+        alignment = audit["alignment"]
+        print(f"Strict embedding intersection: {alignment['strict_intersection_group_count']} groups")
+        print(f"Label mismatches: {alignment['label_mismatch_count']}")
+        print(f"User ID mismatches: {alignment['user_id_mismatch_count']}")
 
 
 if __name__ == "__main__":
