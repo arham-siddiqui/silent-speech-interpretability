@@ -33,5 +33,17 @@ lip-fold:
 laser-fold:
 	python3 scripts/10_train_laser_fold_embeddings.py --config configs/defaults.yaml --fold 0
 
+mouth-fold:
+	python3 scripts/11_train_mouth_fold_embeddings.py --config configs/defaults.yaml --fold 0
+
+uwb-fold:
+	python3 scripts/12_train_uwb_fold_embeddings.py --config configs/defaults.yaml --fold 0
+
+mmwave-fold:
+	python3 scripts/13_train_mmwave_fold_embeddings.py --config configs/defaults.yaml --fold 0
+
+true-cv-artifacts:
+	python3 scripts/14_run_true_encoder_artifacts.py --config configs/real_embeddings.local.yaml
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py

@@ -67,6 +67,9 @@ def _invalid_artifacts(config: dict, fold_id: int, metadata: dict, paths: dict[s
     true_cv = config.get("true_encoder_cv", {})
     epoch_gates = {
         "lip": int(true_cv.get("min_lip_epochs", 0)),
+        "mouth": int(true_cv.get("min_mouth_epochs", 0)),
+        "uwb": int(true_cv.get("min_uwb_epochs", 0)),
+        "mmwave": int(true_cv.get("min_mmwave_epochs", 0)),
         "laser": int(true_cv.get("min_laser_epochs", 0)),
     }
     for modality, min_epochs in epoch_gates.items():
