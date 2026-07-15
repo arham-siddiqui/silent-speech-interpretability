@@ -59,13 +59,30 @@ def _load_or_create_metadata(config: dict, fold: dict) -> tuple[Path, dict]:
     return path, metadata
 
 
-def _mark_lip_complete(metadata_path: Path, metadata: dict, embedding_path: Path, checkpoint_path: Path, label_map_path: Path) -> None:
+def _mark_lip_complete(
+    metadata_path: Path,
+    metadata: dict,
+    embedding_path: Path,
+    checkpoint_path: Path,
+    label_map_path: Path,
+    train_config: LipTrainingConfig,
+) -> None:
     completed = set(metadata.get("completed_modalities", []))
     completed.add("lip")
     metadata["completed_modalities"] = sorted(completed)
     metadata["lip_embedding_path"] = str(embedding_path)
     metadata["lip_checkpoint_path"] = str(checkpoint_path)
     metadata["lip_label_map_path"] = str(label_map_path)
+    metadata["lip_training"] = {
+        "max_epochs": train_config.max_epochs,
+        "batch_size": train_config.batch_size,
+        "lr": train_config.lr,
+        "hidden_size": train_config.hidden_size,
+        "num_layers": train_config.num_layers,
+        "embedding_dim": train_config.embedding_dim,
+        "dropout": train_config.dropout,
+        "note": "Short max_epochs values are smoke tests, not final scientific fold embeddings.",
+    }
     expected = set(metadata.get("modalities", []))
     metadata["status"] = "completed" if expected and expected.issubset(completed) else "partial"
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
@@ -101,8 +118,8 @@ def main() -> None:
     train_count = sum(sample["user_id"] in {str(s) for s in fold["train_speakers"]} for sample in samples)
     val_count = sum(sample["user_id"] in {str(s) for s in fold["val_speakers"]} for sample in samples)
     test_count = sum(sample["user_id"] in {str(s) for s in fold["test_speakers"]} for sample in samples)
-    print(f"Fold {args.fold}: {train_count} train | {val_count} val | {test_count} test lip candidates")
-    print(f"Classes: {len(label_map)}")
+    print(f"Fold {args.fold}: {train_count} train | {val_count} val | {test_count} test lip candidates", flush=True)
+    print(f"Classes: {len(label_map)}", flush=True)
     if args.dry_run:
         return
 
@@ -137,9 +154,9 @@ def main() -> None:
         dropout=train_config.dropout,
     ).to(device)
     model = train_lip_model(model, train_loader, val_loader, train_config, checkpoint_path, device)
-    count = extract_lip_embeddings(model, samples, label_map, embedding_path, device)
+    count = extract_lip_embeddings(model, samples, label_map, embedding_path, device, batch_size=max(train_config.batch_size, 64))
     metadata_path, metadata = _load_or_create_metadata(config, fold)
-    _mark_lip_complete(metadata_path, metadata, embedding_path, checkpoint_path, label_map_path)
+    _mark_lip_complete(metadata_path, metadata, embedding_path, checkpoint_path, label_map_path, train_config)
     print(f"Saved {count} lip embeddings to {embedding_path}")
     print(f"Updated metadata at {metadata_path}")
 

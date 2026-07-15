@@ -206,6 +206,31 @@ def collate_lip_batch(batch):
     )
 
 
+class LipExtractionDataset(Dataset):
+    def __init__(self, samples: list[dict[str, str]], label_map: dict[str, int]):
+        self.items = []
+        for sample in samples:
+            sequence = load_lip_sequence(sample["landmarkers_dir"])
+            if sequence is None:
+                continue
+            features = np.concatenate([sequence, compute_velocity(sequence)], axis=1)
+            self.items.append((features, label_map[sample["label_str"]], sample))
+
+    def __len__(self) -> int:
+        return len(self.items)
+
+    def __getitem__(self, idx: int):
+        features, label, sample = self.items[idx]
+        return torch.from_numpy(features), label, sample
+
+
+def collate_lip_extraction_batch(batch):
+    sequences, labels, samples = zip(*batch)
+    lengths = torch.tensor([len(sequence) for sequence in sequences], dtype=torch.long)
+    padded = pad_sequence(sequences, batch_first=True)
+    return padded, lengths, torch.tensor(labels, dtype=torch.long), list(samples)
+
+
 class LipLSTMV2(nn.Module):
     def __init__(
         self,
@@ -348,22 +373,22 @@ def extract_lip_embeddings(
     label_map: dict[str, int],
     output_path: str | Path,
     device: torch.device,
+    batch_size: int = 64,
 ) -> int:
     model.eval()
     embeddings, labels, user_ids, group_names, video_names = [], [], [], [], []
-    for sample in samples:
-        sequence = load_lip_sequence(sample["landmarkers_dir"])
-        if sequence is None:
-            continue
-        features = np.concatenate([sequence, compute_velocity(sequence)], axis=1)
-        x = torch.from_numpy(features).unsqueeze(0).to(device)
-        lengths = torch.tensor([len(features)], dtype=torch.long, device=device)
-        embedding = model.encode(x, lengths).squeeze(0).cpu().numpy()
-        embeddings.append(embedding)
-        labels.append(label_map[sample["label_str"]])
-        user_ids.append(sample["user_id"])
-        group_names.append(sample["group_name"])
-        video_names.append(sample["video_name"])
+    dataset = LipExtractionDataset(samples, label_map)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_lip_extraction_batch)
+    for padded, lengths, batch_labels, batch_samples in loader:
+        padded = padded.to(device)
+        lengths = lengths.to(device)
+        batch_embeddings = model.encode(padded, lengths).cpu().numpy()
+        embeddings.extend(batch_embeddings)
+        labels.extend(batch_labels.numpy().tolist())
+        for sample in batch_samples:
+            user_ids.append(sample["user_id"])
+            group_names.append(sample["group_name"])
+            video_names.append(sample["video_name"])
 
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
