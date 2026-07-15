@@ -105,6 +105,42 @@ def mean_eval_arrays(payload: dict[str, object], pairs: list[tuple[str, str]]) -
     return np.stack(embeddings).astype(np.float32), np.asarray(labels, dtype=np.int64)
 
 
+def stacked_repetition_training_arrays(
+    payloads: Mapping[str, dict[str, object]],
+    modalities: list[str],
+    pairs: list[tuple[str, str]],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Build old-fusion-style training data, expanding by shared repetition index."""
+    samples = []
+    labels = []
+    users = []
+    for pair in pairs:
+        min_reps = min(len(payloads[modality]["repetitions"][pair]) for modality in modalities)
+        for rep_idx in range(min_reps):
+            samples.append(
+                np.stack([payloads[modality]["repetitions"][pair][rep_idx] for modality in modalities], axis=0)
+            )
+            labels.append(payloads[modalities[0]]["labels"][pair])
+            users.append(pair[0])
+    return np.stack(samples).astype(np.float32), np.asarray(labels, dtype=np.int64), np.asarray(users)
+
+
+def stacked_mean_eval_arrays(
+    payloads: Mapping[str, dict[str, object]],
+    modalities: list[str],
+    pairs: list[tuple[str, str]],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build old-fusion-style eval data by mean-pooling repetitions per pair."""
+    samples = []
+    labels = []
+    for pair in pairs:
+        samples.append(
+            np.stack([np.mean(payloads[modality]["repetitions"][pair], axis=0) for modality in modalities], axis=0)
+        )
+        labels.append(payloads[modalities[0]]["labels"][pair])
+    return np.stack(samples).astype(np.float32), np.asarray(labels, dtype=np.int64)
+
+
 def validate_pair_labels(payloads: Mapping[str, dict[str, object]], pairs: list[tuple[str, str]]) -> np.ndarray:
     modalities = list(payloads)
     reference = payloads[modalities[0]]

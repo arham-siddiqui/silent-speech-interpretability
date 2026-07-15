@@ -15,5 +15,8 @@ cv:
 report:
 	python3 scripts/04_make_baseline_report.py --config configs/defaults.yaml
 
+compare:
+	python3 scripts/05_compare_legacy_baseline.py --config configs/defaults.yaml
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py

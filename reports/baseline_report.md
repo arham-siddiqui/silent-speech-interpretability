@@ -26,6 +26,17 @@ This report summarizes the current contactless / microphone-free speech decoding
 
 Best fixed-split method: `borda` at accuracy 0.767.
 
+## Legacy-Compatible Comparison
+
+| baseline_family   | method                  | num_train | num_val | num_test | accuracy | macro_f1 |
+| ----------------- | ----------------------- | --------- | ------- | -------- | -------- | -------- |
+| auditable_current | equal_weight            | 420       | 59      | 60       | 0.750    | 0.735    |
+| auditable_current | borda                   | 420       | 59      | 60       | 0.767    | 0.746    |
+| auditable_current | consistency_weighted    | 420       | 59      | 60       | 0.767    | 0.751    |
+| legacy_compatible | legacy_equal_weight     | 3509      | 59      | 60       | 0.733    | 0.699    |
+| legacy_compatible | legacy_borda            | 3509      | 59      | 60       | 0.783    | 0.773    |
+| legacy_compatible | legacy_hard_consistency | 3509      | 59      | 60       | 0.783    | 0.765    |
+
 ## 5-Fold Speaker-Disjoint CV
 
 | method               | modality | mean  | std   | count |

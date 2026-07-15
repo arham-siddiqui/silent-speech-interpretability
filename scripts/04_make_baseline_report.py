@@ -91,6 +91,8 @@ def main() -> None:
     per_modality = pd.read_csv(results_dir / "per_modality_results.csv")
     fixed = pd.read_csv(results_dir / "fixed_split_results.csv")
     cv_summary = pd.read_csv(results_dir / "speaker_cv_summary.csv")
+    comparison_path = results_dir / "baseline_comparison.csv"
+    comparison = pd.read_csv(comparison_path) if comparison_path.exists() else pd.DataFrame()
 
     _plot_outputs(results_dir, figures_dir)
 
@@ -122,6 +124,15 @@ def main() -> None:
         _markdown_table(pd.concat([per_modality, fixed], ignore_index=True), ["method", "modality", "num_train", "num_test", "accuracy", "macro_f1"]),
         "",
         f"Best fixed-split method: `{best_fixed['method']}` at accuracy {best_fixed['accuracy']:.3f}.",
+        "",
+        "## Legacy-Compatible Comparison",
+        "",
+        _markdown_table(
+            comparison,
+            ["baseline_family", "method", "num_train", "num_val", "num_test", "accuracy", "macro_f1"],
+        )
+        if not comparison.empty
+        else "Run `scripts/05_compare_legacy_baseline.py` to generate this comparison.",
         "",
         "## 5-Fold Speaker-Disjoint CV",
         "",
