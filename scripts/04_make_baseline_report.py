@@ -95,6 +95,8 @@ def main() -> None:
     comparison = pd.read_csv(comparison_path) if comparison_path.exists() else pd.DataFrame()
     sanity_path = results_dir / "evaluation_sanity_audit.json"
     sanity = json.loads(sanity_path.read_text(encoding="utf-8")) if sanity_path.exists() else {}
+    true_cv_missing_path = results_dir / "true_encoder_cv_missing_artifacts.csv"
+    true_cv_missing = pd.read_csv(true_cv_missing_path) if true_cv_missing_path.exists() else pd.DataFrame()
 
     _plot_outputs(results_dir, figures_dir)
 
@@ -149,6 +151,15 @@ def main() -> None:
         _markdown_table(cv_summary, ["method", "modality", "mean", "std", "count"]),
         "",
         f"Best CV method: `{best_cv['method']}` / `{best_cv['modality']}` at mean accuracy {best_cv['mean']:.3f}.",
+        "",
+        "## True Encoder-Disjoint CV Status",
+        "",
+        (
+            f"True encoder-disjoint CV is prepared but not yet runnable: {len(true_cv_missing)} fold-specific embedding artifacts are missing. "
+            "See `reports/true_encoder_cv_plan.md` and `reports/results/true_encoder_cv_missing_artifacts.csv`."
+        )
+        if not true_cv_missing.empty
+        else "True encoder-disjoint CV artifacts are present or have not been checked yet.",
         "",
         "## Figures",
         "",

@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Run true encoder-disjoint CV from fold-specific embedding artifacts."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import numpy as np
+import pandas as pd
+
+from silent_speech_interpretability.configs import load_config
+from silent_speech_interpretability.data.embeddings import (
+    common_pairs,
+    load_embedding_repetitions,
+    mean_eval_arrays,
+    repetition_training_arrays,
+    validate_pair_labels,
+)
+from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
+from silent_speech_interpretability.data.splits import make_speaker_kfold_splits
+from silent_speech_interpretability.data.synthetic import MODALITIES
+from silent_speech_interpretability.evals.metrics import accuracy, macro_f1
+from silent_speech_interpretability.evals.true_cv import configured_fold_embedding_paths, metadata_path_for_fold, missing_embedding_paths
+from silent_speech_interpretability.models.fusion import (
+    PrototypeClassifier,
+    borda_count_fusion,
+    consistency_weighted_fusion,
+    equal_weight_fusion,
+)
+
+
+def _align_probs(classifier: PrototypeClassifier, embeddings: np.ndarray, class_axis: np.ndarray) -> np.ndarray:
+    raw = classifier.predict_proba(embeddings)
+    aligned = np.zeros((raw.shape[0], len(class_axis)), dtype=np.float32)
+    class_to_column = {int(cls): i for i, cls in enumerate(class_axis)}
+    for raw_column, cls in enumerate(classifier.classes_):
+        aligned[:, class_to_column[int(cls)]] = raw[:, raw_column]
+    return aligned / (aligned.sum(axis=1, keepdims=True) + 1e-8)
+
+
+def _load_metadata(config: dict, fold_id: int) -> dict:
+    embeddings_dir = config.get("true_encoder_cv", {}).get("embeddings_dir", "artifacts/embeddings/speaker_cv")
+    path = metadata_path_for_fold(embeddings_dir, fold_id)
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _validate_fold_metadata(config: dict, fold: dict, metadata: dict) -> None:
+    if not metadata:
+        if config.get("true_encoder_cv", {}).get("require_metadata", True):
+            raise RuntimeError(f"Missing metadata for fold {fold['fold']}; run scripts/07_prepare_true_encoder_cv.py first.")
+        return
+    if metadata.get("status") != "completed":
+        raise RuntimeError(f"Fold {fold['fold']} metadata status is {metadata.get('status')!r}, expected 'completed'.")
+    if set(map(int, metadata.get("train_speakers", []))) & set(map(int, fold["test_speakers"])):
+        raise RuntimeError(f"Fold {fold['fold']} encoder train speakers overlap test speakers.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default=None)
+    parser.add_argument("--override", action="append", default=[])
+    parser.add_argument("--allow-missing", action="store_true", help="Write a missing-artifact report instead of failing.")
+    args = parser.parse_args()
+
+    config = load_config(args.config, args.override)
+    seed_paths, _sources = resolve_embedding_paths(config["data"], [config["data"]["embeddings_dir"], ".", "extra", "notebooks"])
+    manifest = build_manifest(seed_paths)
+    folds = make_speaker_kfold_splits(manifest, config["splits"]["num_folds"], config["project"]["seed"])
+    results_dir = Path(config["data"]["results_dir"])
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    all_missing = []
+    rows = []
+    class_axis = np.arange(int(config["classes"]["num_classes"]))
+    fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
+
+    for fold in folds:
+        fold_id = int(fold["fold"])
+        paths = configured_fold_embedding_paths(config.get("true_encoder_cv", {}), fold_id)
+        missing = missing_embedding_paths(paths)
+        if missing:
+            all_missing.extend({"fold": fold_id, "modality": modality, "path": path} for modality, path in missing.items())
+            continue
+        metadata = _load_metadata(config, fold_id)
+        _validate_fold_metadata(config, fold, metadata)
+
+        payloads = {modality: load_embedding_repetitions(path) for modality, path in paths.items()}
+        modalities = [modality for modality in MODALITIES if modality in payloads]
+        common_payloads = {modality: payloads[modality] for modality in modalities}
+        train_pairs = common_pairs(common_payloads, fold["train_speakers"])
+        test_pairs = common_pairs(common_payloads, fold["test_speakers"])
+        y_true = validate_pair_labels(common_payloads, test_pairs)
+
+        probabilities = {}
+        for modality in modalities:
+            train_x, train_y = repetition_training_arrays(payloads[modality], train_pairs)
+            test_x, _ = mean_eval_arrays(payloads[modality], test_pairs)
+            classifier = PrototypeClassifier(config["fusion"]["temperature"]).fit(train_x, train_y)
+            probs = _align_probs(classifier, test_x, class_axis)
+            predictions = class_axis[np.argmax(probs, axis=1)]
+            probabilities[modality] = probs
+            rows.append(
+                {
+                    "fold": fold_id,
+                    "method": "prototype",
+                    "modality": modality,
+                    "accuracy": accuracy(y_true, predictions),
+                    "macro_f1": macro_f1(y_true, predictions),
+                    "num_train": len(train_pairs),
+                    "num_test": len(test_pairs),
+                    "encoder_disjoint_test": True,
+                }
+            )
+
+        for method in fusion_methods:
+            if method == "equal_weight":
+                fused = equal_weight_fusion(probabilities)
+            elif method == "borda":
+                fused = borda_count_fusion(probabilities)
+            elif method == "consistency_weighted":
+                fused, _weights = consistency_weighted_fusion(probabilities)
+            else:
+                continue
+            predictions = class_axis[np.argmax(fused, axis=1)]
+            rows.append(
+                {
+                    "fold": fold_id,
+                    "method": method,
+                    "modality": "fusion",
+                    "accuracy": accuracy(y_true, predictions),
+                    "macro_f1": macro_f1(y_true, predictions),
+                    "num_train": len(train_pairs),
+                    "num_test": len(test_pairs),
+                    "encoder_disjoint_test": True,
+                }
+            )
+
+    if all_missing:
+        missing_df = pd.DataFrame(all_missing)
+        missing_df.to_csv(results_dir / "true_encoder_cv_missing_artifacts.csv", index=False)
+        message = f"Missing {len(all_missing)} fold-specific embedding artifacts. See {results_dir / 'true_encoder_cv_missing_artifacts.csv'}"
+        if args.allow_missing:
+            print(message)
+            return
+        raise RuntimeError(message)
+
+    results = pd.DataFrame(rows)
+    results.to_csv(results_dir / "true_encoder_cv_results.csv", index=False)
+    results.groupby(["method", "modality"])["accuracy"].agg(["mean", "std", "count"]).reset_index().to_csv(
+        results_dir / "true_encoder_cv_summary.csv", index=False
+    )
+    print(results.to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()

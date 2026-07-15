@@ -54,6 +54,10 @@ Sanity note: 0/5 CV folds are encoder-disjoint for these precomputed embeddings.
 
 Best CV method: `consistency_weighted` / `fusion` at mean accuracy 0.931.
 
+## True Encoder-Disjoint CV Status
+
+True encoder-disjoint CV is prepared but not yet runnable: 25 fold-specific embedding artifacts are missing. See `reports/true_encoder_cv_plan.md` and `reports/results/true_encoder_cv_missing_artifacts.csv`.
+
 ## Figures
 
 - `reports/figures/generated/fixed_split_accuracy_bar.png`

@@ -21,5 +21,11 @@ compare:
 sanity:
 	python3 scripts/06_evaluation_sanity_audit.py --config configs/defaults.yaml
 
+prepare-true-cv:
+	python3 scripts/07_prepare_true_encoder_cv.py --config configs/defaults.yaml
+
+true-cv:
+	python3 scripts/08_run_true_encoder_cv.py --config configs/defaults.yaml
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py
