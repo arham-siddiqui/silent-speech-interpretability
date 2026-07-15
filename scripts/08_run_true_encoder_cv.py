@@ -62,6 +62,25 @@ def _validate_fold_metadata(config: dict, fold: dict, metadata: dict) -> None:
         raise RuntimeError(f"Fold {fold['fold']} encoder train speakers overlap test speakers.")
 
 
+def _invalid_artifacts(config: dict, fold_id: int, metadata: dict, paths: dict[str, Path]) -> list[dict[str, object]]:
+    invalid = []
+    true_cv = config.get("true_encoder_cv", {})
+    min_lip_epochs = int(true_cv.get("min_lip_epochs", 0))
+    if "lip" in paths and Path(paths["lip"]).exists() and min_lip_epochs > 0:
+        lip_training = metadata.get("lip_training", {}) if metadata else {}
+        lip_epochs = int(lip_training.get("max_epochs", 0))
+        if lip_epochs < min_lip_epochs:
+            invalid.append(
+                {
+                    "fold": fold_id,
+                    "modality": "lip",
+                    "path": str(paths["lip"]),
+                    "reason": f"lip artifact has max_epochs={lip_epochs}, expected at least {min_lip_epochs}",
+                }
+            )
+    return invalid
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default=None)
@@ -77,6 +96,7 @@ def main() -> None:
     results_dir.mkdir(parents=True, exist_ok=True)
 
     all_missing = []
+    all_invalid = []
     rows = []
     class_axis = np.arange(int(config["classes"]["num_classes"]))
     fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
@@ -85,10 +105,17 @@ def main() -> None:
         fold_id = int(fold["fold"])
         paths = configured_fold_embedding_paths(config.get("true_encoder_cv", {}), fold_id)
         missing = missing_embedding_paths(paths)
-        if missing:
-            all_missing.extend({"fold": fold_id, "modality": modality, "path": path} for modality, path in missing.items())
-            continue
         metadata = _load_metadata(config, fold_id)
+        if missing:
+            all_missing.extend(
+                {"fold": fold_id, "modality": modality, "path": path, "reason": "missing file"}
+                for modality, path in missing.items()
+            )
+        invalid = _invalid_artifacts(config, fold_id, metadata, paths)
+        if invalid:
+            all_invalid.extend(invalid)
+        if missing or invalid:
+            continue
         _validate_fold_metadata(config, fold, metadata)
 
         payloads = {modality: load_embedding_repetitions(path) for modality, path in paths.items()}
@@ -142,10 +169,14 @@ def main() -> None:
                 }
             )
 
-    if all_missing:
-        missing_df = pd.DataFrame(all_missing)
+    missing_or_invalid = all_missing + all_invalid
+    if missing_or_invalid:
+        missing_df = pd.DataFrame(missing_or_invalid)
         missing_df.to_csv(results_dir / "true_encoder_cv_missing_artifacts.csv", index=False)
-        message = f"Missing {len(all_missing)} fold-specific embedding artifacts. See {results_dir / 'true_encoder_cv_missing_artifacts.csv'}"
+        message = (
+            f"Missing or invalid {len(missing_or_invalid)} fold-specific embedding artifacts. "
+            f"See {results_dir / 'true_encoder_cv_missing_artifacts.csv'}"
+        )
         if args.allow_missing:
             print(message)
             return

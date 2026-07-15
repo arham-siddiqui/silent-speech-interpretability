@@ -155,7 +155,7 @@ def main() -> None:
         "## True Encoder-Disjoint CV Status",
         "",
         (
-            f"True encoder-disjoint CV is prepared but not yet runnable: {len(true_cv_missing)} fold-specific embedding artifacts are missing. "
+            f"True encoder-disjoint CV is prepared but not yet runnable: {len(true_cv_missing)} fold-specific embedding artifacts are missing or invalid. "
             "See `reports/true_encoder_cv_plan.md` and `reports/results/true_encoder_cv_missing_artifacts.csv`."
         )
         if not true_cv_missing.empty

@@ -27,6 +27,14 @@ from silent_speech_interpretability.models.encoders.lip import (
 )
 
 
+def _default_device() -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
 def _training_config(config: dict, args: argparse.Namespace) -> LipTrainingConfig:
     raw = config.get("lip_encoder", {})
     return LipTrainingConfig(
@@ -124,7 +132,8 @@ def main() -> None:
         return
 
     train_config = _training_config(config, args)
-    device = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    device = torch.device(args.device) if args.device else _default_device()
+    print(f"Device: {device}", flush=True)
     train_loader, val_loader, speaker_map = make_lip_dataloaders(
         samples,
         fold["train_speakers"],

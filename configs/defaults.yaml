@@ -40,6 +40,7 @@ evaluation:
 true_encoder_cv:
   embeddings_dir: artifacts/embeddings/speaker_cv
   require_metadata: true
+  min_lip_epochs: 80
   fold_embedding_paths: {}
 lip_encoder:
   batch_size: 32
