@@ -30,5 +30,8 @@ true-cv:
 lip-fold:
 	python3 scripts/09_train_lip_fold_embeddings.py --config configs/defaults.yaml --fold 0
 
+laser-fold:
+	python3 scripts/10_train_laser_fold_embeddings.py --config configs/defaults.yaml --fold 0
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py

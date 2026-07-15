@@ -65,17 +65,22 @@ def _validate_fold_metadata(config: dict, fold: dict, metadata: dict) -> None:
 def _invalid_artifacts(config: dict, fold_id: int, metadata: dict, paths: dict[str, Path]) -> list[dict[str, object]]:
     invalid = []
     true_cv = config.get("true_encoder_cv", {})
-    min_lip_epochs = int(true_cv.get("min_lip_epochs", 0))
-    if "lip" in paths and Path(paths["lip"]).exists() and min_lip_epochs > 0:
-        lip_training = metadata.get("lip_training", {}) if metadata else {}
-        lip_epochs = int(lip_training.get("max_epochs", 0))
-        if lip_epochs < min_lip_epochs:
+    epoch_gates = {
+        "lip": int(true_cv.get("min_lip_epochs", 0)),
+        "laser": int(true_cv.get("min_laser_epochs", 0)),
+    }
+    for modality, min_epochs in epoch_gates.items():
+        if modality not in paths or not Path(paths[modality]).exists() or min_epochs <= 0:
+            continue
+        training = metadata.get(f"{modality}_training", {}) if metadata else {}
+        epochs = int(training.get("max_epochs", 0))
+        if epochs < min_epochs:
             invalid.append(
                 {
                     "fold": fold_id,
-                    "modality": "lip",
-                    "path": str(paths["lip"]),
-                    "reason": f"lip artifact has max_epochs={lip_epochs}, expected at least {min_lip_epochs}",
+                    "modality": modality,
+                    "path": str(paths[modality]),
+                    "reason": f"{modality} artifact has max_epochs={epochs}, expected at least {min_epochs}",
                 }
             )
     return invalid
