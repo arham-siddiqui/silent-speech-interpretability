@@ -27,5 +27,8 @@ prepare-true-cv:
 true-cv:
 	python3 scripts/08_run_true_encoder_cv.py --config configs/defaults.yaml
 
+lip-fold:
+	python3 scripts/09_train_lip_fold_embeddings.py --config configs/defaults.yaml --fold 0
+
 cleanup:
 	python3 scripts/00_cleanup_repo.py

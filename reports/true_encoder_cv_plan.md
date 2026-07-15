@@ -10,6 +10,8 @@ Expected artifacts per fold:
 - Val speakers: [13, 11]
 - Test speakers: [16, 10, 15, 8]
 - Metadata: `artifacts/embeddings/speaker_cv/fold_0/metadata.json`
+- Lip command:
+  `python3 scripts/09_train_lip_fold_embeddings.py --config configs/real_embeddings.local.yaml --fold 0`
 
 - `artifacts/embeddings/speaker_cv/fold_0/lip_embeddings.npz`
 - `artifacts/embeddings/speaker_cv/fold_0/mouth_embeddings.npz`
@@ -23,6 +25,8 @@ Expected artifacts per fold:
 - Val speakers: [16, 10]
 - Test speakers: [13, 11, 7, 20]
 - Metadata: `artifacts/embeddings/speaker_cv/fold_1/metadata.json`
+- Lip command:
+  `python3 scripts/09_train_lip_fold_embeddings.py --config configs/real_embeddings.local.yaml --fold 1`
 
 - `artifacts/embeddings/speaker_cv/fold_1/lip_embeddings.npz`
 - `artifacts/embeddings/speaker_cv/fold_1/mouth_embeddings.npz`
@@ -36,6 +40,8 @@ Expected artifacts per fold:
 - Val speakers: [16, 10]
 - Test speakers: [4, 1, 17, 6]
 - Metadata: `artifacts/embeddings/speaker_cv/fold_2/metadata.json`
+- Lip command:
+  `python3 scripts/09_train_lip_fold_embeddings.py --config configs/real_embeddings.local.yaml --fold 2`
 
 - `artifacts/embeddings/speaker_cv/fold_2/lip_embeddings.npz`
 - `artifacts/embeddings/speaker_cv/fold_2/mouth_embeddings.npz`
@@ -49,6 +55,8 @@ Expected artifacts per fold:
 - Val speakers: [16, 10]
 - Test speakers: [12, 19, 3, 5]
 - Metadata: `artifacts/embeddings/speaker_cv/fold_3/metadata.json`
+- Lip command:
+  `python3 scripts/09_train_lip_fold_embeddings.py --config configs/real_embeddings.local.yaml --fold 3`
 
 - `artifacts/embeddings/speaker_cv/fold_3/lip_embeddings.npz`
 - `artifacts/embeddings/speaker_cv/fold_3/mouth_embeddings.npz`
@@ -62,6 +70,8 @@ Expected artifacts per fold:
 - Val speakers: [16, 10]
 - Test speakers: [18, 2, 14, 9]
 - Metadata: `artifacts/embeddings/speaker_cv/fold_4/metadata.json`
+- Lip command:
+  `python3 scripts/09_train_lip_fold_embeddings.py --config configs/real_embeddings.local.yaml --fold 4`
 
 - `artifacts/embeddings/speaker_cv/fold_4/lip_embeddings.npz`
 - `artifacts/embeddings/speaker_cv/fold_4/mouth_embeddings.npz`

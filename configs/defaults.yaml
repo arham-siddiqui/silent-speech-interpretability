@@ -6,6 +6,7 @@ data:
   manifest_path: artifacts/manifest.csv
   intersection_manifest_path: artifacts/manifest_intersection.csv
   embeddings_dir: artifacts/embeddings
+  rvtall_base:
   embedding_paths:
     lip:
     mouth:
@@ -40,6 +41,15 @@ true_encoder_cv:
   embeddings_dir: artifacts/embeddings/speaker_cv
   require_metadata: true
   fold_embedding_paths: {}
+lip_encoder:
+  batch_size: 32
+  max_epochs: 80
+  patience: 25
+  lr: 0.0003
+  hidden_size: 256
+  num_layers: 2
+  embedding_dim: 128
+  dropout: 0.3
 modalities:
   lip:
     enabled: true

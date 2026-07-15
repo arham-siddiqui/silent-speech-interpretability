@@ -67,6 +67,11 @@ def main() -> None:
                 f"- Val speakers: {fold['val_speakers']}",
                 f"- Test speakers: {fold['test_speakers']}",
                 f"- Metadata: `{metadata_path}`",
+                "- Lip command:",
+                (
+                    "  `python3 scripts/09_train_lip_fold_embeddings.py "
+                    f"--config configs/real_embeddings.local.yaml --fold {fold_id}`"
+                ),
                 "",
             ]
         )
