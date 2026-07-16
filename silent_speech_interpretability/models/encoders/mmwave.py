@@ -199,9 +199,24 @@ def train_mmwave_model(model: MmwaveCNNLSTMEncoder, train_loader: DataLoader, va
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.max_epochs)
     checkpoint = Path(checkpoint_path)
+    state_checkpoint = checkpoint.with_suffix(".training_state.pt")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     best_val_acc, patience_count = 0.0, 0
-    for epoch in range(1, config.max_epochs + 1):
+    start_epoch = 1
+    if state_checkpoint.exists():
+        state = torch.load(state_checkpoint, map_location=device)
+        model.load_state_dict(state["model_state"])
+        optimizer.load_state_dict(state["optimizer_state"])
+        scheduler.load_state_dict(state["scheduler_state"])
+        best_val_acc = float(state.get("best_val_acc", 0.0))
+        patience_count = int(state.get("patience_count", 0))
+        start_epoch = int(state.get("epoch", 0)) + 1
+        print(f"Resuming mmWave training from epoch {start_epoch} using {state_checkpoint}", flush=True)
+    elif checkpoint.exists():
+        model.load_state_dict(torch.load(checkpoint, map_location=device))
+        print(f"Warm-starting mmWave training from model checkpoint {checkpoint}", flush=True)
+
+    for epoch in range(start_epoch, config.max_epochs + 1):
         model.train()
         total_loss, correct, total = 0.0, 0, 0
         for padded, lengths, labels, _samples in train_loader:
@@ -224,8 +239,20 @@ def train_mmwave_model(model: MmwaveCNNLSTMEncoder, train_loader: DataLoader, va
             torch.save(model.state_dict(), checkpoint)
         else:
             patience_count += 1
-            if patience_count >= config.patience:
-                break
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state": model.state_dict(),
+                "optimizer_state": optimizer.state_dict(),
+                "scheduler_state": scheduler.state_dict(),
+                "best_val_acc": best_val_acc,
+                "patience_count": patience_count,
+                "max_epochs": config.max_epochs,
+            },
+            state_checkpoint,
+        )
+        if patience_count >= config.patience:
+            break
     if checkpoint.exists():
         model.load_state_dict(torch.load(checkpoint, map_location=device))
     return model

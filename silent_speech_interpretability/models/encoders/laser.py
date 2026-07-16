@@ -219,6 +219,7 @@ def train_laser_model(
     config: LaserTrainingConfig,
     checkpoint_path: str | Path,
     device: torch.device,
+    resume: bool = False,
 ) -> LaserCNNLSTMEncoder:
     criterion = nn.CrossEntropyLoss(label_smoothing=config.label_smoothing)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -226,9 +227,24 @@ def train_laser_model(
     best_val_acc = 0.0
     patience_count = 0
     checkpoint = Path(checkpoint_path)
+    state_checkpoint = checkpoint.with_suffix(".training_state.pt")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    start_epoch = 1
 
-    for epoch in range(1, config.max_epochs + 1):
+    if resume and state_checkpoint.exists():
+        state = torch.load(state_checkpoint, map_location=device)
+        model.load_state_dict(state["model_state"])
+        optimizer.load_state_dict(state["optimizer_state"])
+        scheduler.load_state_dict(state["scheduler_state"])
+        best_val_acc = float(state.get("best_val_acc", 0.0))
+        patience_count = int(state.get("patience_count", 0))
+        start_epoch = int(state.get("epoch", 0)) + 1
+        print(f"Resuming laser training from epoch {start_epoch} using {state_checkpoint}", flush=True)
+    elif resume and checkpoint.exists():
+        model.load_state_dict(torch.load(checkpoint, map_location=device))
+        print(f"Warm-starting laser training from model checkpoint {checkpoint}", flush=True)
+
+    for epoch in range(start_epoch, config.max_epochs + 1):
         model.train()
         total_loss, correct, total = 0.0, 0, 0
         for padded, lengths, labels, _samples in train_loader:
@@ -257,8 +273,20 @@ def train_laser_model(
             torch.save(model.state_dict(), checkpoint)
         else:
             patience_count += 1
-            if patience_count >= config.patience:
-                break
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state": model.state_dict(),
+                "optimizer_state": optimizer.state_dict(),
+                "scheduler_state": scheduler.state_dict(),
+                "best_val_acc": best_val_acc,
+                "patience_count": patience_count,
+                "max_epochs": config.max_epochs,
+            },
+            state_checkpoint,
+        )
+        if patience_count >= config.patience:
+            break
 
     model.load_state_dict(torch.load(checkpoint, map_location=device))
     return model

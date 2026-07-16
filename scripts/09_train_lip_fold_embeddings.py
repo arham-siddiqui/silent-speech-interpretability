@@ -106,6 +106,7 @@ def main() -> None:
     parser.add_argument("--device", default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=None)
+    parser.add_argument("--resume", action="store_true", help="Resume from a fold training-state checkpoint or warm-start from model weights.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -162,7 +163,7 @@ def main() -> None:
         embedding_dim=train_config.embedding_dim,
         dropout=train_config.dropout,
     ).to(device)
-    model = train_lip_model(model, train_loader, val_loader, train_config, checkpoint_path, device)
+    model = train_lip_model(model, train_loader, val_loader, train_config, checkpoint_path, device, resume=args.resume)
     count = extract_lip_embeddings(model, samples, label_map, embedding_path, device, batch_size=max(train_config.batch_size, 64))
     metadata_path, metadata = _load_or_create_metadata(config, fold)
     _mark_lip_complete(metadata_path, metadata, embedding_path, checkpoint_path, label_map_path, train_config)

@@ -78,6 +78,8 @@ def main() -> None:
             command = [sys.executable, MODALITY_SCRIPTS[modality], "--config", args.config, "--fold", str(fold)]
             if args.device:
                 command.extend(["--device", args.device])
+            if modality in {"lip", "laser"}:
+                command.append("--resume")
             log_path = log_dir / f"fold_{fold}_{modality}.log"
             print(f"RUN fold={fold} modality={modality}: {' '.join(command)}", flush=True)
             print(f"LOG {log_path}", flush=True)
