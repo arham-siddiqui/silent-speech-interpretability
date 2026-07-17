@@ -206,6 +206,37 @@ learned to trust the only encoder that was actually updating. Minimal improvemen
 
 ## 5. Accuracy Results
 
+### Current strict encoder-disjoint CV result
+
+The most reliable current evaluation is the completed 5-fold **true encoder-disjoint**
+speaker CV. In this setting, each fold uses fold-specific encoder artifacts whose
+encoder-training speakers do not overlap the held-out test speakers.
+
+Full report: [`reports/true_encoder_cv_results.md`](reports/true_encoder_cv_results.md)
+Error analysis: [`reports/true_cv_error_analysis.md`](reports/true_cv_error_analysis.md)
+
+| Method | Modality | Mean Accuracy |
+|--------|----------|--------------:|
+| Validation-weighted fusion | Fusion | **63.9%** |
+| Equal-weight fusion | Fusion | 61.7% |
+| Prototype | Lip | 60.9% |
+| Consistency-weighted fusion | Fusion | 58.5% |
+| Borda fusion | Fusion | 40.1% |
+| Prototype | UWB | 26.7% |
+| Prototype | Laser | 24.3% |
+| Prototype | mmWave | 15.7% |
+| Prototype | Mouth | 5.7% |
+
+The mouth result is provisional. The current mouth fold artifacts are documented as
+projection/smoke-test artifacts, not final scientific mouth encoder folds; see
+[`reports/mouth_encoder_audit.md`](reports/mouth_encoder_audit.md).
+
+### Legacy fixed-split result
+
+The numbers below are older fixed-split results from the original project setup.
+They are useful historical context, but they are less reliable than the true
+encoder-disjoint CV above because the final test set was much smaller.
+
 **Evaluation**: speaker-disjoint, 30 classes, chance = 3.3%.
 Data: 3509 train / 59 val / 60 test samples (intersection of all 5 modalities).
 
@@ -258,4 +289,7 @@ toward continuous phoneme-level decoding, enabling open-vocabulary silent speech
 synchronization. Learned alignment (e.g. cross-attention between modality streams) could
 allow the fusion layer to attend to the right time window in each sensor.
 
-**Speaker cross-validation** - the current evaluation holds out a fixed pair of test speakers (users 19–20), yielding a test set of only 60 samples. This makes accuracy estimates noisy and potentially unrepresentative of true generalization. A k-fold cross-validation over speakers — rotating which users are held out across folds and averaging results — would produce a statistically robust accuracy estimate while still maintaining strict speaker independence. With 20 speakers, a 5-fold scheme (4 test speakers per fold) would increase the effective test set to 150+ samples per evaluation and give a far more reliable measure of how well the system generalizes.
+**Extend the true-CV pipeline** — the project now has 5-fold true encoder-disjoint
+speaker CV. The next step is to add reliability plots, per-class confusion figures,
+and full mouth encoder fold retraining so the strict CV report becomes the primary
+scientific result.

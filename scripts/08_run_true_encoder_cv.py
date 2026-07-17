@@ -31,6 +31,7 @@ from silent_speech_interpretability.models.fusion import (
     borda_count_fusion,
     consistency_weighted_fusion,
     equal_weight_fusion,
+    static_weight_fusion,
 )
 
 
@@ -60,6 +61,47 @@ def _validate_fold_metadata(config: dict, fold: dict, metadata: dict) -> None:
         raise RuntimeError(f"Fold {fold['fold']} metadata status is {metadata.get('status')!r}, expected 'completed'.")
     if set(map(int, metadata.get("train_speakers", []))) & set(map(int, fold["test_speakers"])):
         raise RuntimeError(f"Fold {fold['fold']} encoder train speakers overlap test speakers.")
+
+
+def _predictions_for(probabilities: np.ndarray, class_axis: np.ndarray) -> np.ndarray:
+    return class_axis[np.argmax(probabilities, axis=1)]
+
+
+def _record_predictions(
+    prediction_rows: list[dict[str, object]],
+    fold_id: int,
+    method: str,
+    modality: str,
+    pairs: list[tuple[str, str]],
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+) -> None:
+    for pair, expected, predicted in zip(pairs, y_true, y_pred, strict=True):
+        prediction_rows.append(
+            {
+                "fold": fold_id,
+                "method": method,
+                "modality": modality,
+                "user_id": pair[0],
+                "group_name": pair[1],
+                "class_id": int(expected),
+                "predicted_class_id": int(predicted),
+                "correct": bool(int(expected) == int(predicted)),
+            }
+        )
+
+
+def _validation_reliability_weights(
+    val_scores: dict[str, float],
+    floor: float = 0.05,
+) -> dict[str, float]:
+    if not val_scores:
+        return {}
+    raw = {modality: max(float(score), floor) for modality, score in val_scores.items()}
+    total = sum(raw.values())
+    if total <= 0.0:
+        return {modality: 1.0 / len(raw) for modality in raw}
+    return {modality: weight / total for modality, weight in raw.items()}
 
 
 def _invalid_artifacts(config: dict, fold_id: int, metadata: dict, paths: dict[str, Path]) -> list[dict[str, object]]:
@@ -106,6 +148,8 @@ def main() -> None:
     all_missing = []
     all_invalid = []
     rows = []
+    prediction_rows = []
+    weight_rows = []
     class_axis = np.arange(int(config["classes"]["num_classes"]))
     fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
 
@@ -130,17 +174,25 @@ def main() -> None:
         modalities = [modality for modality in MODALITIES if modality in payloads]
         common_payloads = {modality: payloads[modality] for modality in modalities}
         train_pairs = common_pairs(common_payloads, fold["train_speakers"])
+        val_pairs = common_pairs(common_payloads, fold["val_speakers"])
         test_pairs = common_pairs(common_payloads, fold["test_speakers"])
         y_true = validate_pair_labels(common_payloads, test_pairs)
 
         probabilities = {}
+        validation_scores = {}
         for modality in modalities:
             train_x, train_y = repetition_training_arrays(payloads[modality], train_pairs)
             test_x, _ = mean_eval_arrays(payloads[modality], test_pairs)
             classifier = PrototypeClassifier(config["fusion"]["temperature"]).fit(train_x, train_y)
             probs = _align_probs(classifier, test_x, class_axis)
-            predictions = class_axis[np.argmax(probs, axis=1)]
+            predictions = _predictions_for(probs, class_axis)
             probabilities[modality] = probs
+
+            if val_pairs:
+                val_x, val_y = mean_eval_arrays(payloads[modality], val_pairs)
+                val_probs = _align_probs(classifier, val_x, class_axis)
+                validation_scores[modality] = accuracy(val_y, _predictions_for(val_probs, class_axis))
+
             rows.append(
                 {
                     "fold": fold_id,
@@ -153,6 +205,20 @@ def main() -> None:
                     "encoder_disjoint_test": True,
                 }
             )
+            _record_predictions(prediction_rows, fold_id, "prototype", modality, test_pairs, y_true, predictions)
+
+        reliability_weights = _validation_reliability_weights(validation_scores)
+        for modality in modalities:
+            weight_rows.append(
+                {
+                    "fold": fold_id,
+                    "method": "validation_weighted",
+                    "modality": modality,
+                    "validation_accuracy": validation_scores.get(modality, np.nan),
+                    "weight": reliability_weights.get(modality, np.nan),
+                    "num_val": len(val_pairs),
+                }
+            )
 
         for method in fusion_methods:
             if method == "equal_weight":
@@ -161,9 +227,11 @@ def main() -> None:
                 fused = borda_count_fusion(probabilities)
             elif method == "consistency_weighted":
                 fused, _weights = consistency_weighted_fusion(probabilities)
+            elif method == "validation_weighted":
+                fused = static_weight_fusion(probabilities, reliability_weights)
             else:
                 continue
-            predictions = class_axis[np.argmax(fused, axis=1)]
+            predictions = _predictions_for(fused, class_axis)
             rows.append(
                 {
                     "fold": fold_id,
@@ -176,6 +244,7 @@ def main() -> None:
                     "encoder_disjoint_test": True,
                 }
             )
+            _record_predictions(prediction_rows, fold_id, method, "fusion", test_pairs, y_true, predictions)
 
     missing_or_invalid = all_missing + all_invalid
     if missing_or_invalid:
@@ -189,12 +258,19 @@ def main() -> None:
             print(message)
             return
         raise RuntimeError(message)
+    (results_dir / "true_encoder_cv_missing_artifacts.csv").write_text("fold,modality,path,reason\n", encoding="utf-8")
 
     results = pd.DataFrame(rows)
     results.to_csv(results_dir / "true_encoder_cv_results.csv", index=False)
     results.groupby(["method", "modality"])["accuracy"].agg(["mean", "std", "count"]).reset_index().to_csv(
         results_dir / "true_encoder_cv_summary.csv", index=False
     )
+    predictions = pd.DataFrame(prediction_rows)
+    predictions.to_csv(results_dir / "true_encoder_cv_predictions.csv", index=False)
+    predictions.groupby(["method", "modality", "class_id"])["correct"].agg(["mean", "sum", "count"]).reset_index().rename(
+        columns={"mean": "accuracy", "sum": "num_correct", "count": "num_samples"}
+    ).to_csv(results_dir / "true_encoder_cv_per_class.csv", index=False)
+    pd.DataFrame(weight_rows).to_csv(results_dir / "true_encoder_cv_fusion_weights.csv", index=False)
     print(results.to_string(index=False))
 
 

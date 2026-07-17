@@ -1,6 +1,11 @@
 import numpy as np
 
-from silent_speech_interpretability.models.fusion import borda_count_fusion, consistency_weighted_fusion, equal_weight_fusion
+from silent_speech_interpretability.models.fusion import (
+    borda_count_fusion,
+    consistency_weighted_fusion,
+    equal_weight_fusion,
+    static_weight_fusion,
+)
 
 
 def test_fusion_shapes_and_weight_normalization():
@@ -15,3 +20,13 @@ def test_fusion_shapes_and_weight_normalization():
     assert fused.shape == (2, 2)
     assert weights.shape == (2, 3)
     assert np.allclose(weights.sum(axis=1), 1.0)
+
+
+def test_static_weight_fusion_uses_modality_weights():
+    probs = {
+        "lip": np.array([[0.9, 0.1]]),
+        "laser": np.array([[0.1, 0.9]]),
+    }
+    fused = static_weight_fusion(probs, {"lip": 3.0, "laser": 1.0})
+    assert fused.shape == (1, 2)
+    assert fused[0, 0] > fused[0, 1]

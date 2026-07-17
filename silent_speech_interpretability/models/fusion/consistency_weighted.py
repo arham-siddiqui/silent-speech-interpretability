@@ -10,6 +10,18 @@ def equal_weight_fusion(probabilities: dict[str, np.ndarray]) -> np.ndarray:
     return stacked.mean(axis=0)
 
 
+def static_weight_fusion(probabilities: dict[str, np.ndarray], weights: dict[str, float]) -> np.ndarray:
+    """Fuse probability vectors with fixed modality weights."""
+    modalities = list(probabilities)
+    raw_weights = np.asarray([weights.get(modality, 0.0) for modality in modalities], dtype=np.float32)
+    raw_weights = np.maximum(raw_weights, 0.0)
+    if float(raw_weights.sum()) <= 0.0:
+        raw_weights = np.ones(len(modalities), dtype=np.float32)
+    normalized = raw_weights / (raw_weights.sum() + 1e-8)
+    stacked = np.stack([probabilities[modality] for modality in modalities], axis=0)
+    return np.sum(stacked * normalized[:, None, None], axis=0)
+
+
 def borda_count_fusion(probabilities: dict[str, np.ndarray]) -> np.ndarray:
     prob_list = list(probabilities.values())
     n_samples, n_classes = prob_list[0].shape

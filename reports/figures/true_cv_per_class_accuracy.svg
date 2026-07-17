@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="1126" viewBox="0 0 860 1126">
+<rect width="860" height="1126" fill="#ffffff"/>
+<text x="24.0" y="34.0" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#111827">Validation-weighted fusion accuracy by class</text>
+<line x1="220.0" y1="46" x2="220.0" y2="1090" stroke="#e5e7eb"/>
+<text x="220.0" y="1112.0" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="400" text-anchor="middle" fill="#111827">0.0%</text>
+<line x1="360.0" y1="46" x2="360.0" y2="1090" stroke="#e5e7eb"/>
+<text x="360.0" y="1112.0" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="400" text-anchor="middle" fill="#111827">25.0%</text>
+<line x1="500.0" y1="46" x2="500.0" y2="1090" stroke="#e5e7eb"/>
+<text x="500.0" y="1112.0" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="400" text-anchor="middle" fill="#111827">50.0%</text>
+<line x1="640.0" y1="46" x2="640.0" y2="1090" stroke="#e5e7eb"/>
+<text x="640.0" y="1112.0" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="400" text-anchor="middle" fill="#111827">75.0%</text>
+<text x="24.0" y="83.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 0</text>
+<rect x="220" y="64" width="560.0" height="20" rx="3" fill="#0f766e"/>
+<text x="788.0" y="80.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">100.0%</text>
+<text x="24.0" y="117.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 1</text>
+<rect x="220" y="98" width="342.2" height="20" rx="3" fill="#0f766e"/>
+<text x="570.2" y="114.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">61.1%</text>
+<text x="24.0" y="151.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 2</text>
+<rect x="220" y="132" width="560.0" height="20" rx="3" fill="#0f766e"/>
+<text x="788.0" y="148.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">100.0%</text>
+<text x="24.0" y="185.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 3</text>
+<rect x="220" y="166" width="373.3" height="20" rx="3" fill="#0f766e"/>
+<text x="601.3" y="182.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">66.7%</text>
+<text x="24.0" y="219.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 4</text>
+<rect x="220" y="200" width="466.7" height="20" rx="3" fill="#0f766e"/>
+<text x="694.7" y="216.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">83.3%</text>
+<text x="24.0" y="253.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 5</text>
+<rect x="220" y="234" width="497.8" height="20" rx="3" fill="#0f766e"/>
+<text x="725.8" y="250.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">88.9%</text>
+<text x="24.0" y="287.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 6</text>
+<rect x="220" y="268" width="471.6" height="20" rx="3" fill="#0f766e"/>
+<text x="699.6" y="284.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">84.2%</text>
+<text x="24.0" y="321.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 7</text>
+<rect x="220" y="302" width="324.2" height="20" rx="3" fill="#0f766e"/>
+<text x="552.2" y="318.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">57.9%</text>
+<text x="24.0" y="355.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 8</text>
+<rect x="220" y="336" width="560.0" height="20" rx="3" fill="#0f766e"/>
+<text x="788.0" y="352.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">100.0%</text>
+<text x="24.0" y="389.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 9</text>
+<rect x="220" y="370" width="442.1" height="20" rx="3" fill="#0f766e"/>
+<text x="670.1" y="386.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">78.9%</text>
+<text x="24.0" y="423.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 10</text>
+<rect x="220" y="404" width="210.0" height="20" rx="3" fill="#0f766e"/>
+<text x="438.0" y="420.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">37.5%</text>
+<text x="24.0" y="457.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 11</text>
+<rect x="220" y="438" width="245.0" height="20" rx="3" fill="#0f766e"/>
+<text x="473.0" y="454.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">43.8%</text>
+<text x="24.0" y="491.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 12</text>
+<rect x="220" y="472" width="155.6" height="20" rx="3" fill="#0f766e"/>
+<text x="383.6" y="488.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">27.8%</text>
+<text x="24.0" y="525.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 13</text>
+<rect x="220" y="506" width="311.1" height="20" rx="3" fill="#0f766e"/>
+<text x="539.1" y="522.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">55.6%</text>
+<text x="24.0" y="559.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 14</text>
+<rect x="220" y="540" width="329.4" height="20" rx="3" fill="#0f766e"/>
+<text x="557.4" y="556.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">58.8%</text>
+<text x="24.0" y="593.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 15</text>
+<rect x="220" y="574" width="329.4" height="20" rx="3" fill="#0f766e"/>
+<text x="557.4" y="590.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">58.8%</text>
+<text x="24.0" y="627.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 16</text>
+<rect x="220" y="608" width="265.3" height="20" rx="3" fill="#0f766e"/>
+<text x="493.3" y="624.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">47.4%</text>
+<text x="24.0" y="661.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 17</text>
+<rect x="220" y="642" width="383.2" height="20" rx="3" fill="#0f766e"/>
+<text x="611.2" y="658.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">68.4%</text>
+<text x="24.0" y="695.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 18</text>
+<rect x="220" y="676" width="235.8" height="20" rx="3" fill="#0f766e"/>
+<text x="463.8" y="692.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">42.1%</text>
+<text x="24.0" y="729.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 19</text>
+<rect x="220" y="710" width="461.2" height="20" rx="3" fill="#0f766e"/>
+<text x="689.2" y="726.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">82.4%</text>
+<text x="24.0" y="763.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 20</text>
+<rect x="220" y="744" width="248.9" height="20" rx="3" fill="#0f766e"/>
+<text x="476.9" y="760.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">44.4%</text>
+<text x="24.0" y="797.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 21</text>
+<rect x="220" y="778" width="280.0" height="20" rx="3" fill="#0f766e"/>
+<text x="508.0" y="794.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">50.0%</text>
+<text x="24.0" y="831.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 22</text>
+<rect x="220" y="812" width="217.8" height="20" rx="3" fill="#0f766e"/>
+<text x="445.8" y="828.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">38.9%</text>
+<text x="24.0" y="865.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 23</text>
+<rect x="220" y="846" width="342.2" height="20" rx="3" fill="#0f766e"/>
+<text x="570.2" y="862.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">61.1%</text>
+<text x="24.0" y="899.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 24</text>
+<rect x="220" y="880" width="497.8" height="20" rx="3" fill="#0f766e"/>
+<text x="725.8" y="896.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">88.9%</text>
+<text x="24.0" y="933.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 25</text>
+<rect x="220" y="914" width="263.5" height="20" rx="3" fill="#0f766e"/>
+<text x="491.5" y="930.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">47.1%</text>
+<text x="24.0" y="967.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 26</text>
+<rect x="220" y="948" width="342.2" height="20" rx="3" fill="#0f766e"/>
+<text x="570.2" y="964.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">61.1%</text>
+<text x="24.0" y="1001.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 27</text>
+<rect x="220" y="982" width="362.4" height="20" rx="3" fill="#0f766e"/>
+<text x="590.4" y="998.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">64.7%</text>
+<text x="24.0" y="1035.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 28</text>
+<rect x="220" y="1016" width="342.2" height="20" rx="3" fill="#0f766e"/>
+<text x="570.2" y="1032.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">61.1%</text>
+<text x="24.0" y="1069.0" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start" fill="#111827">Class 29</text>
+<rect x="220" y="1050" width="311.1" height="20" rx="3" fill="#0f766e"/>
+<text x="539.1" y="1066.0" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" text-anchor="start" fill="#111827">55.6%</text>
+</svg>
