@@ -1,0 +1,56 @@
+from pathlib import Path
+
+import numpy as np
+import torch
+
+from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
+from silent_speech_interpretability.models.teachers.teacher_targets import (
+    common_teacher_pairs,
+    load_teacher_targets,
+    make_class_structured_targets,
+    save_teacher_targets,
+    teacher_arrays,
+)
+
+
+def test_teacher_target_round_trip(tmp_path: Path):
+    labels = np.array([0, 1, 0])
+    targets = make_class_structured_targets(labels, target_dim=8, seed=1)
+    path = save_teacher_targets(
+        tmp_path / "targets.npz",
+        targets,
+        labels,
+        np.array(["1", "1", "2"]),
+        np.array(["a", "b", "c"]),
+    )
+    loaded = load_teacher_targets(path)
+    assert loaded["target_dim"] == 8
+    assert loaded["pairs"] == {("1", "a"), ("1", "b"), ("2", "c")}
+    x, y = teacher_arrays(loaded, [("1", "a"), ("2", "c")])
+    assert x.shape == (2, 8)
+    assert y.tolist() == [0, 0]
+
+
+def test_common_teacher_pairs_filters_speakers(tmp_path: Path):
+    labels = np.array([0, 1])
+    path = save_teacher_targets(
+        tmp_path / "targets.npz",
+        make_class_structured_targets(labels, target_dim=4),
+        labels,
+        np.array(["1", "2"]),
+        np.array(["a", "b"]),
+    )
+    teacher = load_teacher_targets(path)
+    payloads = {
+        "lip": {"pairs": {("1", "a"), ("2", "b")}},
+        "laser": {"pairs": {("1", "a"), ("2", "b")}},
+    }
+    assert common_teacher_pairs(payloads, teacher, speakers=[2]) == [("2", "b")]
+
+
+def test_articulatory_student_shapes():
+    model = ArticulatoryStudent(["lip", "laser"], embedding_dim=8, hidden_dim=16, bottleneck_dim=6, target_dim=5, num_classes=3)
+    output = model({"lip": torch.randn(4, 8), "laser": torch.randn(4, 8)})
+    assert output["target"].shape == (4, 5)
+    assert output["logits"].shape == (4, 3)
+    assert output["bottleneck"].shape == (4, 6)

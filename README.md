@@ -271,6 +271,12 @@ how well the individual encoders generalize across speakers.
 
 ## 6. Future Directions
 
+**Audio teacher/student distillation** — the repo now includes a first scaffold for
+teacher-target storage and silent-sensor student training. See
+[`reports/audio_teacher_student_scaffold.md`](reports/audio_teacher_student_scaffold.md).
+The current smoke run uses synthetic teacher targets; the next research step is to
+replace those with real SSL/audio-teacher targets.
+
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
 accuracy further.
