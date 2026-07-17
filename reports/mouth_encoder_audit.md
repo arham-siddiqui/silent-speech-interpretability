@@ -1,7 +1,7 @@
 # Mouth Encoder Audit
 
 The true encoder-disjoint CV run shows mouth embeddings near chance:
-mean accuracy 5.7% +/- 0.9%
+mean accuracy 5.0% +/- 1.3%
 across 5 folds.
 
 ## Fold Results
@@ -9,10 +9,10 @@ across 5 folds.
 | Fold | Accuracy | Macro F1 | Test Samples |
 | --- | --- | --- | --- |
 | 0 | 5.1% | 2.2% | 117 |
-| 1 | 4.4% | 2.0% | 90 |
-| 2 | 6.9% | 2.8% | 102 |
-| 3 | 6.1% | 6.2% | 115 |
-| 4 | 6.1% | 3.5% | 115 |
+| 1 | 4.4% | 1.4% | 90 |
+| 2 | 4.9% | 3.8% | 102 |
+| 3 | 3.5% | 1.2% | 115 |
+| 4 | 7.0% | 5.7% | 115 |
 
 ## Artifact Metadata Notes
 
@@ -30,6 +30,10 @@ The mouth artifacts are present and pass the artifact contract, but their metada
 them as projection/smoke-test style artifacts rather than final scientific mouth encoder
 folds. The near-chance CV accuracy is therefore best interpreted as an artifact-quality
 issue, not evidence that mouth video lacks signal.
+
+The current fold-specific projection-head training path was rerun and still produced
+near-chance held-out performance, so simply rerunning `scripts/11_train_mouth_fold_embeddings.py`
+is not enough to fix this modality.
 
 ## Recommended Fix
 

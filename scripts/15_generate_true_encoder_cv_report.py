@@ -16,6 +16,7 @@ import pandas as pd
 METHOD_NAMES = {
     "prototype": "Prototype",
     "equal_weight": "Equal-weight fusion",
+    "equal_weight_no_mouth": "Equal-weight no-mouth fusion",
     "validation_weighted": "Validation-weighted fusion",
     "borda": "Borda fusion",
     "consistency_weighted": "Consistency-weighted fusion",
@@ -69,6 +70,7 @@ def _fold_table(results: pd.DataFrame) -> str:
         ("prototype", "mmwave", "mmWave"),
         ("prototype", "laser", "Laser"),
         ("equal_weight", "fusion", "Equal Fusion"),
+        ("equal_weight_no_mouth", "fusion", "No-Mouth Equal"),
         ("validation_weighted", "fusion", "Validation Fusion"),
         ("borda", "fusion", "Borda"),
         ("consistency_weighted", "fusion", "Consistency Fusion"),
@@ -129,7 +131,7 @@ cross-validation outputs in `reports/results/`.
 - Split: 5-fold encoder-disjoint speaker CV.
 - Classifier: prototype/nearest-centroid per modality, plus late-fusion voting.
 - Fusion methods: equal-weight averaging, validation-weighted averaging, Borda rank
-  fusion, and consistency-weighted fusion.
+  fusion, consistency-weighted fusion, and no-mouth equal-weight ablation.
 - Chance accuracy: 3.3%.
 - All reported folds have `encoder_disjoint_test=True`.
 
@@ -256,6 +258,10 @@ The mouth artifacts are present and pass the artifact contract, but their metada
 them as projection/smoke-test style artifacts rather than final scientific mouth encoder
 folds. The near-chance CV accuracy is therefore best interpreted as an artifact-quality
 issue, not evidence that mouth video lacks signal.
+
+The current fold-specific projection-head training path was rerun and still produced
+near-chance held-out performance, so simply rerunning `scripts/11_train_mouth_fold_embeddings.py`
+is not enough to fix this modality.
 
 ## Recommended Fix
 

@@ -17,6 +17,7 @@ COLORS = {
     "laser": "#d47b24",
     "fusion": "#1f2937",
     "equal_weight": "#4b5563",
+    "equal_weight_no_mouth": "#2563eb",
     "validation_weighted": "#0f766e",
     "borda": "#7c3aed",
     "consistency_weighted": "#b45309",
@@ -25,6 +26,7 @@ COLORS = {
 METHOD_LABELS = {
     "prototype": "Prototype",
     "equal_weight": "Equal",
+    "equal_weight_no_mouth": "No-mouth equal",
     "validation_weighted": "Validation",
     "borda": "Borda",
     "consistency_weighted": "Consistency",

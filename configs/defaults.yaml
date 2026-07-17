@@ -110,6 +110,7 @@ modalities:
 fusion:
   methods:
     - equal_weight
+    - equal_weight_no_mouth
     - validation_weighted
     - borda
     - consistency_weighted

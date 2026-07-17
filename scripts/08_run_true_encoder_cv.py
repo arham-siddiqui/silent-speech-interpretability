@@ -223,6 +223,8 @@ def main() -> None:
         for method in fusion_methods:
             if method == "equal_weight":
                 fused = equal_weight_fusion(probabilities)
+            elif method == "equal_weight_no_mouth":
+                fused = equal_weight_fusion({k: v for k, v in probabilities.items() if k != "mouth"})
             elif method == "borda":
                 fused = borda_count_fusion(probabilities)
             elif method == "consistency_weighted":

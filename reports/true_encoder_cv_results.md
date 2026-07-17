@@ -10,7 +10,7 @@ cross-validation outputs in `reports/results/`.
 - Split: 5-fold encoder-disjoint speaker CV.
 - Classifier: prototype/nearest-centroid per modality, plus late-fusion voting.
 - Fusion methods: equal-weight averaging, validation-weighted averaging, Borda rank
-  fusion, and consistency-weighted fusion.
+  fusion, consistency-weighted fusion, and no-mouth equal-weight ablation.
 - Chance accuracy: 3.3%.
 - All reported folds have `encoder_disjoint_test=True`.
 
@@ -33,24 +33,25 @@ meaning all required fold/modality artifacts are present.
 | Method | Modality | Mean Accuracy | Std. Dev. | Folds |
 | --- | --- | --- | --- | --- |
 | Validation-weighted fusion | Fusion | 63.9% | 6.8% | 5 |
-| Equal-weight fusion | Fusion | 61.7% | 7.9% | 5 |
+| Equal-weight no-mouth fusion | Fusion | 61.9% | 8.9% | 5 |
 | Prototype | Lip | 60.9% | 6.6% | 5 |
-| Consistency-weighted fusion | Fusion | 58.5% | 8.5% | 5 |
-| Borda fusion | Fusion | 40.1% | 10.2% | 5 |
+| Equal-weight fusion | Fusion | 60.4% | 8.4% | 5 |
+| Consistency-weighted fusion | Fusion | 56.4% | 9.7% | 5 |
+| Borda fusion | Fusion | 38.8% | 8.1% | 5 |
 | Prototype | UWB | 26.7% | 9.3% | 5 |
 | Prototype | Laser | 24.3% | 5.5% | 5 |
 | Prototype | mmWave | 15.7% | 1.2% | 5 |
-| Prototype | Mouth | 5.7% | 0.9% | 5 |
+| Prototype | Mouth | 5.0% | 1.3% | 5 |
 
 ## Per-Fold Accuracy
 
-| Fold | Lip | Mouth | UWB | mmWave | Laser | Equal Fusion | Validation Fusion | Borda | Consistency Fusion |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 61.5% | 5.1% | 27.4% | 13.7% | 16.2% | 62.4% | 62.4% | 33.3% | 57.3% |
-| 1 | 56.7% | 4.4% | 14.4% | 16.7% | 28.9% | 55.6% | 57.8% | 28.9% | 50.0% |
-| 2 | 56.9% | 6.9% | 33.3% | 16.7% | 21.6% | 62.7% | 61.8% | 38.2% | 59.8% |
-| 3 | 72.2% | 6.1% | 37.4% | 15.7% | 29.6% | 73.9% | 75.7% | 54.8% | 72.2% |
-| 4 | 57.4% | 6.1% | 20.9% | 15.7% | 25.2% | 53.9% | 61.7% | 45.2% | 53.0% |
+| Fold | Lip | Mouth | UWB | mmWave | Laser | Equal Fusion | No-Mouth Equal | Validation Fusion | Borda | Consistency Fusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 61.5% | 5.1% | 27.4% | 13.7% | 16.2% | 60.7% | 64.1% | 62.4% | 37.6% | 56.4% |
+| 1 | 56.7% | 4.4% | 14.4% | 16.7% | 28.9% | 50.0% | 52.2% | 57.8% | 30.0% | 44.4% |
+| 2 | 56.9% | 4.9% | 33.3% | 16.7% | 21.6% | 61.8% | 63.7% | 61.8% | 34.3% | 56.9% |
+| 3 | 72.2% | 3.5% | 37.4% | 15.7% | 29.6% | 73.0% | 74.8% | 75.7% | 51.3% | 71.3% |
+| 4 | 57.4% | 7.0% | 20.9% | 15.7% | 25.2% | 56.5% | 54.8% | 61.7% | 40.9% | 53.0% |
 
 ## Validation-Derived Fusion Weights
 
@@ -61,10 +62,10 @@ to the held-out test speakers.
 
 | Fold | Lip | Mouth | UWB | mmWave | Laser |
 | --- | --- | --- | --- | --- | --- |
-| 0 | 62.8% | 4.7% | 9.3% | 4.7% | 18.6% |
+| 0 | 63.5% | 3.5% | 9.4% | 4.7% | 18.8% |
 | 1 | 44.1% | 5.9% | 19.6% | 14.7% | 15.7% |
-| 2 | 44.0% | 2.9% | 30.0% | 8.0% | 15.0% |
-| 3 | 51.5% | 6.2% | 21.6% | 11.3% | 9.3% |
+| 2 | 44.0% | 3.0% | 30.0% | 8.0% | 15.0% |
+| 3 | 52.1% | 5.2% | 21.9% | 11.5% | 9.4% |
 | 4 | 46.3% | 4.2% | 27.4% | 11.6% | 10.5% |
 
 ## Per-Class Error Snapshot
@@ -106,7 +107,7 @@ Strongest classes for the best fusion method (`validation_weighted` / `fusion`):
 1. The best overall method is Validation-weighted fusion, averaging
    63.9% accuracy across five folds.
 2. Validation-weighted fusion averages 63.9%, compared with
-   61.7% for equal-weight fusion and 60.9% for lip alone.
+   60.4% for equal-weight fusion and 60.9% for lip alone.
 3. Lip remains the dominant single modality, but validation-derived weighting recovers
    useful auxiliary signal on several folds.
 4. UWB and laser carry useful but variable auxiliary signal.
