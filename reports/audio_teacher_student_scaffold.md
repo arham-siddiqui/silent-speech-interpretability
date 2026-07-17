@@ -81,20 +81,18 @@ Current local status:
 
 - `librosa` and `soundfile` are installed.
 - `transformers` is not installed in the current environment.
-- The current manifest has no usable `audio_path` entries.
+- The RVTALL audio has been discovered and aligned in an audited local manifest.
+- See `reports/audio_manifest_audit.md` for coverage and repetition matching details.
 - Dry-run audit output is written to `reports/results/ssl_teacher_audio_audit.csv`.
 
-So the next blocking requirement for real teacher targets is not the student pipeline;
-it is locating/populating paired audio files and installing/caching the SSL model.
+The remaining blocker for real teacher targets is installing/caching the SSL model.
 
 ## Next Steps
 
-1. Populate manifest `audio_path` values for paired utterance audio, or add a script
-   that discovers audio files and joins them to `(user_id, group_name)`.
-2. Install/cache the SSL teacher dependency stack (`transformers` plus model weights).
-3. Decide whether teacher targets should be utterance-level pooled vectors or temporal
+1. Install/cache the SSL teacher dependency stack (`transformers` plus model weights).
+2. Decide whether teacher targets should be utterance-level pooled vectors or temporal
    sequences.
-4. Add a real teacher-target audit: coverage, target dimension, duplicate keys, and
+3. Add a real teacher-target audit: coverage, target dimension, duplicate keys, and
    split overlap checks.
-5. Train students across all 5 folds and compare student class accuracy plus target MSE
+4. Train students across all 5 folds and compare student class accuracy plus target MSE
    against the strict CV fusion baseline.
