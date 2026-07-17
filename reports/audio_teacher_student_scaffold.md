@@ -13,6 +13,8 @@ silent speech interpretability project.
   - `target_name`: teacher identifier.
 - Synthetic teacher target generator:
   - `scripts/17_prepare_teacher_targets.py`
+- SSL audio teacher extractor:
+  - `scripts/19_extract_ssl_teacher_targets.py`
 - Silent-sensor student trainer:
   - `scripts/18_train_teacher_student.py`
 - Student model:
@@ -63,12 +65,36 @@ targets from HuBERT, wav2vec2, SPARC, Sylber, or another speech representation m
 The student training/evaluation path does not need to change as long as the real teacher
 extractor writes the same NPZ schema.
 
+## Real SSL Teacher Extraction Status
+
+The SSL extraction path is implemented for HuBERT/wav2vec-style models through
+`transformers`:
+
+```text
+python3 scripts/19_extract_ssl_teacher_targets.py \
+  --config configs/real_embeddings.local.yaml \
+  --model-name facebook/hubert-base-ls960 \
+  --local-files-only
+```
+
+Current local status:
+
+- `librosa` and `soundfile` are installed.
+- `transformers` is not installed in the current environment.
+- The current manifest has no usable `audio_path` entries.
+- Dry-run audit output is written to `reports/results/ssl_teacher_audio_audit.csv`.
+
+So the next blocking requirement for real teacher targets is not the student pipeline;
+it is locating/populating paired audio files and installing/caching the SSL model.
+
 ## Next Steps
 
-1. Implement a real SSL teacher extractor for local audio files.
-2. Decide whether teacher targets should be utterance-level pooled vectors or temporal
+1. Populate manifest `audio_path` values for paired utterance audio, or add a script
+   that discovers audio files and joins them to `(user_id, group_name)`.
+2. Install/cache the SSL teacher dependency stack (`transformers` plus model weights).
+3. Decide whether teacher targets should be utterance-level pooled vectors or temporal
    sequences.
-3. Add a real teacher-target audit: coverage, target dimension, duplicate keys, and
+4. Add a real teacher-target audit: coverage, target dimension, duplicate keys, and
    split overlap checks.
-4. Train students across all 5 folds and compare student class accuracy plus target MSE
+5. Train students across all 5 folds and compare student class accuracy plus target MSE
    against the strict CV fusion baseline.

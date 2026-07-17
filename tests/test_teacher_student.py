@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher
 from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
 from silent_speech_interpretability.models.teachers.teacher_targets import (
     common_teacher_pairs,
@@ -54,3 +55,8 @@ def test_articulatory_student_shapes():
     assert output["target"].shape == (4, 5)
     assert output["logits"].shape == (4, 3)
     assert output["bottleneck"].shape == (4, 6)
+
+
+def test_ssl_teacher_reports_dependency_availability():
+    teacher = SSLTeacher("facebook/hubert-base-ls960", local_files_only=True)
+    assert isinstance(teacher.available(), bool)
