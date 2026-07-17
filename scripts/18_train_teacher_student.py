@@ -51,6 +51,11 @@ def main() -> None:
     parser.add_argument("--teacher-targets", default=None)
     parser.add_argument("--fold", type=int, default=0)
     parser.add_argument("--modalities", default=None, help="Comma-separated modalities; defaults to fusion modalities.")
+    parser.add_argument(
+        "--pair-modalities",
+        default=None,
+        help="Modalities defining sample coverage; defaults to the trained modalities.",
+    )
     parser.add_argument("--max-epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--device", default=None)
@@ -78,15 +83,26 @@ def main() -> None:
         modalities = [modality for modality in ["lip", "uwb", "mmwave", "laser", "mouth"] if modality in payloads and modality not in excluded]
 
     common_payloads = {modality: payloads[modality] for modality in modalities}
-    train_pairs = common_teacher_pairs(common_payloads, teacher, fold["train_speakers"])
-    val_pairs = common_teacher_pairs(common_payloads, teacher, fold["val_speakers"])
-    test_pairs = common_teacher_pairs(common_payloads, teacher, fold["test_speakers"])
+    pair_modalities = (
+        [item.strip() for item in args.pair_modalities.split(",") if item.strip()]
+        if args.pair_modalities
+        else modalities
+    )
+    pair_payloads = {modality: payloads[modality] for modality in pair_modalities}
+    train_pairs = common_teacher_pairs(pair_payloads, teacher, fold["train_speakers"])
+    val_pairs = common_teacher_pairs(pair_payloads, teacher, fold["val_speakers"])
+    test_pairs = common_teacher_pairs(pair_payloads, teacher, fold["test_speakers"])
     if not train_pairs or not val_pairs or not test_pairs:
         raise RuntimeError(f"Empty student split: train={len(train_pairs)} val={len(val_pairs)} test={len(test_pairs)}")
 
     train_arrays = _arrays_for_pairs(common_payloads, teacher, modalities, train_pairs)
     val_arrays = _arrays_for_pairs(common_payloads, teacher, modalities, val_pairs)
     test_arrays = _arrays_for_pairs(common_payloads, teacher, modalities, test_pairs)
+    center_teacher_targets = bool(config.get("student", {}).get("center_teacher_targets", True))
+    teacher_center = train_arrays[1].mean(axis=0) if center_teacher_targets else np.zeros(train_arrays[1].shape[1], dtype=np.float32)
+    train_arrays = (train_arrays[0], train_arrays[1] - teacher_center, train_arrays[2])
+    val_arrays = (val_arrays[0], val_arrays[1] - teacher_center, val_arrays[2])
+    test_arrays = (test_arrays[0], test_arrays[1] - teacher_center, test_arrays[2])
 
     device = torch.device(args.device) if args.device else _default_device()
     student_config = config.get("student", {})
@@ -115,22 +131,42 @@ def main() -> None:
         shuffle=False,
     )
     test_metrics = evaluate_student(model, test_loader, device, train_config.ce_weight)
+    normalized_train_targets = train_arrays[1] / (np.linalg.norm(train_arrays[1], axis=1, keepdims=True) + 1e-8)
+    normalized_test_targets = test_arrays[1] / (np.linalg.norm(test_arrays[1], axis=1, keepdims=True) + 1e-8)
+    mean_teacher = normalized_train_targets.mean(axis=0)
+    mean_teacher /= np.linalg.norm(mean_teacher) + 1e-8
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        target_baseline = {
+            "mse": float(np.mean(np.sum((normalized_test_targets - mean_teacher) ** 2, axis=1))),
+            "cosine_similarity": float(np.mean(normalized_test_targets @ mean_teacher)),
+        }
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = output_dir / f"fold_{args.fold}_teacher_student.pt"
     metrics_path = output_dir / f"fold_{args.fold}_teacher_student_metrics.json"
-    torch.save({"state_dict": model.state_dict(), "modalities": modalities, "teacher_targets": str(teacher_path)}, checkpoint_path)
+    torch.save(
+        {
+            "state_dict": model.state_dict(),
+            "modalities": modalities,
+            "teacher_targets": str(teacher_path),
+            "teacher_center": teacher_center,
+        },
+        checkpoint_path,
+    )
     metrics = {
         "fold": args.fold,
         "seed": seed,
         "modalities": modalities,
+        "pair_modalities": pair_modalities,
         "teacher_targets": str(teacher_path),
+        "center_teacher_targets": center_teacher_targets,
         "num_train": len(train_pairs),
         "num_val": len(val_pairs),
         "num_test": len(test_pairs),
         "val": val_metrics,
         "test": test_metrics,
+        "target_mean_baseline": target_baseline,
     }
     metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(json.dumps(metrics, indent=2))

@@ -14,6 +14,7 @@ from silent_speech_interpretability.models.teachers.teacher_targets import (
     save_teacher_targets,
     teacher_arrays,
 )
+from silent_speech_interpretability.training.train_articulatory_student import target_alignment_loss
 
 
 def test_teacher_target_round_trip(tmp_path: Path):
@@ -91,3 +92,11 @@ def test_ssl_teacher_loads_feature_extractor_without_tokenizer(monkeypatch):
 
     assert teacher.processor == ("facebook/hubert-base-ls960", True)
     assert isinstance(teacher.model, FakeModel)
+
+
+def test_target_alignment_loss_is_per_sample_squared_distance():
+    predicted = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
+    teacher = torch.tensor([[1.0, 0.0], [1.0, 0.0]])
+
+    # First sample distance is 0; second is 2; mean per-sample distance is 1.
+    assert torch.isclose(target_alignment_loss(predicted, teacher), torch.tensor(1.0))

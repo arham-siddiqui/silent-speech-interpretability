@@ -86,12 +86,13 @@ Current local status:
 - Real HuBERT targets were extracted for 596 unique speaker/group pairs.
 - See `reports/hubert_teacher_extraction.md` for target validation and runtime.
 - Five-fold student CV is complete; see `reports/hubert_teacher_student_cv.md`.
+- Layer probes and modality attribution are complete; see
+  `reports/hubert_interpretability_summary.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Decide whether the next teacher experiment should use pooled vectors or temporal
-   sequences.
-2. Add layer-wise probes to compare sensor bottlenecks with HuBERT features.
-3. Add SPARC or Sylber targets if their optional dependencies are available.
+1. Train a sparse autoencoder on the speaker-reduced student bottleneck.
+2. Rank and causally ablate class/type-selective bottleneck features.
+3. Compare the pooled HuBERT baseline with temporal, SPARC, or Sylber targets.

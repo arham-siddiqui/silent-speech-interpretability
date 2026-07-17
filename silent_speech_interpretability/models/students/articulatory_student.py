@@ -44,10 +44,29 @@ class ArticulatoryStudent(nn.Module):
             x = torch.cat([embeddings[modality] for modality in self.modalities], dim=-1)
         else:
             x = embeddings
-        bottleneck = self.backbone(x)
+        activations = self.extract_activations(x)
+        bottleneck = activations["bottleneck"]
         target = self.target_head(bottleneck)
         return {
             "bottleneck": bottleneck,
             "target": F.normalize(target, p=2, dim=-1),
             "logits": self.classifier(bottleneck),
+        }
+
+    def extract_activations(self, embeddings: dict[str, torch.Tensor] | torch.Tensor) -> dict[str, torch.Tensor]:
+        """Return named student layers without changing checkpoint structure."""
+        if isinstance(embeddings, dict):
+            sensor_input = torch.cat([embeddings[modality] for modality in self.modalities], dim=-1)
+        else:
+            sensor_input = embeddings
+        normalized_input = self.backbone[0](sensor_input)
+        hidden = self.backbone[2](self.backbone[1](normalized_input))
+        hidden_for_bottleneck = self.backbone[3](hidden)
+        bottleneck = self.backbone[6](self.backbone[5](self.backbone[4](hidden_for_bottleneck)))
+        predicted_hubert = F.normalize(self.target_head(bottleneck), p=2, dim=-1)
+        return {
+            "sensor_input": sensor_input,
+            "hidden": hidden,
+            "bottleneck": bottleneck,
+            "predicted_hubert": predicted_hubert,
         }

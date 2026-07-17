@@ -22,6 +22,12 @@ class StudentTrainConfig:
     patience: int = 8
 
 
+def target_alignment_loss(predicted: torch.Tensor, teacher: torch.Tensor) -> torch.Tensor:
+    """Mean per-sample squared L2 distance between normalized teacher targets."""
+    normalized_teacher = F.normalize(teacher, p=2, dim=-1)
+    return ((predicted - normalized_teacher) ** 2).sum(dim=-1).mean()
+
+
 def make_student_arrays(
     modality_arrays: dict[str, np.ndarray],
     teacher_targets: np.ndarray,
@@ -49,19 +55,22 @@ def _loader(x: np.ndarray, y_teacher: np.ndarray, y_label: np.ndarray, batch_siz
 @torch.no_grad()
 def evaluate_student(model: ArticulatoryStudent, loader: DataLoader, device: torch.device, ce_weight: float = 0.2) -> dict[str, float]:
     model.eval()
-    total, mse_total, ce_total, correct = 0, 0.0, 0.0, 0
+    total, mse_total, ce_total, cosine_total, correct = 0, 0.0, 0.0, 0.0, 0
     for x, teacher, labels in loader:
         x, teacher, labels = x.to(device), teacher.to(device), labels.to(device)
         output = model(x)
-        mse = F.mse_loss(output["target"], F.normalize(teacher, p=2, dim=-1), reduction="sum")
+        normalized_teacher = F.normalize(teacher, p=2, dim=-1)
+        mse = F.mse_loss(output["target"], normalized_teacher, reduction="sum")
         ce = F.cross_entropy(output["logits"], labels, reduction="sum")
         mse_total += float(mse.item())
         ce_total += float(ce.item())
+        cosine_total += float(F.cosine_similarity(output["target"], normalized_teacher, dim=-1).sum().item())
         correct += int((output["logits"].argmax(dim=1) == labels).sum().item())
         total += int(len(labels))
     return {
         "loss": (mse_total + ce_weight * ce_total) / max(total, 1),
         "mse": mse_total / max(total, 1),
+        "cosine_similarity": cosine_total / max(total, 1),
         "ce": ce_total / max(total, 1),
         "accuracy": correct / max(total, 1),
     }
@@ -80,8 +89,6 @@ def train_student(
     best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
     best_metrics = {"loss": float("inf"), "mse": float("inf"), "ce": float("inf"), "accuracy": 0.0}
     patience_count = 0
-    teacher_norm = lambda x: F.normalize(x, p=2, dim=-1)
-
     model.to(device)
     for epoch in range(1, config.max_epochs + 1):
         model.train()
@@ -89,7 +96,7 @@ def train_student(
             x, teacher, labels = x.to(device), teacher.to(device), labels.to(device)
             optimizer.zero_grad()
             output = model(x)
-            mse = F.mse_loss(output["target"], teacher_norm(teacher))
+            mse = target_alignment_loss(output["target"], teacher)
             ce = F.cross_entropy(output["logits"], labels)
             loss = mse + config.ce_weight * ce
             loss.backward()

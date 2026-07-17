@@ -22,6 +22,9 @@ audio-teachers = [
   "soundfile",
   "transformers>=4.48,<5",
 ]
+interpretability = [
+  "scikit-learn>=1.5,<2",
+]
 
 [tool.setuptools.packages.find]
 include = ["silent_speech_interpretability*"]

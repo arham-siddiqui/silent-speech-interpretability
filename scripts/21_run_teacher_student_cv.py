@@ -25,6 +25,8 @@ def _result_row(metrics: dict, elapsed_seconds: float) -> dict[str, object]:
         "val_mse": float(metrics["val"]["mse"]),
         "test_accuracy": float(metrics["test"]["accuracy"]),
         "test_mse": float(metrics["test"]["mse"]),
+        "test_cosine_similarity": float(metrics["test"]["cosine_similarity"]),
+        "mean_baseline_cosine_similarity": float(metrics["target_mean_baseline"]["cosine_similarity"]),
         "test_ce": float(metrics["test"]["ce"]),
         "test_loss": float(metrics["test"]["loss"]),
         "elapsed_seconds": float(elapsed_seconds),
@@ -41,6 +43,9 @@ def _write_report(
     accuracy_std = results["test_accuracy"].std(ddof=1)
     mse_mean = results["test_mse"].mean()
     mse_std = results["test_mse"].std(ddof=1)
+    cosine_mean = results["test_cosine_similarity"].mean()
+    cosine_std = results["test_cosine_similarity"].std(ddof=1)
+    mean_baseline_cosine = results["mean_baseline_cosine_similarity"].mean()
     baseline_mean = results["baseline_accuracy"].mean()
     baseline_std = results["baseline_accuracy"].std(ddof=1)
     gap = results["accuracy_delta"].mean()
@@ -49,7 +54,8 @@ def _write_report(
     rows = "\n".join(
         f"| {int(row.fold)} | {int(row.num_train)} | {int(row.num_val)} | {int(row.num_test)} | "
         f"{100 * row.val_accuracy:.1f}% | {100 * row.test_accuracy:.1f}% | "
-        f"{100 * row.baseline_accuracy:.1f}% | {100 * row.accuracy_delta:+.1f} | {row.test_mse:.4f} |"
+        f"{100 * row.baseline_accuracy:.1f}% | {100 * row.accuracy_delta:+.1f} | "
+        f"{row.test_cosine_similarity:.3f} | {row.test_mse:.4f} |"
         for row in results.itertuples(index=False)
     )
     comparison = "above" if gap >= 0 else "below"
@@ -66,12 +72,13 @@ HuBERT targets using fold-specific, encoder-disjoint sensor embeddings.
 - Mouth: excluded, matching the strict fusion baseline
 - Evaluation: 5-fold speaker-disjoint CV
 - Maximum epochs per fold: {max_epochs}, with validation-loss early stopping
+- HuBERT targets are centered using training-fold statistics before normalization
 - Audio is used only to create fixed teacher targets and is absent from student inference
 
 ## Per-Fold Results
 
-| Fold | Train | Validation | Test | Validation Accuracy | Student Accuracy | Fusion Baseline | Delta (pp) | Test Target MSE |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Fold | Train | Validation | Test | Validation Accuracy | Student Accuracy | Fusion Baseline | Delta (pp) | Target Cosine | Target MSE |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 {rows}
 
 ## Aggregate
@@ -81,6 +88,7 @@ HuBERT targets using fold-specific, encoder-disjoint sensor embeddings.
 | Student test accuracy | {100 * accuracy_mean:.1f}% | {100 * accuracy_std:.1f}% |
 | Strict fusion test accuracy | {100 * baseline_mean:.1f}% | {100 * baseline_std:.1f}% |
 | Paired accuracy delta | {100 * gap:+.1f} pp | {100 * gap_std:.1f} pp |
+| Residual-HuBERT cosine | {cosine_mean:.3f} | {cosine_std:.3f} |
 | Test target MSE | {mse_mean:.4f} | {mse_std:.4f} |
 
 The student classifier is **{abs(100 * gap):.1f} percentage points {comparison}** the
@@ -88,6 +96,10 @@ current validation-weighted strict fusion baseline and wins on {fold_wins} of 5 
 The paired fold deltas vary substantially, so this small mean difference is not evidence
 of a reliable improvement by itself. Target MSE separately measures how well silent
 sensors recover the teacher representation.
+
+The train-mean residual direction scores {mean_baseline_cosine:.3f} cosine on held-out
+speakers, compared with {cosine_mean:.3f} for the student. Centering removes HuBERT's
+dominant shared direction, so this measures recovery of utterance-varying structure.
 
 ## Interpretation Boundary
 
@@ -108,7 +120,7 @@ def main() -> None:
         default="artifacts/teacher_targets/facebook_hubert-base-ls960_targets.npz",
     )
     parser.add_argument("--folds", default="0,1,2,3,4")
-    parser.add_argument("--max-epochs", type=int, default=30)
+    parser.add_argument("--max-epochs", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--device", default="mps")
     parser.add_argument("--output-dir", default="artifacts/students/hubert_cv")
@@ -189,6 +201,9 @@ def main() -> None:
                 "test_accuracy_std": results["test_accuracy"].std(ddof=1),
                 "test_mse_mean": results["test_mse"].mean(),
                 "test_mse_std": results["test_mse"].std(ddof=1),
+                "test_cosine_mean": results["test_cosine_similarity"].mean(),
+                "test_cosine_std": results["test_cosine_similarity"].std(ddof=1),
+                "mean_baseline_cosine": results["mean_baseline_cosine_similarity"].mean(),
                 "baseline_accuracy_mean": results["baseline_accuracy"].mean(),
                 "baseline_accuracy_std": results["baseline_accuracy"].std(ddof=1),
                 "accuracy_gap_mean": results["accuracy_delta"].mean(),

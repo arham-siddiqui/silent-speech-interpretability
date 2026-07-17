@@ -133,6 +133,7 @@ teacher_targets:
 student:
   bottleneck_dim: 64
   hidden_dim: 256
+  center_teacher_targets: true
   loss_weights:
     ce: 1.0
     articulatory_mse: 1.0

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="417" viewBox="0 0 900 417">
+<rect width="900" height="417" fill="#ffffff"/>
+<text x="24" y="36" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#111827">HuBERT student modality attribution</text>
+<line x1="260.0" y1="48" x2="260.0" y2="382" stroke="#e5e7eb"/>
+<text x="260.0" y="403" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">0%</text>
+<line x1="400.0" y1="48" x2="400.0" y2="382" stroke="#e5e7eb"/>
+<text x="400.0" y="403" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">25%</text>
+<line x1="540.0" y1="48" x2="540.0" y2="382" stroke="#e5e7eb"/>
+<text x="540.0" y="403" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">50%</text>
+<line x1="680.0" y1="48" x2="680.0" y2="382" stroke="#e5e7eb"/>
+<text x="680.0" y="403" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">75%</text>
+<line x1="820.0" y1="48" x2="820.0" y2="382" stroke="#e5e7eb"/>
+<text x="820.0" y="403" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#374151">100%</text>
+<text x="24" y="83" font-family="Arial, sans-serif" font-size="12" fill="#111827">Leave Out Uwb</text>
+<rect x="260" y="66" width="363.6" height="20" rx="3" fill="#4b5563"/>
+<text x="630.6" y="82" font-family="Arial, sans-serif" font-size="11" fill="#111827">64.9%</text>
+<text x="24" y="117" font-family="Arial, sans-serif" font-size="12" fill="#111827">Full</text>
+<rect x="260" y="100" width="358.5" height="20" rx="3" fill="#0f766e"/>
+<text x="625.5" y="116" font-family="Arial, sans-serif" font-size="11" fill="#111827">64.0%</text>
+<text x="24" y="151" font-family="Arial, sans-serif" font-size="12" fill="#111827">Leave Out Mmwave</text>
+<rect x="260" y="134" width="357.9" height="20" rx="3" fill="#4b5563"/>
+<text x="624.9" y="150" font-family="Arial, sans-serif" font-size="11" fill="#111827">63.9%</text>
+<text x="24" y="185" font-family="Arial, sans-serif" font-size="12" fill="#111827">Leave Out Laser</text>
+<rect x="260" y="168" width="348.8" height="20" rx="3" fill="#4b5563"/>
+<text x="615.8" y="184" font-family="Arial, sans-serif" font-size="11" fill="#111827">62.3%</text>
+<text x="24" y="219" font-family="Arial, sans-serif" font-size="12" fill="#111827">Single Lip</text>
+<rect x="260" y="202" width="341.9" height="20" rx="3" fill="#4b5563"/>
+<text x="608.9" y="218" font-family="Arial, sans-serif" font-size="11" fill="#111827">61.0%</text>
+<text x="24" y="253" font-family="Arial, sans-serif" font-size="12" fill="#111827">Leave Out Lip</text>
+<rect x="260" y="236" width="206.1" height="20" rx="3" fill="#4b5563"/>
+<text x="473.1" y="252" font-family="Arial, sans-serif" font-size="11" fill="#111827">36.8%</text>
+<text x="24" y="287" font-family="Arial, sans-serif" font-size="12" fill="#111827">Single Uwb</text>
+<rect x="260" y="270" width="157.3" height="20" rx="3" fill="#4b5563"/>
+<text x="424.3" y="286" font-family="Arial, sans-serif" font-size="11" fill="#111827">28.1%</text>
+<text x="24" y="321" font-family="Arial, sans-serif" font-size="12" fill="#111827">Single Laser</text>
+<rect x="260" y="304" width="119.0" height="20" rx="3" fill="#4b5563"/>
+<text x="386.0" y="320" font-family="Arial, sans-serif" font-size="11" fill="#111827">21.3%</text>
+<text x="24" y="355" font-family="Arial, sans-serif" font-size="12" fill="#111827">Single Mmwave</text>
+<rect x="260" y="338" width="90.7" height="20" rx="3" fill="#4b5563"/>
+<text x="357.7" y="354" font-family="Arial, sans-serif" font-size="11" fill="#111827">16.2%</text>
+</svg>

@@ -10,33 +10,39 @@ HuBERT targets using fold-specific, encoder-disjoint sensor embeddings.
 - Sensor modalities: lip, UWB, mmWave, and laser
 - Mouth: excluded, matching the strict fusion baseline
 - Evaluation: 5-fold speaker-disjoint CV
-- Maximum epochs per fold: 30, with validation-loss early stopping
+- Maximum epochs per fold: 100, with validation-loss early stopping
+- HuBERT targets are centered using training-fold statistics before normalization
 - Audio is used only to create fixed teacher targets and is absent from student inference
 
 ## Per-Fold Results
 
-| Fold | Train | Validation | Test | Validation Accuracy | Student Accuracy | Fusion Baseline | Delta (pp) | Test Target MSE |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 0 | 392 | 30 | 117 | 86.7% | 68.4% | 62.4% | +6.0 | 0.9732 |
-| 1 | 391 | 58 | 90 | 74.1% | 58.9% | 57.8% | +1.1 | 0.9191 |
-| 2 | 379 | 58 | 102 | 77.6% | 60.8% | 61.8% | -1.0 | 1.0582 |
-| 3 | 366 | 58 | 115 | 81.0% | 80.0% | 75.7% | +4.3 | 1.0607 |
-| 4 | 366 | 58 | 115 | 75.9% | 54.8% | 61.7% | -7.0 | 0.9884 |
+| Fold | Train | Validation | Test | Validation Accuracy | Student Accuracy | Fusion Baseline | Delta (pp) | Target Cosine | Target MSE |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 392 | 30 | 117 | 86.7% | 67.5% | 62.4% | +5.1 | 0.443 | 1.1138 |
+| 1 | 391 | 58 | 90 | 77.6% | 61.1% | 57.8% | +3.3 | 0.405 | 1.1895 |
+| 2 | 379 | 58 | 102 | 81.0% | 62.7% | 61.8% | +1.0 | 0.450 | 1.0993 |
+| 3 | 366 | 58 | 115 | 79.3% | 74.8% | 75.7% | -0.9 | 0.439 | 1.1218 |
+| 4 | 366 | 58 | 115 | 70.7% | 53.9% | 61.7% | -7.8 | 0.413 | 1.1733 |
 
 ## Aggregate
 
 | Metric | Mean | Standard Deviation |
 |---|---:|---:|
-| Student test accuracy | 64.6% | 9.9% |
+| Student test accuracy | 64.0% | 7.8% |
 | Strict fusion test accuracy | 63.9% | 6.8% |
-| Paired accuracy delta | +0.7 pp | 5.1 pp |
-| Test target MSE | 0.9999 | 0.0602 |
+| Paired accuracy delta | +0.1 pp | 5.0 pp |
+| Residual-HuBERT cosine | 0.430 | 0.020 |
+| Test target MSE | 1.1395 | 0.0395 |
 
-The student classifier is **0.7 percentage points above** the
+The student classifier is **0.1 percentage points above** the
 current validation-weighted strict fusion baseline and wins on 3 of 5 folds.
 The paired fold deltas vary substantially, so this small mean difference is not evidence
 of a reliable improvement by itself. Target MSE separately measures how well silent
 sensors recover the teacher representation.
+
+The train-mean residual direction scores -0.001 cosine on held-out
+speakers, compared with 0.430 for the student. Centering removes HuBERT's
+dominant shared direction, so this measures recovery of utterance-varying structure.
 
 ## Interpretation Boundary
 

@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability
 
 test:
 	python3 -m pytest -q
@@ -50,3 +50,8 @@ cleanup:
 
 hubert-student-cv:
 	python3 scripts/21_run_teacher_student_cv.py
+
+hubert-interpretability:
+	python3 scripts/22_probe_hubert_student.py
+	python3 scripts/23_run_hubert_modality_attribution.py
+	python3 scripts/24_generate_hubert_interpretability_report.py

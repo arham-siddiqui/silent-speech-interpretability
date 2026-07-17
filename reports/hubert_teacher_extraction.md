@@ -60,3 +60,7 @@ These are mean-pooled final HuBERT hidden states for each aligned utterance. The
 valid real speech-representation targets, but they are not yet temporal articulatory
 trajectories. Five-fold speaker-disjoint student training is now complete; see
 `reports/hubert_teacher_student_cv.md` for the comparison with strict fusion.
+
+Final student experiments subtract the training-fold target mean before normalization.
+This removes HuBERT's dominant shared direction without using validation/test-speaker
+statistics and makes target cosine reflect utterance-varying structure.

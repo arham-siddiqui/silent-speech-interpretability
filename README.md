@@ -276,9 +276,11 @@ teacher-target storage and silent-sensor student training. See
 [`reports/audio_teacher_student_scaffold.md`](reports/audio_teacher_student_scaffold.md).
 Real HuBERT targets have now been extracted for 596 aligned speaker/utterance pairs;
 see [`reports/hubert_teacher_extraction.md`](reports/hubert_teacher_extraction.md).
-Five-fold speaker-disjoint student training reached 64.6% mean accuracy versus 63.9%
+Five-fold speaker-disjoint student training reached 64.0% mean accuracy versus 63.9%
 for strict validation-weighted fusion; see
 [`reports/hubert_teacher_student_cv.md`](reports/hubert_teacher_student_cv.md).
+The first probe and modality-attribution batch is summarized in
+[`reports/hubert_interpretability_summary.md`](reports/hubert_interpretability_summary.md).
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
