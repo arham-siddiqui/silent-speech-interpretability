@@ -36,9 +36,9 @@ class SSLTeacher:
     def load(self) -> "SSLTeacher":
         if not self.available():
             raise RuntimeError("SSLTeacher requires optional dependencies: transformers and librosa.")
-        from transformers import AutoModel, AutoProcessor
+        from transformers import AutoFeatureExtractor, AutoModel
 
-        self.processor = AutoProcessor.from_pretrained(self.model_name, local_files_only=self.local_files_only)
+        self.processor = AutoFeatureExtractor.from_pretrained(self.model_name, local_files_only=self.local_files_only)
         self.model = AutoModel.from_pretrained(self.model_name, local_files_only=self.local_files_only).to(self.device)
         self.model.eval()
         return self

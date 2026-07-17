@@ -1,4 +1,6 @@
 from pathlib import Path
+import sys
+import types
 
 import numpy as np
 import torch
@@ -60,3 +62,32 @@ def test_articulatory_student_shapes():
 def test_ssl_teacher_reports_dependency_availability():
     teacher = SSLTeacher("facebook/hubert-base-ls960", local_files_only=True)
     assert isinstance(teacher.available(), bool)
+
+
+def test_ssl_teacher_loads_feature_extractor_without_tokenizer(monkeypatch):
+    class FakeFeatureExtractor:
+        @staticmethod
+        def from_pretrained(model_name, local_files_only=False):
+            return (model_name, local_files_only)
+
+    class FakeModel:
+        @staticmethod
+        def from_pretrained(model_name, local_files_only=False):
+            return FakeModel()
+
+        def to(self, device):
+            return self
+
+        def eval(self):
+            return self
+
+    fake_transformers = types.ModuleType("transformers")
+    fake_transformers.AutoFeatureExtractor = FakeFeatureExtractor
+    fake_transformers.AutoModel = FakeModel
+    monkeypatch.setitem(sys.modules, "transformers", fake_transformers)
+    monkeypatch.setitem(sys.modules, "librosa", types.ModuleType("librosa"))
+
+    teacher = SSLTeacher("facebook/hubert-base-ls960", local_files_only=True).load()
+
+    assert teacher.processor == ("facebook/hubert-base-ls960", True)
+    assert isinstance(teacher.model, FakeModel)

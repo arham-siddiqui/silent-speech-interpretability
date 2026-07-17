@@ -16,6 +16,13 @@ dependencies = [
   "Pillow",
 ]
 
+[project.optional-dependencies]
+audio-teachers = [
+  "librosa",
+  "soundfile",
+  "transformers>=4.48,<5",
+]
+
 [tool.setuptools.packages.find]
 include = ["silent_speech_interpretability*"]
 

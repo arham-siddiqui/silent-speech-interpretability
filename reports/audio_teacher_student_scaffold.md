@@ -80,19 +80,18 @@ python3 scripts/19_extract_ssl_teacher_targets.py \
 Current local status:
 
 - `librosa` and `soundfile` are installed.
-- `transformers` is not installed in the current environment.
+- `transformers` is installed and declared in the `audio-teachers` optional dependency.
 - The RVTALL audio has been discovered and aligned in an audited local manifest.
 - See `reports/audio_manifest_audit.md` for coverage and repetition matching details.
-- Dry-run audit output is written to `reports/results/ssl_teacher_audio_audit.csv`.
+- Real HuBERT targets were extracted for 596 unique speaker/group pairs.
+- See `reports/hubert_teacher_extraction.md` for target validation and runtime.
 
-The remaining blocker for real teacher targets is installing/caching the SSL model.
+Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Install/cache the SSL teacher dependency stack (`transformers` plus model weights).
-2. Decide whether teacher targets should be utterance-level pooled vectors or temporal
+1. Train HuBERT-target students across all 5 speaker-disjoint folds.
+2. Compare student target MSE and class accuracy against the strict fusion baseline.
+3. Decide whether the next teacher experiment should use pooled vectors or temporal
    sequences.
-3. Add a real teacher-target audit: coverage, target dimension, duplicate keys, and
-   split overlap checks.
-4. Train students across all 5 folds and compare student class accuracy plus target MSE
-   against the strict CV fusion baseline.
+4. Add SPARC or Sylber targets if their optional dependencies are available.
