@@ -58,6 +58,9 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_config(args.config)
+    seed = int(config["project"]["seed"]) + args.fold
+    np.random.seed(seed)
+    torch.manual_seed(seed)
     teacher_path = Path(args.teacher_targets or Path(config["data"]["teacher_targets_dir"]) / "synthetic_audio_teacher_targets.npz")
     teacher = load_teacher_targets(teacher_path)
 
@@ -120,6 +123,7 @@ def main() -> None:
     torch.save({"state_dict": model.state_dict(), "modalities": modalities, "teacher_targets": str(teacher_path)}, checkpoint_path)
     metrics = {
         "fold": args.fold,
+        "seed": seed,
         "modalities": modalities,
         "teacher_targets": str(teacher_path),
         "num_train": len(train_pairs),

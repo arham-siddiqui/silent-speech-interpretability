@@ -58,5 +58,5 @@ short-run values are pipeline checks only and are not five-fold research results
 
 These are mean-pooled final HuBERT hidden states for each aligned utterance. They are
 valid real speech-representation targets, but they are not yet temporal articulatory
-trajectories. The next experiment is speaker-disjoint student training across all five
-folds, followed by comparison with the strict supervised fusion baseline.
+trajectories. Five-fold speaker-disjoint student training is now complete; see
+`reports/hubert_teacher_student_cv.md` for the comparison with strict fusion.

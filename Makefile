@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup
+.PHONY: test manifest baseline cv cleanup hubert-student-cv
 
 test:
 	python3 -m pytest -q
@@ -47,3 +47,6 @@ true-cv-artifacts:
 
 cleanup:
 	python3 scripts/00_cleanup_repo.py
+
+hubert-student-cv:
+	python3 scripts/21_run_teacher_student_cv.py

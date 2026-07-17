@@ -85,13 +85,13 @@ Current local status:
 - See `reports/audio_manifest_audit.md` for coverage and repetition matching details.
 - Real HuBERT targets were extracted for 596 unique speaker/group pairs.
 - See `reports/hubert_teacher_extraction.md` for target validation and runtime.
+- Five-fold student CV is complete; see `reports/hubert_teacher_student_cv.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Train HuBERT-target students across all 5 speaker-disjoint folds.
-2. Compare student target MSE and class accuracy against the strict fusion baseline.
-3. Decide whether the next teacher experiment should use pooled vectors or temporal
+1. Decide whether the next teacher experiment should use pooled vectors or temporal
    sequences.
-4. Add SPARC or Sylber targets if their optional dependencies are available.
+2. Add layer-wise probes to compare sensor bottlenecks with HuBERT features.
+3. Add SPARC or Sylber targets if their optional dependencies are available.
