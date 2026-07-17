@@ -70,7 +70,6 @@ def _fold_table(results: pd.DataFrame) -> str:
         ("prototype", "mmwave", "mmWave"),
         ("prototype", "laser", "Laser"),
         ("equal_weight", "fusion", "Equal Fusion"),
-        ("equal_weight_no_mouth", "fusion", "No-Mouth Equal"),
         ("validation_weighted", "fusion", "Validation Fusion"),
         ("borda", "fusion", "Borda"),
         ("consistency_weighted", "fusion", "Consistency Fusion"),
@@ -131,7 +130,9 @@ cross-validation outputs in `reports/results/`.
 - Split: 5-fold encoder-disjoint speaker CV.
 - Classifier: prototype/nearest-centroid per modality, plus late-fusion voting.
 - Fusion methods: equal-weight averaging, validation-weighted averaging, Borda rank
-  fusion, consistency-weighted fusion, and no-mouth equal-weight ablation.
+  fusion, and consistency-weighted fusion.
+- Mouth is reported as a diagnostic modality but excluded from fusion because the
+  current fold-specific mouth embeddings are near chance.
 - Chance accuracy: 3.3%.
 - All reported folds have `encoder_disjoint_test=True`.
 
@@ -160,7 +161,8 @@ meaning all required fold/modality artifacts are present.
 ## Validation-Derived Fusion Weights
 
 These weights are estimated from each fold's validation speakers only, then applied
-to the held-out test speakers.
+to the held-out test speakers. Mouth appears with zero weight because it is excluded
+from fusion by config.
 
 ![Validation-derived fusion weights](figures/true_cv_fusion_weights.svg)
 

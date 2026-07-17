@@ -108,9 +108,10 @@ modalities:
     enabled: true
     embedding_dim: 128
 fusion:
+  excluded_modalities:
+    - mouth
   methods:
     - equal_weight
-    - equal_weight_no_mouth
     - validation_weighted
     - borda
     - consistency_weighted

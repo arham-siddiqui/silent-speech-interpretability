@@ -151,7 +151,9 @@ def main() -> None:
     prediction_rows = []
     weight_rows = []
     class_axis = np.arange(int(config["classes"]["num_classes"]))
-    fusion_methods = [method for method in config["fusion"]["methods"] if method != "learned_gate"]
+    fusion_config = config["fusion"]
+    fusion_methods = [method for method in fusion_config["methods"] if method != "learned_gate"]
+    excluded_fusion_modalities = set(fusion_config.get("excluded_modalities", []))
 
     for fold in folds:
         fold_id = int(fold["fold"])
@@ -208,6 +210,13 @@ def main() -> None:
             _record_predictions(prediction_rows, fold_id, "prototype", modality, test_pairs, y_true, predictions)
 
         reliability_weights = _validation_reliability_weights(validation_scores)
+        fusion_probabilities = {k: v for k, v in probabilities.items() if k not in excluded_fusion_modalities}
+        if not fusion_probabilities:
+            raise RuntimeError("No modalities remain after applying fusion.excluded_modalities.")
+        fusion_validation_scores = {
+            modality: score for modality, score in validation_scores.items() if modality in fusion_probabilities
+        }
+        reliability_weights = _validation_reliability_weights(fusion_validation_scores)
         for modality in modalities:
             weight_rows.append(
                 {
@@ -215,22 +224,23 @@ def main() -> None:
                     "method": "validation_weighted",
                     "modality": modality,
                     "validation_accuracy": validation_scores.get(modality, np.nan),
-                    "weight": reliability_weights.get(modality, np.nan),
+                    "weight": reliability_weights.get(modality, 0.0),
+                    "included_in_fusion": modality in fusion_probabilities,
                     "num_val": len(val_pairs),
                 }
             )
 
         for method in fusion_methods:
             if method == "equal_weight":
-                fused = equal_weight_fusion(probabilities)
+                fused = equal_weight_fusion(fusion_probabilities)
             elif method == "equal_weight_no_mouth":
                 fused = equal_weight_fusion({k: v for k, v in probabilities.items() if k != "mouth"})
             elif method == "borda":
-                fused = borda_count_fusion(probabilities)
+                fused = borda_count_fusion(fusion_probabilities)
             elif method == "consistency_weighted":
-                fused, _weights = consistency_weighted_fusion(probabilities)
+                fused, _weights = consistency_weighted_fusion(fusion_probabilities)
             elif method == "validation_weighted":
-                fused = static_weight_fusion(probabilities, reliability_weights)
+                fused = static_weight_fusion(fusion_probabilities, reliability_weights)
             else:
                 continue
             predictions = _predictions_for(fused, class_axis)

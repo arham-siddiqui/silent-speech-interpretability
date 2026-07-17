@@ -218,18 +218,18 @@ Error analysis: [`reports/true_cv_error_analysis.md`](reports/true_cv_error_anal
 | Method | Modality | Mean Accuracy |
 |--------|----------|--------------:|
 | Validation-weighted fusion | Fusion | **63.9%** |
+| Equal-weight fusion | Fusion | 61.9% |
 | Prototype | Lip | 60.9% |
-| Equal-weight no-mouth fusion | Fusion | 61.9% |
-| Equal-weight fusion | Fusion | 60.4% |
-| Consistency-weighted fusion | Fusion | 56.4% |
-| Borda fusion | Fusion | 38.8% |
+| Consistency-weighted fusion | Fusion | 57.5% |
+| Borda fusion | Fusion | 47.0% |
 | Prototype | UWB | 26.7% |
 | Prototype | Laser | 24.3% |
 | Prototype | mmWave | 15.7% |
 | Prototype | Mouth | 5.0% |
 
-The mouth result is provisional. The current mouth fold artifacts are documented as
-projection/smoke-test artifacts, not final scientific mouth encoder folds; see
+The mouth result is provisional and mouth is excluded from fusion by default. The
+current mouth fold artifacts are documented as projection/smoke-test artifacts,
+not final scientific mouth encoder folds; see
 [`reports/mouth_encoder_audit.md`](reports/mouth_encoder_audit.md).
 
 ### Legacy fixed-split result

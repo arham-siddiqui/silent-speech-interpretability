@@ -10,7 +10,9 @@ cross-validation outputs in `reports/results/`.
 - Split: 5-fold encoder-disjoint speaker CV.
 - Classifier: prototype/nearest-centroid per modality, plus late-fusion voting.
 - Fusion methods: equal-weight averaging, validation-weighted averaging, Borda rank
-  fusion, consistency-weighted fusion, and no-mouth equal-weight ablation.
+  fusion, and consistency-weighted fusion.
+- Mouth is reported as a diagnostic modality but excluded from fusion because the
+  current fold-specific mouth embeddings are near chance.
 - Chance accuracy: 3.3%.
 - All reported folds have `encoder_disjoint_test=True`.
 
@@ -33,11 +35,10 @@ meaning all required fold/modality artifacts are present.
 | Method | Modality | Mean Accuracy | Std. Dev. | Folds |
 | --- | --- | --- | --- | --- |
 | Validation-weighted fusion | Fusion | 63.9% | 6.8% | 5 |
-| Equal-weight no-mouth fusion | Fusion | 61.9% | 8.9% | 5 |
+| Equal-weight fusion | Fusion | 61.9% | 8.9% | 5 |
 | Prototype | Lip | 60.9% | 6.6% | 5 |
-| Equal-weight fusion | Fusion | 60.4% | 8.4% | 5 |
-| Consistency-weighted fusion | Fusion | 56.4% | 9.7% | 5 |
-| Borda fusion | Fusion | 38.8% | 8.1% | 5 |
+| Consistency-weighted fusion | Fusion | 57.5% | 10.8% | 5 |
+| Borda fusion | Fusion | 47.0% | 10.6% | 5 |
 | Prototype | UWB | 26.7% | 9.3% | 5 |
 | Prototype | Laser | 24.3% | 5.5% | 5 |
 | Prototype | mmWave | 15.7% | 1.2% | 5 |
@@ -45,28 +46,29 @@ meaning all required fold/modality artifacts are present.
 
 ## Per-Fold Accuracy
 
-| Fold | Lip | Mouth | UWB | mmWave | Laser | Equal Fusion | No-Mouth Equal | Validation Fusion | Borda | Consistency Fusion |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 61.5% | 5.1% | 27.4% | 13.7% | 16.2% | 60.7% | 64.1% | 62.4% | 37.6% | 56.4% |
-| 1 | 56.7% | 4.4% | 14.4% | 16.7% | 28.9% | 50.0% | 52.2% | 57.8% | 30.0% | 44.4% |
-| 2 | 56.9% | 4.9% | 33.3% | 16.7% | 21.6% | 61.8% | 63.7% | 61.8% | 34.3% | 56.9% |
-| 3 | 72.2% | 3.5% | 37.4% | 15.7% | 29.6% | 73.0% | 74.8% | 75.7% | 51.3% | 71.3% |
-| 4 | 57.4% | 7.0% | 20.9% | 15.7% | 25.2% | 56.5% | 54.8% | 61.7% | 40.9% | 53.0% |
+| Fold | Lip | Mouth | UWB | mmWave | Laser | Equal Fusion | Validation Fusion | Borda | Consistency Fusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 61.5% | 5.1% | 27.4% | 13.7% | 16.2% | 64.1% | 62.4% | 39.3% | 58.1% |
+| 1 | 56.7% | 4.4% | 14.4% | 16.7% | 28.9% | 52.2% | 57.8% | 37.8% | 44.4% |
+| 2 | 56.9% | 4.9% | 33.3% | 16.7% | 21.6% | 63.7% | 61.8% | 43.1% | 58.8% |
+| 3 | 72.2% | 3.5% | 37.4% | 15.7% | 29.6% | 74.8% | 75.7% | 63.5% | 73.9% |
+| 4 | 57.4% | 7.0% | 20.9% | 15.7% | 25.2% | 54.8% | 61.7% | 51.3% | 52.2% |
 
 ## Validation-Derived Fusion Weights
 
 These weights are estimated from each fold's validation speakers only, then applied
-to the held-out test speakers.
+to the held-out test speakers. Mouth appears with zero weight because it is excluded
+from fusion by config.
 
 ![Validation-derived fusion weights](figures/true_cv_fusion_weights.svg)
 
 | Fold | Lip | Mouth | UWB | mmWave | Laser |
 | --- | --- | --- | --- | --- | --- |
-| 0 | 63.5% | 3.5% | 9.4% | 4.7% | 18.8% |
-| 1 | 44.1% | 5.9% | 19.6% | 14.7% | 15.7% |
-| 2 | 44.0% | 3.0% | 30.0% | 8.0% | 15.0% |
-| 3 | 52.1% | 5.2% | 21.9% | 11.5% | 9.4% |
-| 4 | 46.3% | 4.2% | 27.4% | 11.6% | 10.5% |
+| 0 | 65.9% | 0.0% | 9.8% | 4.9% | 19.5% |
+| 1 | 46.9% | 0.0% | 20.8% | 15.6% | 16.7% |
+| 2 | 45.4% | 0.0% | 30.9% | 8.2% | 15.5% |
+| 3 | 54.9% | 0.0% | 23.1% | 12.1% | 9.9% |
+| 4 | 48.4% | 0.0% | 28.6% | 12.1% | 11.0% |
 
 ## Per-Class Error Snapshot
 
@@ -107,7 +109,7 @@ Strongest classes for the best fusion method (`validation_weighted` / `fusion`):
 1. The best overall method is Validation-weighted fusion, averaging
    63.9% accuracy across five folds.
 2. Validation-weighted fusion averages 63.9%, compared with
-   60.4% for equal-weight fusion and 60.9% for lip alone.
+   61.9% for equal-weight fusion and 60.9% for lip alone.
 3. Lip remains the dominant single modality, but validation-derived weighting recovers
    useful auxiliary signal on several folds.
 4. UWB and laser carry useful but variable auxiliary signal.
