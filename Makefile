@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality
 
 test:
 	python3 -m pytest -q
@@ -55,3 +55,9 @@ hubert-interpretability:
 	python3 scripts/22_probe_hubert_student.py
 	python3 scripts/23_run_hubert_modality_attribution.py
 	python3 scripts/24_generate_hubert_interpretability_report.py
+
+hubert-feature-causality:
+	python3 scripts/25_train_bottleneck_sae.py
+	python3 scripts/26_rank_bottleneck_features.py
+	python3 scripts/27_run_bottleneck_causal_ablation.py
+	python3 scripts/28_generate_bottleneck_feature_report.py

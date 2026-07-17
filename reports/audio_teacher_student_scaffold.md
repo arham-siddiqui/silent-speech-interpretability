@@ -88,11 +88,13 @@ Current local status:
 - Five-fold student CV is complete; see `reports/hubert_teacher_student_cv.md`.
 - Layer probes and modality attribution are complete; see
   `reports/hubert_interpretability_summary.md`.
+- Sparse bottleneck feature ranking and causal ablation are complete; see
+  `reports/hubert_bottleneck_feature_causality.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Train a sparse autoencoder on the speaker-reduced student bottleneck.
-2. Rank and causally ablate class/type-selective bottleneck features.
-3. Compare the pooled HuBERT baseline with temporal, SPARC, or Sylber targets.
+1. Inspect the highest-ranked features through their strongest activating utterances.
+2. Compare the pooled HuBERT baseline with temporal, SPARC, or Sylber targets.
+3. Test whether temporally resolved features align with phonetic or articulatory events.

@@ -281,6 +281,8 @@ for strict validation-weighted fusion; see
 [`reports/hubert_teacher_student_cv.md`](reports/hubert_teacher_student_cv.md).
 The first probe and modality-attribution batch is summarized in
 [`reports/hubert_interpretability_summary.md`](reports/hubert_interpretability_summary.md).
+Sparse bottleneck features and controlled causal ablations are reported in
+[`reports/hubert_bottleneck_feature_causality.md`](reports/hubert_bottleneck_feature_causality.md).
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion

@@ -144,6 +144,7 @@ interpretability:
   sae:
     expansion_factor: 8
     l1_coeff: 0.0001
+    top_k: 32
     steps: 5000
   causal:
     ablation_values:

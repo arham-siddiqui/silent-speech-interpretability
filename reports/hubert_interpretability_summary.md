@@ -34,10 +34,18 @@ a trivial shared mean direction achieved very high cosine similarity and obscure
 utterance-varying alignment. All final results use centered targets without test-speaker
 statistics.
 
+## Sparse Feature Causality
+
+Fold-specific Top-K sparse autoencoders explain **68.9%** of held-out bottleneck
+variance with 32 of 512 features active per sample. Ablating the top 50 content-ranked
+features reduces residual-HuBERT cosine by **0.084** and utterance-type accuracy by
+**5.8 points**, compared with **0.010** and **0.3 points** for random features. See
+`reports/hubert_bottleneck_feature_causality.md` for the controls and per-fold results.
+
 ## Limits And Next Step
 
-Linear probes establish decodability, and modality retraining establishes attribution at
-the input level; neither proves that individual bottleneck features causally control a
-speech property. The next phase should train a sparse autoencoder on the bottleneck,
-rank features by class/type selectivity, then ablate the top features across held-out
-speakers.
+These interventions establish causal contribution to the learned representation, but
+not a human-named phoneme or articulator for any individual feature. The next phase is
+sample-level activation inspection followed by a temporal or articulatory teacher
+comparison, which can test whether the sparse features track speech events that pooled
+utterance-level HuBERT targets cannot resolve.
