@@ -1,5 +1,16 @@
 Here’s a crisp hand-off you can paste into any LLM to get them up to speed fast.
 
+## Current interpretability status
+
+- Strict encoder-disjoint supervised baseline: 63.9% validation-weighted fusion.
+- Pooled HuBERT student: 64.0%; sparse causal-feature analysis complete.
+- Four-segment temporal HuBERT student: 64.5%, with true-order segment cosine 0.346
+  versus 0.086 for reversed order.
+- Held-out sparse-feature exemplars, temporal probes, SAEs, and causal ablations are
+  complete. Start with `reports/temporal_interpretability_batch.md`.
+- Next decisive step: expose temporal silent-sensor encoder activations and validate
+  features against forced-alignment or articulatory labels.
+
 # Project snapshot
 
 **Name:** silentSpeech

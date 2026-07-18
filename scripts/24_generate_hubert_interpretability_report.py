@@ -67,6 +67,24 @@ def main() -> None:
 
     probe_index = probes.set_index(["task", "layer"])
     attr_index = attribution.set_index("variant")
+    sparse_section = ""
+    sae_path = results_dir / "hubert_bottleneck_sae_results.csv"
+    ablation_path = results_dir / "hubert_bottleneck_causal_ablation.csv"
+    if sae_path.exists() and ablation_path.exists():
+        sae = pd.read_csv(sae_path)
+        ablation = pd.read_csv(ablation_path)
+        zero50 = ablation[(ablation["mode"] == "zero") & (ablation["k"] == 50)].groupby("selection").mean(numeric_only=True)
+        sparse_section = f"""
+## Sparse Feature Causality
+
+Fold-specific Top-K sparse autoencoders explain **{100*sae.test_explained_variance.mean():.1f}%**
+of held-out bottleneck variance. Ablating the top 50 content-ranked features changes
+residual-HuBERT cosine by **{zero50.loc['top', 'delta_target_cosine']:.3f}** and
+utterance-type accuracy by **{100*zero50.loc['top', 'delta_type_accuracy']:+.1f} points**,
+compared with **{zero50.loc['random', 'delta_target_cosine']:.3f}** and
+**{100*zero50.loc['random', 'delta_type_accuracy']:+.1f} points** for random features.
+See `reports/hubert_bottleneck_feature_causality.md` for all controls.
+"""
     report = f"""# HuBERT Student Interpretability Summary
 
 This report consolidates the first real audio-teacher interpretability batch for the
@@ -103,13 +121,16 @@ a trivial shared mean direction achieved very high cosine similarity and obscure
 utterance-varying alignment. All final results use centered targets without test-speaker
 statistics.
 
-## Limits And Next Step
+{sparse_section}
 
-Linear probes establish decodability, and modality retraining establishes attribution at
-the input level; neither proves that individual bottleneck features causally control a
-speech property. The next phase should train a sparse autoencoder on the bottleneck,
-rank features by class/type selectivity, then ablate the top features across held-out
-speakers.
+## Subsequent Interpretability Work
+
+Sparse feature causality, held-out activation exemplars, and a four-segment temporal
+HuBERT comparison are now complete; see `reports/temporal_interpretability_batch.md`.
+Those experiments establish feature-level causal contribution and recovery of ordered
+teacher structure, but they do not assign phoneme or articulator names because the
+silent inputs remain fixed utterance embeddings. The next phase must expose temporal
+sensor activations or add external alignment labels.
 """
     Path("reports/hubert_interpretability_summary.md").write_text(report, encoding="utf-8")
     print("Saved HuBERT interpretability figures and consolidated report")

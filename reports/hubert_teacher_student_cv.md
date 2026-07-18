@@ -47,6 +47,6 @@ dominant shared direction, so this measures recovery of utterance-varying struct
 ## Interpretation Boundary
 
 These targets are utterance-level mean-pooled HuBERT states. They establish the first
-real audio-teacher baseline, but they do not yet provide frame-level articulatory or
-syllable interpretation. Temporal HuBERT, SPARC, or Sylber targets remain follow-up
-experiments.
+real audio-teacher baseline, but they do not provide frame-level articulatory or
+syllable interpretation. A relative-segment temporal HuBERT comparison is now complete;
+frame-level silent-sensor activations and SPARC or Sylber remain follow-up experiments.

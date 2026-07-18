@@ -34,18 +34,23 @@ a trivial shared mean direction achieved very high cosine similarity and obscure
 utterance-varying alignment. All final results use centered targets without test-speaker
 statistics.
 
+
 ## Sparse Feature Causality
 
-Fold-specific Top-K sparse autoencoders explain **68.9%** of held-out bottleneck
-variance with 32 of 512 features active per sample. Ablating the top 50 content-ranked
-features reduces residual-HuBERT cosine by **0.084** and utterance-type accuracy by
-**5.8 points**, compared with **0.010** and **0.3 points** for random features. See
-`reports/hubert_bottleneck_feature_causality.md` for the controls and per-fold results.
+Fold-specific Top-K sparse autoencoders explain **68.9%**
+of held-out bottleneck variance. Ablating the top 50 content-ranked features changes
+residual-HuBERT cosine by **-0.084** and
+utterance-type accuracy by **-5.8 points**,
+compared with **-0.010** and
+**-0.3 points** for random features.
+See `reports/hubert_bottleneck_feature_causality.md` for all controls.
 
-## Limits And Next Step
 
-These interventions establish causal contribution to the learned representation, but
-not a human-named phoneme or articulator for any individual feature. The next phase is
-sample-level activation inspection followed by a temporal or articulatory teacher
-comparison, which can test whether the sparse features track speech events that pooled
-utterance-level HuBERT targets cannot resolve.
+## Subsequent Interpretability Work
+
+Sparse feature causality, held-out activation exemplars, and a four-segment temporal
+HuBERT comparison are now complete; see `reports/temporal_interpretability_batch.md`.
+Those experiments establish feature-level causal contribution and recovery of ordered
+teacher structure, but they do not assign phoneme or articulator names because the
+silent inputs remain fixed utterance embeddings. The next phase must expose temporal
+sensor activations or add external alignment labels.

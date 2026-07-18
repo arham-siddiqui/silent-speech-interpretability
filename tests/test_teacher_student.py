@@ -5,7 +5,7 @@ import types
 import numpy as np
 import torch
 
-from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher
+from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher, relative_segment_pool
 from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
 from silent_speech_interpretability.models.teachers.teacher_targets import (
     common_teacher_pairs,
@@ -33,6 +33,26 @@ def test_teacher_target_round_trip(tmp_path: Path):
     x, y = teacher_arrays(loaded, [("1", "a"), ("2", "c")])
     assert x.shape == (2, 8)
     assert y.tolist() == [0, 0]
+
+
+def test_temporal_teacher_target_shape_round_trip(tmp_path: Path):
+    path = save_teacher_targets(
+        tmp_path / "temporal.npz",
+        np.zeros((2, 12), dtype=np.float32),
+        np.array([0, 1]),
+        np.array(["1", "2"]),
+        np.array(["a", "b"]),
+        target_shape=(3, 4),
+    )
+    assert load_teacher_targets(path)["target_shape"] == (3, 4)
+
+
+def test_relative_segment_pool_preserves_order():
+    hidden = np.arange(24, dtype=np.float32).reshape(6, 4)
+    pooled = relative_segment_pool(hidden, 3)
+    assert pooled.shape == (3, 4)
+    np.testing.assert_allclose(pooled[0], hidden[:2].mean(axis=0))
+    np.testing.assert_allclose(pooled[-1], hidden[-2:].mean(axis=0))
 
 
 def test_common_teacher_pairs_filters_speakers(tmp_path: Path):

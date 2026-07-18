@@ -8,6 +8,16 @@ import numpy as np
 import torch
 
 
+def relative_segment_pool(hidden_states: np.ndarray, num_segments: int) -> np.ndarray:
+    """Mean-pool an encoded utterance into ordered relative-time segments."""
+    hidden_states = np.asarray(hidden_states, dtype=np.float32)
+    if hidden_states.ndim != 2 or len(hidden_states) == 0:
+        raise ValueError("hidden_states must have shape [frames, features] with at least one frame")
+    if num_segments < 1 or num_segments > len(hidden_states):
+        raise ValueError("num_segments must be between 1 and the number of frames")
+    return np.stack([segment.mean(axis=0) for segment in np.array_split(hidden_states, num_segments)]).astype(np.float32)
+
+
 class SSLTeacher:
     def __init__(self, model_name: str, device: str = "auto", sample_rate: int = 16_000, local_files_only: bool = False):
         self.model_name = model_name
@@ -54,9 +64,8 @@ class SSLTeacher:
         return waveform.astype(np.float32)
 
     @torch.no_grad()
-    def extract_hidden_states(self, audio_path: str | Path) -> dict[str, np.ndarray]:
+    def extract_waveform_hidden_states(self, waveform: np.ndarray) -> dict[str, np.ndarray]:
         self._ensure_loaded()
-        waveform = self.load_audio(audio_path)
         inputs = self.processor(waveform, sampling_rate=self.sample_rate, return_tensors="pt", padding=True)
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
         output = self.model(**inputs)
@@ -66,3 +75,17 @@ class SSLTeacher:
             "pooled": hidden.mean(axis=0).astype(np.float32),
             "sample_rate": np.asarray(self.sample_rate),
         }
+
+    def extract_hidden_states(self, audio_path: str | Path, *, trim_silence: bool = False) -> dict[str, np.ndarray]:
+        waveform = self.load_audio(audio_path)
+        original_samples = len(waveform)
+        if trim_silence:
+            import librosa
+
+            trimmed, _bounds = librosa.effects.trim(waveform, top_db=30)
+            if len(trimmed) >= self.sample_rate // 10:
+                waveform = trimmed.astype(np.float32)
+        extracted = self.extract_waveform_hidden_states(waveform)
+        extracted["original_samples"] = np.asarray(original_samples)
+        extracted["used_samples"] = np.asarray(len(waveform))
+        return extracted

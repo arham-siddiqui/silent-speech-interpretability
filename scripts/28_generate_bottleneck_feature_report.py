@@ -126,8 +126,9 @@ that fine-grained class decisions remain more distributed or redundant.
 ## Boundary
 
 This is evidence for causal contribution under feature ablation, not proof that a sparse
-feature corresponds to a human-named phoneme or articulator. Temporal teachers and
-sample-level feature inspection are required before assigning linguistic labels.
+feature corresponds to a human-named phoneme or articulator. Held-out exemplars and a
+relative-segment teacher provide stronger validation, but phoneme labels still require
+temporal sensor activations or external alignment annotations.
 """
     Path("reports/hubert_bottleneck_feature_causality.md").write_text(report, encoding="utf-8")
     print("Saved sparse-feature figures and causal report")

@@ -22,6 +22,7 @@ def save_teacher_targets(
     *,
     target_name: str = "synthetic_teacher",
     class_names: np.ndarray | None = None,
+    target_shape: tuple[int, ...] | None = None,
 ) -> Path:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -34,6 +35,10 @@ def save_teacher_targets(
     }
     if class_names is not None:
         payload["class_names"] = np.asarray(class_names).astype(str)
+    if target_shape is not None:
+        if int(np.prod(target_shape)) != int(payload["targets"].shape[1]):
+            raise ValueError("target_shape must match the flattened teacher target dimension")
+        payload["target_shape"] = np.asarray(target_shape, dtype=np.int64)
     np.savez_compressed(output, **payload)
     return output
 
@@ -46,6 +51,7 @@ def load_teacher_targets(path: str | Path) -> dict[str, object]:
         user_ids = data["user_ids"].astype(str)
         group_names = data["group_names"].astype(str)
         target_name = str(data["target_name"]) if "target_name" in data.files else path.stem
+        target_shape = tuple(data["target_shape"].astype(int).tolist()) if "target_shape" in data.files else (targets.shape[1],)
 
     if not (len(targets) == len(labels) == len(user_ids) == len(group_names)):
         raise ValueError(f"Inconsistent teacher target lengths in {path}")
@@ -68,6 +74,7 @@ def load_teacher_targets(path: str | Path) -> dict[str, object]:
         "index": index,
         "label_by_pair": label_by_pair,
         "target_dim": int(targets.shape[1]),
+        "target_shape": target_shape,
     }
 
 

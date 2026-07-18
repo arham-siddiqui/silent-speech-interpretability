@@ -90,11 +90,17 @@ Current local status:
   `reports/hubert_interpretability_summary.md`.
 - Sparse bottleneck feature ranking and causal ablation are complete; see
   `reports/hubert_bottleneck_feature_causality.md`.
+- Held-out feature exemplars and four-segment temporal HuBERT CV are complete; see
+  `reports/temporal_interpretability_batch.md`.
+- Temporal-student probes and sparse causal ablations are complete; see
+  `reports/hubert_temporal_feature_causality.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Inspect the highest-ranked features through their strongest activating utterances.
-2. Compare the pooled HuBERT baseline with temporal, SPARC, or Sylber targets.
-3. Test whether temporally resolved features align with phonetic or articulatory events.
+1. Export temporal activations from the silent modality encoders instead of only their
+   utterance-level embeddings.
+2. Add forced-alignment or articulatory labels for phoneme-level feature validation.
+3. Compare the validated HuBERT path with one articulatory-focused teacher such as
+   SPARC or Sylber.

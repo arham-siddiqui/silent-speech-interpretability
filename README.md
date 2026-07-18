@@ -283,6 +283,10 @@ The first probe and modality-attribution batch is summarized in
 [`reports/hubert_interpretability_summary.md`](reports/hubert_interpretability_summary.md).
 Sparse bottleneck features and controlled causal ablations are reported in
 [`reports/hubert_bottleneck_feature_causality.md`](reports/hubert_bottleneck_feature_causality.md).
+Held-out feature exemplars and the four-segment temporal HuBERT experiment are summarized
+in [`reports/temporal_interpretability_batch.md`](reports/temporal_interpretability_batch.md),
+with temporal sparse-feature controls in
+[`reports/hubert_temporal_feature_causality.md`](reports/hubert_temporal_feature_causality.md).
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
@@ -296,8 +300,10 @@ modality ceilings and therefore the fusion ceiling.
 not enough to learn reliable modality weights. More speakers would enable proper
 gating to outperform the no-training baselines.
 
-**Phoneme-level decoding** — move from closed-set 30-class word/sentence classification
-toward continuous phoneme-level decoding, enabling open-vocabulary silent speech.
+**Phoneme-level decoding** — the relative-segment HuBERT student recovers ordered speech
+structure, but the current sensor embeddings remain utterance-level. Expose temporal
+sensor encoder activations and add forced-alignment labels before moving toward
+continuous or open-vocabulary decoding.
 
 **Temporal alignment** — modalities currently operate independently with no cross-modal
 synchronization. Learned alignment (e.g. cross-attention between modality streams) could
