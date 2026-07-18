@@ -282,6 +282,14 @@ class LipLSTMV2(nn.Module):
         _, _, embedding = self.forward(x, lengths, dann_alpha=0.0)
         return embedding
 
+    def encode_sequence(self, x: torch.Tensor, lengths: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Project every valid BiLSTM time step into the trained embedding space."""
+        x = self.input_norm(x)
+        packed = pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)
+        packed_output, _ = self.lstm(packed)
+        output, _ = pad_packed_sequence(packed_output, batch_first=True)
+        return F.normalize(self.embed_proj(output), p=2, dim=-1), lengths
+
 
 def dann_alpha(epoch: int, total_epochs: int, max_alpha: float) -> float:
     progress = epoch / total_epochs

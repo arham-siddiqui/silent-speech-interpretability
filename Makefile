@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors
 
 test:
 	python3 -m pytest -q
@@ -72,3 +72,9 @@ hubert-temporal-interpretability:
 	python3 scripts/27_run_bottleneck_causal_ablation.py --activations-dir artifacts/activations/hubert_temporal4_cv --student-dir artifacts/students/hubert_temporal4_cv --sae-dir artifacts/sae/hubert_temporal4_bottleneck --rankings reports/results/hubert_temporal_bottleneck_feature_rankings.csv --probe-results reports/results/hubert_temporal_student_probe_results.csv --output reports/results/hubert_temporal_bottleneck_causal_ablation.csv
 	python3 scripts/33_generate_temporal_feature_report.py
 	python3 scripts/32_generate_temporal_interpretability_report.py
+
+hubert-temporal-sensors:
+	python3 scripts/34_extract_temporal_sensor_activations.py
+	python3 scripts/35_run_temporal_sensor_student_cv.py
+	python3 scripts/36_probe_temporal_articulation.py
+	python3 scripts/37_generate_temporal_sensor_report.py

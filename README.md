@@ -287,6 +287,12 @@ Held-out feature exemplars and the four-segment temporal HuBERT experiment are s
 in [`reports/temporal_interpretability_batch.md`](reports/temporal_interpretability_batch.md),
 with temporal sparse-feature controls in
 [`reports/hubert_temporal_feature_causality.md`](reports/hubert_temporal_feature_causality.md).
+Fold-specific temporal states from lip, laser, mmWave, and UWB are now evaluated in
+[`reports/temporal_sensor_interpretability.md`](reports/temporal_sensor_interpretability.md).
+The temporal-state student improves true-order HuBERT cosine from 0.346 to 0.381, while
+speaker-disjoint probes show that non-lip contactless sensors add `+0.076 R2` for lip
+motion beyond a class-and-position baseline. The temporal-state model currently trades
+away classification accuracy (49.9% versus 64.5%), which motivates multitask training.
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
@@ -300,10 +306,15 @@ modality ceilings and therefore the fusion ceiling.
 not enough to learn reliable modality weights. More speakers would enable proper
 gating to outperform the no-training baselines.
 
-**Phoneme-level decoding** — the relative-segment HuBERT student recovers ordered speech
-structure, but the current sensor embeddings remain utterance-level. Expose temporal
-sensor encoder activations and add forced-alignment labels before moving toward
-continuous or open-vocabulary decoding.
+**Phoneme-level decoding** — the relative-segment HuBERT student and temporal sensor
+states recover ordered speech structure. True phoneme probes still require the original
+prompt text plus forced alignment or external phonetic annotations; these are not present
+in the local RVTALL release.
+
+**Multitask temporal student** — combine temporal HuBERT alignment with the stronger
+utterance-level classification objective. The immediate target is to retain the 0.381
+ordered alignment while recovering the gap from 49.9% toward the 64.5% fixed-embedding
+student accuracy.
 
 **Temporal alignment** — modalities currently operate independently with no cross-modal
 synchronization. Learned alignment (e.g. cross-attention between modality streams) could

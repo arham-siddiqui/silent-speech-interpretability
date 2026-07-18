@@ -35,10 +35,12 @@ Detailed evidence is in:
 - `reports/hubert_temporal_teacher_student.md`
 - `reports/hubert_temporal_feature_causality.md`
 - `reports/hubert_bottleneck_feature_causality.md`
+- `reports/temporal_sensor_interpretability.md`
 
 ## Grand-Scheme Status
 
 The project now has a strict supervised baseline, a real pooled audio teacher, causal
 sparse bottleneck features, held-out feature exemplars, and a first temporal-teacher
-comparison. The remaining interpretability gap is phoneme/articulator naming: that needs
-explicit temporal sensor activations or external phonetic/articulatory annotations.
+comparison. Temporal sensor states and measured lip-articulation probes are now complete.
+The remaining interpretability gap is phoneme naming, which needs prompt text plus forced
+alignment or external phonetic annotations unavailable in the local release.

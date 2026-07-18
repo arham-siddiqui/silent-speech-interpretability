@@ -127,10 +127,10 @@ statistics.
 
 Sparse feature causality, held-out activation exemplars, and a four-segment temporal
 HuBERT comparison are now complete; see `reports/temporal_interpretability_batch.md`.
-Those experiments establish feature-level causal contribution and recovery of ordered
-teacher structure, but they do not assign phoneme or articulator names because the
-silent inputs remain fixed utterance embeddings. The next phase must expose temporal
-sensor activations or add external alignment labels.
+Fold-specific temporal sensor states and measured lip-articulation probes are also
+complete; see `reports/temporal_sensor_interpretability.md`. They establish ordered
+teacher alignment and contactless sensitivity to lip motion, but phoneme naming still
+requires prompt text plus forced alignment or external phonetic annotations.
 """
     Path("reports/hubert_interpretability_summary.md").write_text(report, encoding="utf-8")
     print("Saved HuBERT interpretability figures and consolidated report")

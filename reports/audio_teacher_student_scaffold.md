@@ -94,13 +94,17 @@ Current local status:
   `reports/temporal_interpretability_batch.md`.
 - Temporal-student probes and sparse causal ablations are complete; see
   `reports/hubert_temporal_feature_causality.md`.
+- Fold-specific temporal activations from lip, laser, mmWave, and UWB encoders have been
+  aligned to temporal HuBERT and probed against measured lip articulation; see
+  `reports/temporal_sensor_interpretability.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Export temporal activations from the silent modality encoders instead of only their
-   utterance-level embeddings.
-2. Add forced-alignment or articulatory labels for phoneme-level feature validation.
+1. Add a multitask temporal/classification objective that preserves ordered HuBERT
+   alignment without the current classification-accuracy loss.
+2. Obtain the RVTALL prompt text or external phonetic annotations, then add true
+   forced-alignment probes. The local release has no transcripts or phoneme timestamps.
 3. Compare the validated HuBERT path with one articulatory-focused teacher such as
    SPARC or Sylber.

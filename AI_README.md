@@ -8,8 +8,16 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
   versus 0.086 for reversed order.
 - Held-out sparse-feature exemplars, temporal probes, SAEs, and causal ablations are
   complete. Start with `reports/temporal_interpretability_batch.md`.
-- Next decisive step: expose temporal silent-sensor encoder activations and validate
-  features against forced-alignment or articulatory labels.
+- Fold-specific temporal silent-sensor activations are now exposed and aligned to
+  four-segment HuBERT targets. True-order cosine is 0.381 versus 0.047 reversed.
+- Speaker-disjoint articulation probes are complete. Non-lip contactless sensors add
+  `+0.076 R2` for lip motion beyond a class-and-position baseline, but do not reliably
+  recover lip aperture or width. Start with `reports/temporal_sensor_interpretability.md`.
+- The local release has no prompt text, TextGrids, or phoneme timestamps, so true forced
+  alignment remains blocked on obtaining transcript/annotation metadata.
+- Next decisive step: add multitask temporal/classification training to recover the
+  classification drop (49.9% temporal-state student versus 64.5% fixed-embedding student),
+  then run phoneme probes once prompt text or external alignments are available.
 
 # Project snapshot
 

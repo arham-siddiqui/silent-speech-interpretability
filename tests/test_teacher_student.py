@@ -7,6 +7,8 @@ import torch
 
 from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher, relative_segment_pool
 from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
+from silent_speech_interpretability.models.students.temporal_sensor_student import TemporalSensorStudent
+from silent_speech_interpretability.interp.temporal import lip_articulation_segments, pool_temporal_segments
 from silent_speech_interpretability.models.teachers.teacher_targets import (
     common_teacher_pairs,
     load_teacher_targets,
@@ -53,6 +55,27 @@ def test_relative_segment_pool_preserves_order():
     assert pooled.shape == (3, 4)
     np.testing.assert_allclose(pooled[0], hidden[:2].mean(axis=0))
     np.testing.assert_allclose(pooled[-1], hidden[-2:].mean(axis=0))
+
+
+def test_temporal_sensor_pooling_and_student_shapes():
+    sequences = torch.arange(2 * 8 * 6, dtype=torch.float32).reshape(2, 8, 6)
+    pooled = pool_temporal_segments(sequences, torch.tensor([8, 6]), 3)
+    assert pooled.shape == (2, 3, 6)
+    model = TemporalSensorStudent(input_dim=6, target_dim=5, hidden_dim=12, bottleneck_dim=4, num_classes=3, num_segments=3)
+    output = model(pooled)
+    assert output["target"].shape == (2, 3, 5)
+    assert output["bottleneck"].shape == (2, 3, 4)
+    assert output["logits"].shape == (2, 3)
+
+
+def test_lip_articulation_segments_shape():
+    sequence = np.zeros((8, 40), dtype=np.float32)
+    points = sequence.reshape(8, 20, 2)
+    points[:, 6, 0] = 2.0
+    points[:, 18, 1] = np.arange(8)
+    values = lip_articulation_segments(sequence, 4)
+    assert values.shape == (4, 3)
+    assert np.all(values[:, 1] == 2.0)
 
 
 def test_common_teacher_pairs_filters_speakers(tmp_path: Path):

@@ -217,6 +217,13 @@ class UWBEncoderV2(nn.Module):
         return (lstm_out * weights).sum(dim=1)
 
     def forward(self, x: torch.Tensor, lengths: torch.Tensor, dann_alpha_value: float = 0.0):
+        lstm_out, cnn_lengths = self._encode_backbone(x, lengths)
+        raw_embedding = self.embed_proj(self.dropout(self._attend(lstm_out, cnn_lengths)))
+        class_logits = self.classifier(raw_embedding)
+        speaker_logits = self.speaker_head(grad_reverse(raw_embedding, alpha=dann_alpha_value))
+        return class_logits, speaker_logits, F.normalize(raw_embedding, p=2, dim=1)
+
+    def _encode_backbone(self, x: torch.Tensor, lengths: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         x = x.permute(0, 2, 3, 1)
         x = self.cnn(x)
         x = x.amax(dim=2).permute(0, 2, 1)
@@ -224,14 +231,15 @@ class UWBEncoderV2(nn.Module):
         packed = pack_padded_sequence(x, cnn_lengths.cpu(), batch_first=True, enforce_sorted=False)
         lstm_out, _hidden = self.lstm(packed)
         lstm_out, _ = pad_packed_sequence(lstm_out, batch_first=True)
-        raw_embedding = self.embed_proj(self.dropout(self._attend(lstm_out, cnn_lengths)))
-        class_logits = self.classifier(raw_embedding)
-        speaker_logits = self.speaker_head(grad_reverse(raw_embedding, alpha=dann_alpha_value))
-        return class_logits, speaker_logits, F.normalize(raw_embedding, p=2, dim=1)
+        return lstm_out, cnn_lengths
 
     def encode(self, x: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
         _class_logits, _speaker_logits, embedding = self.forward(x, lengths, dann_alpha_value=0.0)
         return embedding
+
+    def encode_sequence(self, x: torch.Tensor, lengths: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        output, output_lengths = self._encode_backbone(x, lengths)
+        return F.normalize(self.embed_proj(output), p=2, dim=-1), output_lengths
 
 
 def make_uwb_dataloaders(samples: list[dict[str, str]], train_speakers: list[int], val_speakers: list[int], label_map: dict[str, int], config: UWBTrainingConfig) -> tuple[DataLoader, DataLoader, dict[str, int]]:

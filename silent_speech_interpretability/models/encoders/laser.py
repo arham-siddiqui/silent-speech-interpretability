@@ -12,7 +12,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pack_padded_sequence, pad_sequence
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence, pad_sequence
 from torch.utils.data import DataLoader, Dataset
 
 
@@ -163,20 +163,32 @@ class LaserCNNLSTMEncoder(nn.Module):
         return output.long().clamp(min=1)
 
     def forward(self, x: torch.Tensor, lengths: torch.Tensor):
+        output, cnn_lengths = self._encode_backbone(x, lengths)
+        indices = (cnn_lengths - 1).clamp(min=0)
+        forward_state = output[torch.arange(len(output), device=output.device), indices, : output.shape[-1] // 2]
+        backward_state = output[:, 0, output.shape[-1] // 2 :]
+        state = torch.cat([forward_state, backward_state], dim=1)
+        embedding = self.embed_proj(self.dropout(state))
+        logits = self.classifier(embedding)
+        return logits, F.normalize(embedding, p=2, dim=1)
+
+    def _encode_backbone(self, x: torch.Tensor, lengths: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         x = x.unsqueeze(1)
         x = self.cnn(x)
         x = x.permute(0, 2, 1)
         cnn_lengths = self._cnn_out_lengths(lengths)
         packed = pack_padded_sequence(x, cnn_lengths.cpu(), batch_first=True, enforce_sorted=False)
-        _output, (hidden, _cell) = self.lstm(packed)
-        state = torch.cat([hidden[-2], hidden[-1]], dim=1)
-        embedding = self.embed_proj(self.dropout(state))
-        logits = self.classifier(embedding)
-        return logits, F.normalize(embedding, p=2, dim=1)
+        packed_output, _ = self.lstm(packed)
+        output, _ = pad_packed_sequence(packed_output, batch_first=True)
+        return output, cnn_lengths
 
     def encode(self, x: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
         _logits, embedding = self.forward(x, lengths)
         return embedding
+
+    def encode_sequence(self, x: torch.Tensor, lengths: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        output, output_lengths = self._encode_backbone(x, lengths)
+        return F.normalize(self.embed_proj(output), p=2, dim=-1), output_lengths
 
 
 def make_laser_dataloaders(
