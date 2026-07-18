@@ -21,7 +21,10 @@ from sklearn.preprocessing import StandardScaler
 from silent_speech_interpretability.configs import load_config
 from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
 from silent_speech_interpretability.data.splits import make_speaker_kfold_splits
-from silent_speech_interpretability.models.students.temporal_sensor_student import TemporalSensorStudent
+from silent_speech_interpretability.models.students.temporal_sensor_student import (
+    MultitaskTemporalSensorStudent,
+    TemporalSensorStudent,
+)
 
 
 TARGET_NAMES = ("lip_aperture", "lip_width", "lip_motion")
@@ -119,9 +122,17 @@ def _fit_probe(
 
 def _student_representation(checkpoint_path: Path, x: np.ndarray) -> np.ndarray:
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    model = TemporalSensorStudent(
+    model_class = (
+        MultitaskTemporalSensorStudent
+        if checkpoint.get("model_type") == "multitask_temporal_sensor"
+        else TemporalSensorStudent
+    )
+    model = model_class(
         input_dim=int(checkpoint["input_dim"]),
         target_dim=int(checkpoint["target_dim"]),
+        hidden_dim=int(checkpoint.get("hidden_dim", 256)),
+        bottleneck_dim=int(checkpoint.get("bottleneck_dim", 64)),
+        num_classes=int(checkpoint.get("num_classes", 30)),
         num_segments=int(checkpoint["num_segments"]),
     )
     model.load_state_dict(checkpoint["state_dict"])
@@ -136,6 +147,7 @@ def main() -> None:
     parser.add_argument("--config", default="configs/real_embeddings.local.yaml")
     parser.add_argument("--activations-dir", default="artifacts/activations/temporal_sensors")
     parser.add_argument("--student-dir", default="artifacts/students/temporal_sensor_cv")
+    parser.add_argument("--multitask-student-dir", default="artifacts/students/temporal_sensor_multitask_cv")
     parser.add_argument("--output", default="reports/results/temporal_articulation_probe_results.csv")
     parser.add_argument("--summary-output", default="reports/results/temporal_articulation_probe_summary.csv")
     args = parser.parse_args()
@@ -162,12 +174,29 @@ def main() -> None:
                 for split in ("train", "val", "test")
             }
             representations = {split: raw[split][0] for split in raw}
+            student_variants: list[tuple[str, dict[str, np.ndarray] | None]] = []
             if variant == "all_modalities":
-                student_path = Path(args.student_dir) / f"fold_{fold_id}_temporal_sensor_student.pt"
-                student_representations = {split: _student_representation(student_path, raw[split][0]) for split in raw}
-            else:
-                student_representations = None
-            for representation_name, values in ((variant, representations), ("temporal_student", student_representations)):
+                student_variants.append(
+                    (
+                        "temporal_student",
+                        {
+                            split: _student_representation(
+                                Path(args.student_dir) / f"fold_{fold_id}_temporal_sensor_student.pt",
+                                raw[split][0],
+                            )
+                            for split in raw
+                        },
+                    )
+                )
+                multitask_path = Path(args.multitask_student_dir) / f"fold_{fold_id}_temporal_sensor_multitask.pt"
+                if multitask_path.exists():
+                    student_variants.append(
+                        (
+                            "multitask_temporal_student",
+                            {split: _student_representation(multitask_path, raw[split][0]) for split in raw},
+                        )
+                    )
+            for representation_name, values in [(variant, representations), *student_variants]:
                 if values is None:
                     continue
                 prepared = {

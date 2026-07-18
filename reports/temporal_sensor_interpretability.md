@@ -34,6 +34,12 @@ regions, then averaged within each speaker/utterance pair.
 - Reversed-order temporal-sensor cosine: **0.047**.
 - True-versus-reversed margin: **+0.333**.
 
+- Multitask temporal-sensor class accuracy: **60.1% +/- 11.1%**.
+- Multitask temporal-sensor true-order cosine: **0.386**.
+- Multitask true-versus-reversed margin: **+0.352**.
+- Detailed multitask comparison: [multitask report](temporal_sensor_multitask.md).
+
+
 ## Articulation Probes
 
 All probes are speaker-disjoint. They predict residual articulation beyond a training-fold
@@ -56,6 +62,9 @@ class-and-segment-position template; `Delta R2` is the gain over that stronger b
 | Mmwave | Lip Aperture | 0.408 | 0.405 | +0.003 | 0.670 | +0.184 |
 | Mmwave | Lip Motion | 0.463 | 0.426 | +0.037 | 0.721 | +0.307 |
 | Mmwave | Lip Width | -0.621 | -0.595 | -0.026 | 0.198 | +0.009 |
+| Multitask Temporal Student | Lip Aperture | 0.428 | 0.403 | +0.025 | 0.685 | +0.231 |
+| Multitask Temporal Student | Lip Motion | 0.486 | 0.433 | +0.052 | 0.745 | +0.345 |
+| Multitask Temporal Student | Lip Width | -0.471 | -0.578 | +0.107 | 0.238 | -0.007 |
 | Temporal Student | Lip Aperture | 0.459 | 0.403 | +0.056 | 0.700 | +0.227 |
 | Temporal Student | Lip Motion | 0.477 | 0.433 | +0.044 | 0.733 | +0.337 |
 | Temporal Student | Lip Width | -0.470 | -0.578 | +0.108 | 0.248 | -0.001 |

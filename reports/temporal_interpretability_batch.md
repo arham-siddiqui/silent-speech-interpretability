@@ -36,11 +36,14 @@ Detailed evidence is in:
 - `reports/hubert_temporal_feature_causality.md`
 - `reports/hubert_bottleneck_feature_causality.md`
 - `reports/temporal_sensor_interpretability.md`
+- `reports/temporal_sensor_multitask.md`
 
 ## Grand-Scheme Status
 
 The project now has a strict supervised baseline, a real pooled audio teacher, causal
 sparse bottleneck features, held-out feature exemplars, and a first temporal-teacher
 comparison. Temporal sensor states and measured lip-articulation probes are now complete.
-The remaining interpretability gap is phoneme naming, which needs prompt text plus forced
-alignment or external phonetic annotations unavailable in the local release.
+A validation-selected multitask temporal student recovers accuracy from 49.9% to 60.1%
+while retaining 0.386 ordered HuBERT cosine. The remaining interpretability gap is phoneme
+naming, which needs prompt text plus forced alignment or external phonetic annotations
+unavailable in the local release.

@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask
 
 test:
 	python3 -m pytest -q
@@ -76,5 +76,10 @@ hubert-temporal-interpretability:
 hubert-temporal-sensors:
 	python3 scripts/34_extract_temporal_sensor_activations.py
 	python3 scripts/35_run_temporal_sensor_student_cv.py
+	python3 scripts/36_probe_temporal_articulation.py
+	python3 scripts/37_generate_temporal_sensor_report.py
+
+hubert-temporal-multitask:
+	python3 scripts/38_run_multitask_temporal_sensor_cv.py
 	python3 scripts/36_probe_temporal_articulation.py
 	python3 scripts/37_generate_temporal_sensor_report.py

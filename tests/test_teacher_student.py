@@ -7,7 +7,10 @@ import torch
 
 from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher, relative_segment_pool
 from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
-from silent_speech_interpretability.models.students.temporal_sensor_student import TemporalSensorStudent
+from silent_speech_interpretability.models.students.temporal_sensor_student import (
+    MultitaskTemporalSensorStudent,
+    TemporalSensorStudent,
+)
 from silent_speech_interpretability.interp.temporal import lip_articulation_segments, pool_temporal_segments
 from silent_speech_interpretability.models.teachers.teacher_targets import (
     common_teacher_pairs,
@@ -65,6 +68,22 @@ def test_temporal_sensor_pooling_and_student_shapes():
     output = model(pooled)
     assert output["target"].shape == (2, 3, 5)
     assert output["bottleneck"].shape == (2, 3, 4)
+    assert output["logits"].shape == (2, 3)
+
+
+def test_multitask_temporal_student_has_order_aware_classification_head():
+    model = MultitaskTemporalSensorStudent(
+        input_dim=6,
+        target_dim=5,
+        hidden_dim=12,
+        bottleneck_dim=4,
+        num_classes=3,
+        num_segments=3,
+    )
+    output = model(torch.randn(2, 3, 6))
+    assert output["target"].shape == (2, 3, 5)
+    assert output["bottleneck"].shape == (2, 3, 4)
+    assert output["utterance"].shape == (2, 36)
     assert output["logits"].shape == (2, 3)
 
 

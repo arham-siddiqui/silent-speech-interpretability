@@ -97,14 +97,17 @@ Current local status:
 - Fold-specific temporal activations from lip, laser, mmWave, and UWB encoders have been
   aligned to temporal HuBERT and probed against measured lip articulation; see
   `reports/temporal_sensor_interpretability.md`.
+- A validation-selected multitask temporal student recovers class accuracy from 49.9%
+  to 60.1% while retaining ordered HuBERT alignment at 0.386 cosine; see
+  `reports/temporal_sensor_multitask.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Add a multitask temporal/classification objective that preserves ordered HuBERT
-   alignment without the current classification-accuracy loss.
-2. Obtain the RVTALL prompt text or external phonetic annotations, then add true
+1. Obtain the RVTALL prompt text or external phonetic annotations, then add true
    forced-alignment probes. The local release has no transcripts or phoneme timestamps.
+2. Add modality-specific temporal attention or gating to address the remaining
+   classification gap without weakening ordered alignment.
 3. Compare the validated HuBERT path with one articulatory-focused teacher such as
    SPARC or Sylber.

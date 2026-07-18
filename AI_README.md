@@ -13,11 +13,15 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
 - Speaker-disjoint articulation probes are complete. Non-lip contactless sensors add
   `+0.076 R2` for lip motion beyond a class-and-position baseline, but do not reliably
   recover lip aperture or width. Start with `reports/temporal_sensor_interpretability.md`.
+- The validation-selected multitask temporal student reaches 60.1% accuracy, up 10.3
+  points from the first temporal-state student, while slightly improving true-order
+  HuBERT cosine from 0.381 to 0.386. Its lip-motion probe gain is `+0.052 R2`.
+  See `reports/temporal_sensor_multitask.md`.
 - The local release has no prompt text, TextGrids, or phoneme timestamps, so true forced
   alignment remains blocked on obtaining transcript/annotation metadata.
-- Next decisive step: add multitask temporal/classification training to recover the
-  classification drop (49.9% temporal-state student versus 64.5% fixed-embedding student),
-  then run phoneme probes once prompt text or external alignments are available.
+- Next decisive step: obtain prompt text or external alignments for phoneme probes. In
+  parallel, modality-specific temporal attention can target the remaining 4.4-point gap
+  to the 64.5% fixed-embedding temporal student.
 
 # Project snapshot
 

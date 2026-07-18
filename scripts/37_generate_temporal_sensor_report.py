@@ -41,7 +41,11 @@ def _grouped_accuracy_figure(path: Path, sensor: pd.DataFrame, fixed: pd.DataFra
 
 
 def _signed_bar_figure(path: Path, summary: pd.DataFrame) -> None:
-    selected = summary[summary["representation"].isin(["lip", "contactless_nonlip", "all_modalities", "temporal_student"])]
+    selected = summary[
+        summary["representation"].isin(
+            ["lip", "contactless_nonlip", "all_modalities", "temporal_student", "multitask_temporal_student"]
+        )
+    ]
     rows = [(f"{row.representation.replace('_', ' ').title()} / {row.target.replace('_', ' ')}", float(row.delta_r2_mean)) for row in selected.itertuples(index=False)]
     width, left, right, top, row_h = 900, 330, 80, 62, 31
     height = top + len(rows) * row_h + 36
@@ -70,6 +74,8 @@ def _signed_bar_figure(path: Path, summary: pd.DataFrame) -> None:
 def main() -> None:
     results = Path("reports/results")
     sensor = pd.read_csv(results / "temporal_sensor_student_cv.csv")
+    multitask_path = results / "temporal_sensor_multitask_cv.csv"
+    multitask = pd.read_csv(multitask_path) if multitask_path.exists() else None
     fixed = pd.read_csv(results / "hubert_temporal_teacher_student_cv.csv")
     articulation = pd.read_csv(results / "temporal_articulation_probe_summary.csv")
     audit = pd.read_csv(results / "temporal_sensor_activation_audit.csv")
@@ -100,6 +106,14 @@ def main() -> None:
             encoder_steps_mean=("mean_encoder_steps", "mean"),
         ).itertuples(index=False)
     )
+    multitask_summary = ""
+    if multitask is not None:
+        multitask_summary = f"""
+- Multitask temporal-sensor class accuracy: **{100*multitask.accuracy.mean():.1f}% +/- {100*multitask.accuracy.std(ddof=1):.1f}%**.
+- Multitask temporal-sensor true-order cosine: **{multitask.segment_cosine.mean():.3f}**.
+- Multitask true-versus-reversed margin: **{multitask.order_margin_reversed.mean():+.3f}**.
+- Detailed multitask comparison: [multitask report](temporal_sensor_multitask.md).
+"""
     report = f"""# Temporal Silent-Sensor Interpretability
 
 This batch exposes sequence activations from the trained lip, laser, mmWave, and UWB
@@ -132,6 +146,7 @@ regions, then averaged within each speaker/utterance pair.
 - Fixed-embedding temporal-student cosine: **{fixed.segment_cosine.mean():.3f}**.
 - Reversed-order temporal-sensor cosine: **{sensor.reversed_segment_cosine.mean():.3f}**.
 - True-versus-reversed margin: **{sensor.order_margin_reversed.mean():+.3f}**.
+{multitask_summary}
 
 ## Articulation Probes
 
