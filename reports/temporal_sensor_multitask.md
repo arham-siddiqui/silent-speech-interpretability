@@ -1,8 +1,8 @@
 # Multitask Temporal Sensor Student
 
-This experiment gives the temporal sensor student an order-aware utterance classifier
-while retaining the four-segment HuBERT alignment branch. Classification-loss weight is
-selected independently in each fold using validation speakers only.
+This experiment evaluates an order-aware utterance classifier while retaining the
+four-segment HuBERT alignment branch. Classification-loss weight is selected independently
+in each fold using validation speakers only.
 
 ![Multitask tradeoff](figures/temporal_sensor_multitask_tradeoff.svg)
 

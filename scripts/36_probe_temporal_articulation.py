@@ -22,6 +22,7 @@ from silent_speech_interpretability.configs import load_config
 from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
 from silent_speech_interpretability.data.splits import make_speaker_kfold_splits
 from silent_speech_interpretability.models.students.temporal_sensor_student import (
+    ModalityAttentionTemporalStudent,
     MultitaskTemporalSensorStudent,
     TemporalSensorStudent,
 )
@@ -122,11 +123,14 @@ def _fit_probe(
 
 def _student_representation(checkpoint_path: Path, x: np.ndarray) -> np.ndarray:
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    model_class = (
-        MultitaskTemporalSensorStudent
-        if checkpoint.get("model_type") == "multitask_temporal_sensor"
-        else TemporalSensorStudent
-    )
+    model_type = checkpoint.get("model_type")
+    if model_type == "modality_attention_temporal_sensor":
+        model_class = ModalityAttentionTemporalStudent
+    elif model_type == "multitask_temporal_sensor":
+        model_class = MultitaskTemporalSensorStudent
+    else:
+        model_class = TemporalSensorStudent
+    extra = {"num_modalities": int(checkpoint["num_modalities"])} if model_class is ModalityAttentionTemporalStudent else {}
     model = model_class(
         input_dim=int(checkpoint["input_dim"]),
         target_dim=int(checkpoint["target_dim"]),
@@ -134,6 +138,7 @@ def _student_representation(checkpoint_path: Path, x: np.ndarray) -> np.ndarray:
         bottleneck_dim=int(checkpoint.get("bottleneck_dim", 64)),
         num_classes=int(checkpoint.get("num_classes", 30)),
         num_segments=int(checkpoint["num_segments"]),
+        **extra,
     )
     model.load_state_dict(checkpoint["state_dict"])
     model.eval()
@@ -148,6 +153,7 @@ def main() -> None:
     parser.add_argument("--activations-dir", default="artifacts/activations/temporal_sensors")
     parser.add_argument("--student-dir", default="artifacts/students/temporal_sensor_cv")
     parser.add_argument("--multitask-student-dir", default="artifacts/students/temporal_sensor_multitask_cv")
+    parser.add_argument("--attention-student-dir", default="artifacts/students/temporal_sensor_attention_cv")
     parser.add_argument("--output", default="reports/results/temporal_articulation_probe_results.csv")
     parser.add_argument("--summary-output", default="reports/results/temporal_articulation_probe_summary.csv")
     args = parser.parse_args()
@@ -194,6 +200,14 @@ def main() -> None:
                         (
                             "multitask_temporal_student",
                             {split: _student_representation(multitask_path, raw[split][0]) for split in raw},
+                        )
+                    )
+                attention_path = Path(args.attention_student_dir) / f"fold_{fold_id}_temporal_sensor_attention.pt"
+                if attention_path.exists():
+                    student_variants.append(
+                        (
+                            "attention_temporal_student",
+                            {split: _student_representation(attention_path, raw[split][0]) for split in raw},
                         )
                     )
             for representation_name, values in [(variant, representations), *student_variants]:

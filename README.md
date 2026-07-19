@@ -295,6 +295,9 @@ motion beyond a class-and-position baseline. The validation-selected multitask m
 recovers temporal-state accuracy from 49.9% to 60.1% while slightly improving true-order
 cosine from 0.381 to 0.386; see
 [`reports/temporal_sensor_multitask.md`](reports/temporal_sensor_multitask.md).
+A modality-specific attention follow-up reaches only 56.8% and 0.378 cosine, so the
+multitask model remains selected. Its diffuse held-out weights are documented in
+[`reports/temporal_sensor_attention_audit.md`](reports/temporal_sensor_attention_audit.md).
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
@@ -313,10 +316,10 @@ states recover ordered speech structure. True phoneme probes still require the o
 prompt text plus forced alignment or external phonetic annotations; these are not present
 in the local RVTALL release.
 
-**Modality-specific temporal attention** — the multitask temporal student now reaches
-60.1% while retaining 0.386 ordered HuBERT cosine. Attention or gated pooling across
-modality-specific time streams is the next modeling route toward the remaining 4.4-point
-gap to the 64.5% fixed-embedding temporal student.
+**Modality-specific temporal attention** — the first attention branch underperforms the
+simpler multitask student and produces diffuse sensor/time weights. Keep it as a controlled
+negative result; revisit gating only with a sharper synchronization or regularization
+hypothesis.
 
 **Temporal alignment** — modalities currently operate independently with no cross-modal
 synchronization. Learned alignment (e.g. cross-attention between modality streams) could

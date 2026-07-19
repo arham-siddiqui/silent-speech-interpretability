@@ -23,6 +23,7 @@ def test_feature_ranking_prefers_label_selective_feature():
 
 
 def test_reconstructed_bottleneck_ablation_changes_selected_feature():
+    torch.manual_seed(1)
     model = SparseAutoencoder(input_dim=4, feature_dim=6)
     x = np.random.default_rng(1).normal(size=(3, 4)).astype(np.float32)
     _baseline, baseline_features = reconstructed_bottleneck(model, x, np.zeros(4), np.ones(4))

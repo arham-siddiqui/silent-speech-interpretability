@@ -18,7 +18,10 @@ import torch.nn.functional as F
 from silent_speech_interpretability.configs import load_config
 from silent_speech_interpretability.data.manifest import build_manifest, resolve_embedding_paths
 from silent_speech_interpretability.data.splits import make_speaker_kfold_splits
-from silent_speech_interpretability.models.students.temporal_sensor_student import MultitaskTemporalSensorStudent
+from silent_speech_interpretability.models.students.temporal_sensor_student import (
+    ModalityAttentionTemporalStudent,
+    MultitaskTemporalSensorStudent,
+)
 from silent_speech_interpretability.models.teachers.teacher_targets import load_teacher_targets
 
 
@@ -55,7 +58,7 @@ def _arrays(
 
 
 def _metrics(
-    model: MultitaskTemporalSensorStudent,
+    model: torch.nn.Module,
     x: np.ndarray,
     targets: np.ndarray,
     labels: np.ndarray,
@@ -78,14 +81,27 @@ def _metrics(
     }
 
 
-def _make_model(config: dict, input_dim: int, teacher: dict[str, object]) -> MultitaskTemporalSensorStudent:
-    return MultitaskTemporalSensorStudent(
+def _make_model(
+    config: dict,
+    input_dim: int,
+    teacher: dict[str, object],
+    model_type: str,
+    num_modalities: int,
+) -> torch.nn.Module:
+    model_class = (
+        ModalityAttentionTemporalStudent
+        if model_type == "modality_attention"
+        else MultitaskTemporalSensorStudent
+    )
+    extra = {"num_modalities": num_modalities} if model_type == "modality_attention" else {}
+    return model_class(
         input_dim=input_dim,
         target_dim=int(teacher["target_shape"][1]),
         hidden_dim=int(config["student"]["hidden_dim"]),
         bottleneck_dim=int(config["student"]["bottleneck_dim"]),
         num_classes=int(config["classes"]["num_classes"]),
         num_segments=int(teacher["target_shape"][0]),
+        **extra,
     )
 
 
@@ -99,9 +115,11 @@ def _train_candidate(
     max_epochs: int,
     batch_size: int,
     seed: int,
+    model_type: str,
+    num_modalities: int,
 ) -> tuple[dict[str, torch.Tensor], int, dict[str, float]]:
     torch.manual_seed(seed)
-    model = _make_model(config, train[0].shape[2], teacher).to(device)
+    model = _make_model(config, train[0].shape[2], teacher, model_type, num_modalities).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
     generator = torch.Generator().manual_seed(seed)
     dataset = torch.utils.data.TensorDataset(
@@ -146,11 +164,13 @@ def _tradeoff_figure(
     results: pd.DataFrame,
     baseline: pd.DataFrame,
     fixed: pd.DataFrame,
+    previous_label: str,
+    current_label: str,
 ) -> None:
     methods = [
         ("Fixed embeddings", float(fixed.accuracy.mean()), float(fixed.segment_cosine.mean())),
-        ("Temporal states", float(baseline.accuracy.mean()), float(baseline.segment_cosine.mean())),
-        ("Multitask states", float(results.accuracy.mean()), float(results.segment_cosine.mean())),
+        (previous_label, float(baseline.accuracy.mean()), float(baseline.segment_cosine.mean())),
+        (current_label, float(results.accuracy.mean()), float(results.segment_cosine.mean())),
     ]
     width, height = 900, 380
     left, right, top, bottom = 90, 35, 70, 65
@@ -194,6 +214,7 @@ def _write_report(
     sweep: pd.DataFrame,
     baseline: pd.DataFrame,
     fixed: pd.DataFrame,
+    experiment_name: str,
 ) -> None:
     baseline = baseline.set_index("fold")
     rows = "\n".join(
@@ -210,13 +231,13 @@ def _write_report(
     )
     accuracy_delta = results.accuracy.mean() - baseline.accuracy.mean()
     cosine_delta = results.segment_cosine.mean() - baseline.segment_cosine.mean()
-    report = f"""# Multitask Temporal Sensor Student
+    report = f"""# {experiment_name} Temporal Sensor Student
 
-This experiment gives the temporal sensor student an order-aware utterance classifier
-while retaining the four-segment HuBERT alignment branch. Classification-loss weight is
-selected independently in each fold using validation speakers only.
+This experiment evaluates an order-aware utterance classifier while retaining the
+four-segment HuBERT alignment branch. Classification-loss weight is selected independently
+in each fold using validation speakers only.
 
-![Multitask tradeoff]({figure_path.relative_to(path.parent)})
+![{experiment_name} tradeoff]({figure_path.relative_to(path.parent)})
 
 ## Protocol
 
@@ -228,21 +249,21 @@ selected independently in each fold using validation speakers only.
 
 ## Test Results
 
-| Fold | Selected CE Weight | Multitask Accuracy | Previous Accuracy | Multitask Cosine | Previous Cosine | Reversed Cosine | Order Margin |
+| Fold | Selected CE Weight | {experiment_name} Accuracy | Previous Accuracy | {experiment_name} Cosine | Previous Cosine | Reversed Cosine | Order Margin |
 |---:|---:|---:|---:|---:|---:|---:|---:|
 {rows}
 
 ## Aggregate
 
-- Multitask accuracy: **{100*results.accuracy.mean():.1f}% +/- {100*results.accuracy.std(ddof=1):.1f}%**.
+- {experiment_name} accuracy: **{100*results.accuracy.mean():.1f}% +/- {100*results.accuracy.std(ddof=1):.1f}%**.
 - Previous temporal-sensor accuracy: **{100*baseline.accuracy.mean():.1f}%**.
 - Fixed-embedding temporal-student accuracy: **{100*fixed.accuracy.mean():.1f}%**.
 - Accuracy change: **{100*accuracy_delta:+.1f} percentage points**.
-- Multitask true-order cosine: **{results.segment_cosine.mean():.3f}**.
+- {experiment_name} true-order cosine: **{results.segment_cosine.mean():.3f}**.
 - Previous temporal-sensor cosine: **{baseline.segment_cosine.mean():.3f}**.
 - Alignment change: **{cosine_delta:+.3f} cosine**.
-- Multitask reversed-order cosine: **{results.reversed_segment_cosine.mean():.3f}**.
-- Multitask true-versus-reversed margin: **{results.order_margin_reversed.mean():+.3f}**.
+- {experiment_name} reversed-order cosine: **{results.reversed_segment_cosine.mean():.3f}**.
+- {experiment_name} true-versus-reversed margin: **{results.order_margin_reversed.mean():+.3f}**.
 
 ## Validation Sweep
 
@@ -268,6 +289,12 @@ def main() -> None:
     parser.add_argument("--max-epochs", type=int, default=100)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--device", default="mps")
+    parser.add_argument("--model-type", choices=("multitask", "modality_attention"), default="multitask")
+    parser.add_argument("--experiment-name", default="Multitask")
+    parser.add_argument("--previous-label", default="Temporal states")
+    parser.add_argument("--current-label", default="Multitask states")
+    parser.add_argument("--checkpoint-suffix", default="temporal_sensor_multitask")
+    parser.add_argument("--progress-label", default="MULTITASK_TEMPORAL_CV")
     parser.add_argument("--output-dir", default="artifacts/students/temporal_sensor_multitask_cv")
     parser.add_argument("--output", default="reports/results/temporal_sensor_multitask_cv.csv")
     parser.add_argument("--sweep-output", default="reports/results/temporal_sensor_multitask_sweep.csv")
@@ -284,9 +311,11 @@ def main() -> None:
         baseline = pd.read_csv(args.baseline_results)
         fixed = pd.read_csv(args.fixed_results)
         figure_path = Path(args.figure_output)
-        _tradeoff_figure(figure_path, results, baseline, fixed)
-        _write_report(Path(args.report_output), figure_path, results, sweep, baseline, fixed)
-        print(f"Saved multitask temporal report to {args.report_output}")
+        _tradeoff_figure(figure_path, results, baseline, fixed, args.previous_label, args.current_label)
+        _write_report(
+            Path(args.report_output), figure_path, results, sweep, baseline, fixed, args.experiment_name
+        )
+        print(f"Saved {args.experiment_name.lower()} temporal report to {args.report_output}")
         return
 
     config = load_config(args.config)
@@ -342,6 +371,8 @@ def main() -> None:
                 args.max_epochs,
                 args.batch_size,
                 seed,
+                args.model_type,
+                len(modalities),
             )
             joint_score = val_metrics["accuracy"] + val_metrics["segment_cosine"]
             candidates.append((joint_score, weight, state, best_epoch, val_metrics))
@@ -360,7 +391,9 @@ def main() -> None:
                     "selected": weight == selected_weight,
                 }
             )
-        model = _make_model(config, prepared[0][0].shape[2], teacher).to(device)
+        model = _make_model(
+            config, prepared[0][0].shape[2], teacher, args.model_type, len(modalities)
+        ).to(device)
         model.load_state_dict(selected_state)
         test_metrics = _metrics(model, *prepared[2], device)
         result_rows.append(
@@ -378,7 +411,7 @@ def main() -> None:
         )
         torch.save(
             {
-                "model_type": "multitask_temporal_sensor",
+                "model_type": f"{args.model_type}_temporal_sensor",
                 "state_dict": selected_state,
                 "modalities": modalities,
                 "classification_weight": selected_weight,
@@ -391,13 +424,14 @@ def main() -> None:
                 "bottleneck_dim": int(config["student"]["bottleneck_dim"]),
                 "num_classes": int(config["classes"]["num_classes"]),
                 "num_segments": int(teacher["target_shape"][0]),
+                "num_modalities": len(modalities),
             },
-            output_dir / f"fold_{fold_id}_temporal_sensor_multitask.pt",
+            output_dir / f"fold_{fold_id}_{args.checkpoint_suffix}.pt",
         )
         elapsed = time.perf_counter() - started
         remaining = elapsed / position * (len(folds) - position)
         print(
-            f"MULTITASK_TEMPORAL_CV fold={fold_id} weight={selected_weight:.1f} "
+            f"{args.progress_label} fold={fold_id} weight={selected_weight:.1f} "
             f"accuracy={test_metrics['accuracy']:.3f} cosine={test_metrics['segment_cosine']:.3f} "
             f"estimated_remaining_seconds={remaining:.1f}",
             flush=True,
@@ -413,9 +447,11 @@ def main() -> None:
     baseline = pd.read_csv(args.baseline_results)
     fixed = pd.read_csv(args.fixed_results)
     figure_path = Path(args.figure_output)
-    _tradeoff_figure(figure_path, results, baseline, fixed)
-    _write_report(Path(args.report_output), figure_path, results, sweep, baseline, fixed)
-    print(f"Saved multitask temporal report to {args.report_output}")
+    _tradeoff_figure(figure_path, results, baseline, fixed, args.previous_label, args.current_label)
+    _write_report(
+        Path(args.report_output), figure_path, results, sweep, baseline, fixed, args.experiment_name
+    )
+    print(f"Saved {args.experiment_name.lower()} temporal report to {args.report_output}")
 
 
 if __name__ == "__main__":

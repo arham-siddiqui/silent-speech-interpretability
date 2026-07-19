@@ -8,6 +8,7 @@ import torch
 from silent_speech_interpretability.models.teachers.ssl_teacher import SSLTeacher, relative_segment_pool
 from silent_speech_interpretability.models.students.articulatory_student import ArticulatoryStudent
 from silent_speech_interpretability.models.students.temporal_sensor_student import (
+    ModalityAttentionTemporalStudent,
     MultitaskTemporalSensorStudent,
     TemporalSensorStudent,
 )
@@ -85,6 +86,26 @@ def test_multitask_temporal_student_has_order_aware_classification_head():
     assert output["bottleneck"].shape == (2, 3, 4)
     assert output["utterance"].shape == (2, 36)
     assert output["logits"].shape == (2, 3)
+
+
+def test_modality_attention_student_normalizes_temporal_and_sensor_weights():
+    model = ModalityAttentionTemporalStudent(
+        input_dim=24,
+        target_dim=5,
+        hidden_dim=12,
+        bottleneck_dim=4,
+        num_classes=3,
+        num_segments=3,
+        num_modalities=4,
+    )
+    output = model(torch.randn(2, 3, 24))
+    assert output["target"].shape == (2, 3, 5)
+    assert output["bottleneck"].shape == (2, 3, 4)
+    assert output["utterance"].shape == (2, 48)
+    assert output["temporal_attention"].shape == (2, 4, 3)
+    assert output["modality_weights"].shape == (2, 3, 4)
+    torch.testing.assert_close(output["temporal_attention"].sum(dim=2), torch.ones(2, 4))
+    torch.testing.assert_close(output["modality_weights"].sum(dim=2), torch.ones(2, 3))
 
 
 def test_lip_articulation_segments_shape():

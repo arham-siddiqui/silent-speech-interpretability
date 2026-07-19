@@ -17,11 +17,15 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
   points from the first temporal-state student, while slightly improving true-order
   HuBERT cosine from 0.381 to 0.386. Its lip-motion probe gain is `+0.052 R2`.
   See `reports/temporal_sensor_multitask.md`.
+- Modality-specific temporal attention was tested and is not the selected model: it
+  reached 56.8% accuracy and 0.378 HuBERT cosine. Held-out weights remained diffuse
+  (temporal entropy 0.880; modality entropy 0.917), explaining why the added routing
+  did not improve the simpler multitask student. See `reports/temporal_sensor_attention_audit.md`.
 - The local release has no prompt text, TextGrids, or phoneme timestamps, so true forced
   alignment remains blocked on obtaining transcript/annotation metadata.
-- Next decisive step: obtain prompt text or external alignments for phoneme probes. In
-  parallel, modality-specific temporal attention can target the remaining 4.4-point gap
-  to the 64.5% fixed-embedding temporal student.
+- Next decisive step: obtain prompt text or external alignments for phoneme probes. Keep
+  the 60.1% multitask model as the selected temporal-state student; do not promote the
+  modality-attention branch without a new regularization or alignment hypothesis.
 
 # Project snapshot
 

@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention
 
 test:
 	python3 -m pytest -q
@@ -81,5 +81,11 @@ hubert-temporal-sensors:
 
 hubert-temporal-multitask:
 	python3 scripts/38_run_multitask_temporal_sensor_cv.py
+	python3 scripts/36_probe_temporal_articulation.py
+	python3 scripts/37_generate_temporal_sensor_report.py
+
+hubert-temporal-attention:
+	python3 scripts/38_run_multitask_temporal_sensor_cv.py --model-type modality_attention --experiment-name Modality-Attention --previous-label "Multitask states" --current-label "Attention states" --checkpoint-suffix temporal_sensor_attention --progress-label ATTENTION_TEMPORAL_CV --output-dir artifacts/students/temporal_sensor_attention_cv --output reports/results/temporal_sensor_attention_cv.csv --sweep-output reports/results/temporal_sensor_attention_sweep.csv --baseline-results reports/results/temporal_sensor_multitask_cv.csv --report-output reports/temporal_sensor_attention.md --figure-output reports/figures/temporal_sensor_attention_tradeoff.svg
+	python3 scripts/39_analyze_temporal_attention.py
 	python3 scripts/36_probe_temporal_articulation.py
 	python3 scripts/37_generate_temporal_sensor_report.py

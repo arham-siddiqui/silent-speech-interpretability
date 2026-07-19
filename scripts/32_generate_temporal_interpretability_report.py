@@ -87,6 +87,7 @@ Detailed evidence is in:
 - `reports/hubert_bottleneck_feature_causality.md`
 - `reports/temporal_sensor_interpretability.md`
 - `reports/temporal_sensor_multitask.md`
+- `reports/temporal_sensor_attention_audit.md`
 
 ## Grand-Scheme Status
 
@@ -96,7 +97,8 @@ comparison. Temporal sensor states and measured lip-articulation probes are now 
 A validation-selected multitask temporal student recovers accuracy from 49.9% to 60.1%
 while retaining 0.386 ordered HuBERT cosine. The remaining interpretability gap is phoneme
 naming, which needs prompt text plus forced alignment or external phonetic annotations
-unavailable in the local release.
+unavailable in the local release. A modality-attention follow-up underperforms the simpler
+multitask student and is retained only as a controlled diagnostic.
 """
     Path("reports/temporal_interpretability_batch.md").write_text(report, encoding="utf-8")
     print("Saved consolidated temporal interpretability report")

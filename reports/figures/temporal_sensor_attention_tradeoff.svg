@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="24" y="34" font-family="Arial" font-size="20" font-weight="700" fill="#111827">Classification and ordered HuBERT alignment</text>
+<line x1="90" y1="315.0" x2="865" y2="315.0" stroke="#e5e7eb"/>
+<text x="80" y="319.0" text-anchor="end" font-family="Arial" font-size="11" fill="#374151">0.0</text>
+<line x1="90" y1="266.0" x2="865" y2="266.0" stroke="#e5e7eb"/>
+<text x="80" y="270.0" text-anchor="end" font-family="Arial" font-size="11" fill="#374151">0.2</text>
+<line x1="90" y1="217.0" x2="865" y2="217.0" stroke="#e5e7eb"/>
+<text x="80" y="221.0" text-anchor="end" font-family="Arial" font-size="11" fill="#374151">0.4</text>
+<line x1="90" y1="168.0" x2="865" y2="168.0" stroke="#e5e7eb"/>
+<text x="80" y="172.0" text-anchor="end" font-family="Arial" font-size="11" fill="#374151">0.6</text>
+<line x1="90" y1="119.0" x2="865" y2="119.0" stroke="#e5e7eb"/>
+<text x="80" y="123.0" text-anchor="end" font-family="Arial" font-size="11" fill="#374151">0.8</text>
+<rect x="185.2" y="157.1" width="30" height="157.9" fill="#0f766e" rx="2"/>
+<text x="200.2" y="151.1" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.645</text>
+<rect x="223.2" y="230.3" width="30" height="84.7" fill="#64748b" rx="2"/>
+<text x="238.2" y="224.3" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.346</text>
+<text x="219.2" y="350" text-anchor="middle" font-family="Arial" font-size="12" fill="#111827">Fixed embeddings</text>
+<rect x="443.5" y="167.7" width="30" height="147.3" fill="#0f766e" rx="2"/>
+<text x="458.5" y="161.7" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.601</text>
+<rect x="481.5" y="220.5" width="30" height="94.5" fill="#64748b" rx="2"/>
+<text x="496.5" y="214.5" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.386</text>
+<text x="477.5" y="350" text-anchor="middle" font-family="Arial" font-size="12" fill="#111827">Multitask states</text>
+<rect x="701.8" y="175.9" width="30" height="139.1" fill="#0f766e" rx="2"/>
+<text x="716.8" y="169.9" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.568</text>
+<rect x="739.8" y="222.4" width="30" height="92.6" fill="#64748b" rx="2"/>
+<text x="754.8" y="216.4" text-anchor="middle" font-family="Arial" font-size="10" fill="#111827">0.378</text>
+<text x="735.8" y="350" text-anchor="middle" font-family="Arial" font-size="12" fill="#111827">Attention states</text>
+<rect x="655" y="18" width="12" height="12" fill="#0f766e"/><text x="673" y="29" font-family="Arial" font-size="11" fill="#111827">Accuracy</text>
+<rect x="755" y="18" width="12" height="12" fill="#64748b"/><text x="773" y="29" font-family="Arial" font-size="11" fill="#111827">Cosine</text>
+</svg>

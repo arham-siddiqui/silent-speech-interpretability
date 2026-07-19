@@ -100,6 +100,9 @@ Current local status:
 - A validation-selected multitask temporal student recovers class accuracy from 49.9%
   to 60.1% while retaining ordered HuBERT alignment at 0.386 cosine; see
   `reports/temporal_sensor_multitask.md`.
+- A modality-specific temporal-attention follow-up underperforms at 56.8% accuracy and
+  remains diagnostic; its held-out weights are audited in
+  `reports/temporal_sensor_attention_audit.md`.
 
 Real utterance-level SSL teacher extraction is no longer blocked.
 
@@ -107,7 +110,7 @@ Real utterance-level SSL teacher extraction is no longer blocked.
 
 1. Obtain the RVTALL prompt text or external phonetic annotations, then add true
    forced-alignment probes. The local release has no transcripts or phoneme timestamps.
-2. Add modality-specific temporal attention or gating to address the remaining
-   classification gap without weakening ordered alignment.
+2. Retain the multitask model. Revisit sensor/time gating only with a sharper alignment
+   or regularization hypothesis; the first attention branch produced diffuse weights.
 3. Compare the validated HuBERT path with one articulatory-focused teacher such as
    SPARC or Sylber.

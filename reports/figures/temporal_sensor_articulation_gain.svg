@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="563" viewBox="0 0 900 563"><rect width="100%" height="100%" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="656" viewBox="0 0 900 656"><rect width="100%" height="100%" fill="#fff"/>
 <text x="24" y="34" font-family="Arial" font-size="20" font-weight="700" fill="#111827">Articulation R2 gain over class-and-position baseline</text>
-<line x1="575.0" y1="48" x2="575.0" y2="535" stroke="#9ca3af"/>
+<line x1="575.0" y1="48" x2="575.0" y2="628" stroke="#9ca3af"/>
 <text x="24" y="78" font-family="Arial" font-size="11">All Modalities / lip aperture</text>
 <rect x="575.0" y="62" width="98.4" height="20" fill="#0f766e" rx="2"/>
 <text x="678.4" y="77" text-anchor="start" font-family="Arial" font-size="10">+0.350</text>
@@ -10,40 +10,49 @@
 <text x="24" y="140" font-family="Arial" font-size="11">All Modalities / lip width</text>
 <rect x="575.0" y="124" width="193.6" height="20" fill="#0f766e" rx="2"/>
 <text x="773.6" y="139" text-anchor="start" font-family="Arial" font-size="10">+0.688</text>
-<text x="24" y="171" font-family="Arial" font-size="11">Contactless Nonlip / lip aperture</text>
-<rect x="574.5" y="155" width="0.5" height="20" fill="#b45309" rx="2"/>
-<text x="569.5" y="170" text-anchor="end" font-family="Arial" font-size="10">-0.002</text>
-<text x="24" y="202" font-family="Arial" font-size="11">Contactless Nonlip / lip motion</text>
-<rect x="575.0" y="186" width="21.4" height="20" fill="#0f766e" rx="2"/>
-<text x="601.4" y="201" text-anchor="start" font-family="Arial" font-size="10">+0.076</text>
-<text x="24" y="233" font-family="Arial" font-size="11">Contactless Nonlip / lip width</text>
-<rect x="546.3" y="217" width="28.7" height="20" fill="#b45309" rx="2"/>
-<text x="541.3" y="232" text-anchor="end" font-family="Arial" font-size="10">-0.102</text>
-<text x="24" y="264" font-family="Arial" font-size="11">Lip / lip aperture</text>
-<rect x="575.0" y="248" width="99.7" height="20" fill="#0f766e" rx="2"/>
-<text x="679.7" y="263" text-anchor="start" font-family="Arial" font-size="10">+0.355</text>
-<text x="24" y="295" font-family="Arial" font-size="11">Lip / lip motion</text>
-<rect x="575.0" y="279" width="30.1" height="20" fill="#0f766e" rx="2"/>
-<text x="610.1" y="294" text-anchor="start" font-family="Arial" font-size="10">+0.107</text>
-<text x="24" y="326" font-family="Arial" font-size="11">Lip / lip width</text>
-<rect x="575.0" y="310" width="213.0" height="20" fill="#0f766e" rx="2"/>
-<text x="793.0" y="325" text-anchor="start" font-family="Arial" font-size="10">+0.757</text>
-<text x="24" y="357" font-family="Arial" font-size="11">Multitask Temporal Student / lip aperture</text>
-<rect x="575.0" y="341" width="7.0" height="20" fill="#0f766e" rx="2"/>
-<text x="587.0" y="356" text-anchor="start" font-family="Arial" font-size="10">+0.025</text>
-<text x="24" y="388" font-family="Arial" font-size="11">Multitask Temporal Student / lip motion</text>
-<rect x="575.0" y="372" width="14.7" height="20" fill="#0f766e" rx="2"/>
-<text x="594.7" y="387" text-anchor="start" font-family="Arial" font-size="10">+0.052</text>
-<text x="24" y="419" font-family="Arial" font-size="11">Multitask Temporal Student / lip width</text>
-<rect x="575.0" y="403" width="30.1" height="20" fill="#0f766e" rx="2"/>
-<text x="610.1" y="418" text-anchor="start" font-family="Arial" font-size="10">+0.107</text>
-<text x="24" y="450" font-family="Arial" font-size="11">Temporal Student / lip aperture</text>
-<rect x="575.0" y="434" width="15.6" height="20" fill="#0f766e" rx="2"/>
-<text x="595.6" y="449" text-anchor="start" font-family="Arial" font-size="10">+0.056</text>
-<text x="24" y="481" font-family="Arial" font-size="11">Temporal Student / lip motion</text>
-<rect x="575.0" y="465" width="12.3" height="20" fill="#0f766e" rx="2"/>
-<text x="592.3" y="480" text-anchor="start" font-family="Arial" font-size="10">+0.044</text>
-<text x="24" y="512" font-family="Arial" font-size="11">Temporal Student / lip width</text>
-<rect x="575.0" y="496" width="30.3" height="20" fill="#0f766e" rx="2"/>
-<text x="610.3" y="511" text-anchor="start" font-family="Arial" font-size="10">+0.108</text>
+<text x="24" y="171" font-family="Arial" font-size="11">Attention Temporal Student / lip aperture</text>
+<rect x="575.0" y="155" width="14.2" height="20" fill="#0f766e" rx="2"/>
+<text x="594.2" y="170" text-anchor="start" font-family="Arial" font-size="10">+0.051</text>
+<text x="24" y="202" font-family="Arial" font-size="11">Attention Temporal Student / lip motion</text>
+<rect x="575.0" y="186" width="10.7" height="20" fill="#0f766e" rx="2"/>
+<text x="590.7" y="201" text-anchor="start" font-family="Arial" font-size="10">+0.038</text>
+<text x="24" y="233" font-family="Arial" font-size="11">Attention Temporal Student / lip width</text>
+<rect x="575.0" y="217" width="21.7" height="20" fill="#0f766e" rx="2"/>
+<text x="601.7" y="232" text-anchor="start" font-family="Arial" font-size="10">+0.077</text>
+<text x="24" y="264" font-family="Arial" font-size="11">Contactless Nonlip / lip aperture</text>
+<rect x="574.5" y="248" width="0.5" height="20" fill="#b45309" rx="2"/>
+<text x="569.5" y="263" text-anchor="end" font-family="Arial" font-size="10">-0.002</text>
+<text x="24" y="295" font-family="Arial" font-size="11">Contactless Nonlip / lip motion</text>
+<rect x="575.0" y="279" width="21.4" height="20" fill="#0f766e" rx="2"/>
+<text x="601.4" y="294" text-anchor="start" font-family="Arial" font-size="10">+0.076</text>
+<text x="24" y="326" font-family="Arial" font-size="11">Contactless Nonlip / lip width</text>
+<rect x="546.3" y="310" width="28.7" height="20" fill="#b45309" rx="2"/>
+<text x="541.3" y="325" text-anchor="end" font-family="Arial" font-size="10">-0.102</text>
+<text x="24" y="357" font-family="Arial" font-size="11">Lip / lip aperture</text>
+<rect x="575.0" y="341" width="99.7" height="20" fill="#0f766e" rx="2"/>
+<text x="679.7" y="356" text-anchor="start" font-family="Arial" font-size="10">+0.355</text>
+<text x="24" y="388" font-family="Arial" font-size="11">Lip / lip motion</text>
+<rect x="575.0" y="372" width="30.1" height="20" fill="#0f766e" rx="2"/>
+<text x="610.1" y="387" text-anchor="start" font-family="Arial" font-size="10">+0.107</text>
+<text x="24" y="419" font-family="Arial" font-size="11">Lip / lip width</text>
+<rect x="575.0" y="403" width="213.0" height="20" fill="#0f766e" rx="2"/>
+<text x="793.0" y="418" text-anchor="start" font-family="Arial" font-size="10">+0.757</text>
+<text x="24" y="450" font-family="Arial" font-size="11">Multitask Temporal Student / lip aperture</text>
+<rect x="575.0" y="434" width="7.0" height="20" fill="#0f766e" rx="2"/>
+<text x="587.0" y="449" text-anchor="start" font-family="Arial" font-size="10">+0.025</text>
+<text x="24" y="481" font-family="Arial" font-size="11">Multitask Temporal Student / lip motion</text>
+<rect x="575.0" y="465" width="14.7" height="20" fill="#0f766e" rx="2"/>
+<text x="594.7" y="480" text-anchor="start" font-family="Arial" font-size="10">+0.052</text>
+<text x="24" y="512" font-family="Arial" font-size="11">Multitask Temporal Student / lip width</text>
+<rect x="575.0" y="496" width="30.1" height="20" fill="#0f766e" rx="2"/>
+<text x="610.1" y="511" text-anchor="start" font-family="Arial" font-size="10">+0.107</text>
+<text x="24" y="543" font-family="Arial" font-size="11">Temporal Student / lip aperture</text>
+<rect x="575.0" y="527" width="15.6" height="20" fill="#0f766e" rx="2"/>
+<text x="595.6" y="542" text-anchor="start" font-family="Arial" font-size="10">+0.056</text>
+<text x="24" y="574" font-family="Arial" font-size="11">Temporal Student / lip motion</text>
+<rect x="575.0" y="558" width="12.3" height="20" fill="#0f766e" rx="2"/>
+<text x="592.3" y="573" text-anchor="start" font-family="Arial" font-size="10">+0.044</text>
+<text x="24" y="605" font-family="Arial" font-size="11">Temporal Student / lip width</text>
+<rect x="575.0" y="589" width="30.3" height="20" fill="#0f766e" rx="2"/>
+<text x="610.3" y="604" text-anchor="start" font-family="Arial" font-size="10">+0.108</text>
 </svg>

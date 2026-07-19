@@ -40,6 +40,13 @@ regions, then averaged within each speaker/utterance pair.
 - Detailed multitask comparison: [multitask report](temporal_sensor_multitask.md).
 
 
+- Modality-attention class accuracy: **56.8%**.
+- Modality-attention true-order cosine: **0.378**.
+- This branch underperforms the multitask student and remains diagnostic; see
+  [attention results](temporal_sensor_attention.md) and
+  [held-out weight audit](temporal_sensor_attention_audit.md).
+
+
 ## Articulation Probes
 
 All probes are speaker-disjoint. They predict residual articulation beyond a training-fold
@@ -50,6 +57,9 @@ class-and-segment-position template; `Delta R2` is the gain over that stronger b
 | All Modalities | Lip Aperture | 0.753 | 0.403 | +0.350 | 0.879 | +0.328 |
 | All Modalities | Lip Motion | 0.596 | 0.433 | +0.163 | 0.812 | +0.432 |
 | All Modalities | Lip Width | 0.110 | -0.578 | +0.688 | 0.583 | +0.014 |
+| Attention Temporal Student | Lip Aperture | 0.454 | 0.403 | +0.051 | 0.697 | +0.227 |
+| Attention Temporal Student | Lip Motion | 0.471 | 0.433 | +0.038 | 0.732 | +0.349 |
+| Attention Temporal Student | Lip Width | -0.501 | -0.578 | +0.077 | 0.229 | -0.001 |
 | Contactless Nonlip | Lip Aperture | 0.402 | 0.403 | -0.002 | 0.665 | +0.211 |
 | Contactless Nonlip | Lip Motion | 0.509 | 0.433 | +0.076 | 0.750 | +0.332 |
 | Contactless Nonlip | Lip Width | -0.680 | -0.578 | -0.102 | 0.105 | +0.001 |

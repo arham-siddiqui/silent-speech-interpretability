@@ -43,7 +43,14 @@ def _grouped_accuracy_figure(path: Path, sensor: pd.DataFrame, fixed: pd.DataFra
 def _signed_bar_figure(path: Path, summary: pd.DataFrame) -> None:
     selected = summary[
         summary["representation"].isin(
-            ["lip", "contactless_nonlip", "all_modalities", "temporal_student", "multitask_temporal_student"]
+            [
+                "lip",
+                "contactless_nonlip",
+                "all_modalities",
+                "temporal_student",
+                "multitask_temporal_student",
+                "attention_temporal_student",
+            ]
         )
     ]
     rows = [(f"{row.representation.replace('_', ' ').title()} / {row.target.replace('_', ' ')}", float(row.delta_r2_mean)) for row in selected.itertuples(index=False)]
@@ -76,6 +83,8 @@ def main() -> None:
     sensor = pd.read_csv(results / "temporal_sensor_student_cv.csv")
     multitask_path = results / "temporal_sensor_multitask_cv.csv"
     multitask = pd.read_csv(multitask_path) if multitask_path.exists() else None
+    attention_path = results / "temporal_sensor_attention_cv.csv"
+    attention = pd.read_csv(attention_path) if attention_path.exists() else None
     fixed = pd.read_csv(results / "hubert_temporal_teacher_student_cv.csv")
     articulation = pd.read_csv(results / "temporal_articulation_probe_summary.csv")
     audit = pd.read_csv(results / "temporal_sensor_activation_audit.csv")
@@ -114,6 +123,15 @@ def main() -> None:
 - Multitask true-versus-reversed margin: **{multitask.order_margin_reversed.mean():+.3f}**.
 - Detailed multitask comparison: [multitask report](temporal_sensor_multitask.md).
 """
+    attention_summary = ""
+    if attention is not None:
+        attention_summary = f"""
+- Modality-attention class accuracy: **{100*attention.accuracy.mean():.1f}%**.
+- Modality-attention true-order cosine: **{attention.segment_cosine.mean():.3f}**.
+- This branch underperforms the multitask student and remains diagnostic; see
+  [attention results](temporal_sensor_attention.md) and
+  [held-out weight audit](temporal_sensor_attention_audit.md).
+"""
     report = f"""# Temporal Silent-Sensor Interpretability
 
 This batch exposes sequence activations from the trained lip, laser, mmWave, and UWB
@@ -147,6 +165,7 @@ regions, then averaged within each speaker/utterance pair.
 - Reversed-order temporal-sensor cosine: **{sensor.reversed_segment_cosine.mean():.3f}**.
 - True-versus-reversed margin: **{sensor.order_margin_reversed.mean():+.3f}**.
 {multitask_summary}
+{attention_summary}
 
 ## Articulation Probes
 
