@@ -108,9 +108,11 @@ Real utterance-level SSL teacher extraction is no longer blocked.
 
 ## Next Steps
 
-1. Obtain the RVTALL prompt text or external phonetic annotations, then add true
-   forced-alignment probes. The local release has no transcripts or phoneme timestamps.
+1. Published RVTALL prompts and CTC word alignments are now recovered; broad phonetic
+   occupancy probes are complete in `reports/temporal_phonetic_probes.md`. Exact acoustic
+   phone boundaries remain the next annotation upgrade.
 2. Retain the multitask model. Revisit sensor/time gating only with a sharper alignment
    or regularization hypothesis; the first attention branch produced diffuse weights.
-3. Compare the validated HuBERT path with one articulatory-focused teacher such as
-   SPARC or Sylber.
+3. Wav2Vec2 has been rejected as a weaker alternate teacher. Compare HuBERT with an
+   articulatory-focused teacher such as SPARC or Sylber only when its weights and
+   dependencies are available.

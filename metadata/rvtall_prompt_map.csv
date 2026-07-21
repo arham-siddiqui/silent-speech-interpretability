@@ -1,0 +1,601 @@
+user_id,group_name,prompt_type,prompt_index,transcript,spoken_text,vowel_arpabet,prompt_cohort
+1,vowel1,vowel,1,[ae],,AE,all
+1,vowel2,vowel,2,[i],,IY,all
+1,vowel3,vowel,3,[schwa],,AH,all
+1,vowel4,vowel,4,[open-o],,AO,all
+1,vowel5,vowel,5,[u],,UW,all
+1,word1,word,1,order,order,,all
+1,word2,word,2,assist,assist,,all
+1,word3,word,3,help,help,,all
+1,word4,word,4,ambulance,ambulance,,all
+1,word5,word,5,bleed,bleed,,all
+1,word6,word,6,fall,fall,,all
+1,word7,word,7,shock,shock,,all
+1,word8,word,8,medical,medical,,all
+1,word9,word,9,sanitize,sanitize,,all
+1,word10,word,10,doctor,doctor,,all
+1,word11,word,11,accident,accident,,all
+1,word12,word,12,rescue,rescue,,all
+1,word13,word,13,emergency,emergency,,all
+1,word14,word,14,heart,heart,,all
+1,word15,word,15,break,break,,all
+1,sentences1,sentence,1,I need help.,I need help.,,all
+1,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+1,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+1,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+1,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+1,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+1,sentences7,sentence,7,The staff sanitized the sickroom.,The staff sanitized the sickroom.,,sanitation
+1,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+1,sentences9,sentence,9,Medical care is important.,Medical care is important.,,sanitation
+1,sentences10,sentence,10,Don't worry about bleeding.,Don't worry about bleeding.,,sanitation
+2,vowel1,vowel,1,[ae],,AE,all
+2,vowel2,vowel,2,[i],,IY,all
+2,vowel3,vowel,3,[schwa],,AH,all
+2,vowel4,vowel,4,[open-o],,AO,all
+2,vowel5,vowel,5,[u],,UW,all
+2,word1,word,1,order,order,,all
+2,word2,word,2,assist,assist,,all
+2,word3,word,3,help,help,,all
+2,word4,word,4,ambulance,ambulance,,all
+2,word5,word,5,bleed,bleed,,all
+2,word6,word,6,fall,fall,,all
+2,word7,word,7,shock,shock,,all
+2,word8,word,8,medical,medical,,all
+2,word9,word,9,sanitize,sanitize,,all
+2,word10,word,10,doctor,doctor,,all
+2,word11,word,11,accident,accident,,all
+2,word12,word,12,rescue,rescue,,all
+2,word13,word,13,emergency,emergency,,all
+2,word14,word,14,heart,heart,,all
+2,word15,word,15,break,break,,all
+2,sentences1,sentence,1,I need help.,I need help.,,all
+2,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+2,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+2,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+2,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+2,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+2,sentences7,sentence,7,The staff sanitized the sickroom.,The staff sanitized the sickroom.,,sanitation
+2,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+2,sentences9,sentence,9,Medical care is important.,Medical care is important.,,sanitation
+2,sentences10,sentence,10,Don't worry about bleeding.,Don't worry about bleeding.,,sanitation
+3,vowel1,vowel,1,[ae],,AE,all
+3,vowel2,vowel,2,[i],,IY,all
+3,vowel3,vowel,3,[schwa],,AH,all
+3,vowel4,vowel,4,[open-o],,AO,all
+3,vowel5,vowel,5,[u],,UW,all
+3,word1,word,1,order,order,,all
+3,word2,word,2,assist,assist,,all
+3,word3,word,3,help,help,,all
+3,word4,word,4,ambulance,ambulance,,all
+3,word5,word,5,bleed,bleed,,all
+3,word6,word,6,fall,fall,,all
+3,word7,word,7,shock,shock,,all
+3,word8,word,8,medical,medical,,all
+3,word9,word,9,sanitize,sanitize,,all
+3,word10,word,10,doctor,doctor,,all
+3,word11,word,11,accident,accident,,all
+3,word12,word,12,rescue,rescue,,all
+3,word13,word,13,emergency,emergency,,all
+3,word14,word,14,heart,heart,,all
+3,word15,word,15,break,break,,all
+3,sentences1,sentence,1,I need help.,I need help.,,all
+3,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+3,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+3,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+3,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+3,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+3,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+3,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+3,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+3,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+4,vowel1,vowel,1,[ae],,AE,all
+4,vowel2,vowel,2,[i],,IY,all
+4,vowel3,vowel,3,[schwa],,AH,all
+4,vowel4,vowel,4,[open-o],,AO,all
+4,vowel5,vowel,5,[u],,UW,all
+4,word1,word,1,order,order,,all
+4,word2,word,2,assist,assist,,all
+4,word3,word,3,help,help,,all
+4,word4,word,4,ambulance,ambulance,,all
+4,word5,word,5,bleed,bleed,,all
+4,word6,word,6,fall,fall,,all
+4,word7,word,7,shock,shock,,all
+4,word8,word,8,medical,medical,,all
+4,word9,word,9,sanitize,sanitize,,all
+4,word10,word,10,doctor,doctor,,all
+4,word11,word,11,accident,accident,,all
+4,word12,word,12,rescue,rescue,,all
+4,word13,word,13,emergency,emergency,,all
+4,word14,word,14,heart,heart,,all
+4,word15,word,15,break,break,,all
+4,sentences1,sentence,1,I need help.,I need help.,,all
+4,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+4,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+4,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+4,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+4,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+4,sentences7,sentence,7,The staff sanitized the sickroom.,The staff sanitized the sickroom.,,sanitation
+4,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+4,sentences9,sentence,9,Medical care is important.,Medical care is important.,,sanitation
+4,sentences10,sentence,10,Don't worry about bleeding.,Don't worry about bleeding.,,sanitation
+5,vowel1,vowel,1,[ae],,AE,all
+5,vowel2,vowel,2,[i],,IY,all
+5,vowel3,vowel,3,[schwa],,AH,all
+5,vowel4,vowel,4,[open-o],,AO,all
+5,vowel5,vowel,5,[u],,UW,all
+5,word1,word,1,order,order,,all
+5,word2,word,2,assist,assist,,all
+5,word3,word,3,help,help,,all
+5,word4,word,4,ambulance,ambulance,,all
+5,word5,word,5,bleed,bleed,,all
+5,word6,word,6,fall,fall,,all
+5,word7,word,7,shock,shock,,all
+5,word8,word,8,medical,medical,,all
+5,word9,word,9,sanitize,sanitize,,all
+5,word10,word,10,doctor,doctor,,all
+5,word11,word,11,accident,accident,,all
+5,word12,word,12,rescue,rescue,,all
+5,word13,word,13,emergency,emergency,,all
+5,word14,word,14,heart,heart,,all
+5,word15,word,15,break,break,,all
+5,sentences1,sentence,1,I need help.,I need help.,,all
+5,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+5,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+5,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+5,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+5,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+5,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+5,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+5,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+5,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+6,vowel1,vowel,1,[ae],,AE,all
+6,vowel2,vowel,2,[i],,IY,all
+6,vowel3,vowel,3,[schwa],,AH,all
+6,vowel4,vowel,4,[open-o],,AO,all
+6,vowel5,vowel,5,[u],,UW,all
+6,word1,word,1,order,order,,all
+6,word2,word,2,assist,assist,,all
+6,word3,word,3,help,help,,all
+6,word4,word,4,ambulance,ambulance,,all
+6,word5,word,5,bleed,bleed,,all
+6,word6,word,6,fall,fall,,all
+6,word7,word,7,shock,shock,,all
+6,word8,word,8,medical,medical,,all
+6,word9,word,9,sanitize,sanitize,,all
+6,word10,word,10,doctor,doctor,,all
+6,word11,word,11,accident,accident,,all
+6,word12,word,12,rescue,rescue,,all
+6,word13,word,13,emergency,emergency,,all
+6,word14,word,14,heart,heart,,all
+6,word15,word,15,break,break,,all
+6,sentences1,sentence,1,I need help.,I need help.,,all
+6,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+6,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+6,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+6,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+6,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+6,sentences7,sentence,7,The staff sanitized the sickroom.,The staff sanitized the sickroom.,,sanitation
+6,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+6,sentences9,sentence,9,Medical care is important.,Medical care is important.,,sanitation
+6,sentences10,sentence,10,Don't worry about bleeding.,Don't worry about bleeding.,,sanitation
+7,vowel1,vowel,1,[ae],,AE,all
+7,vowel2,vowel,2,[i],,IY,all
+7,vowel3,vowel,3,[schwa],,AH,all
+7,vowel4,vowel,4,[open-o],,AO,all
+7,vowel5,vowel,5,[u],,UW,all
+7,word1,word,1,order,order,,all
+7,word2,word,2,assist,assist,,all
+7,word3,word,3,help,help,,all
+7,word4,word,4,ambulance,ambulance,,all
+7,word5,word,5,bleed,bleed,,all
+7,word6,word,6,fall,fall,,all
+7,word7,word,7,shock,shock,,all
+7,word8,word,8,medical,medical,,all
+7,word9,word,9,sanitize,sanitize,,all
+7,word10,word,10,doctor,doctor,,all
+7,word11,word,11,accident,accident,,all
+7,word12,word,12,rescue,rescue,,all
+7,word13,word,13,emergency,emergency,,all
+7,word14,word,14,heart,heart,,all
+7,word15,word,15,break,break,,all
+7,sentences1,sentence,1,I need help.,I need help.,,all
+7,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+7,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+7,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+7,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+7,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+7,sentences7,sentence,7,The staff sanitized the sickroom.,The staff sanitized the sickroom.,,sanitation
+7,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+7,sentences9,sentence,9,Medical care is important.,Medical care is important.,,sanitation
+7,sentences10,sentence,10,Don't worry about bleeding.,Don't worry about bleeding.,,sanitation
+8,vowel1,vowel,1,[ae],,AE,all
+8,vowel2,vowel,2,[i],,IY,all
+8,vowel3,vowel,3,[schwa],,AH,all
+8,vowel4,vowel,4,[open-o],,AO,all
+8,vowel5,vowel,5,[u],,UW,all
+8,word1,word,1,order,order,,all
+8,word2,word,2,assist,assist,,all
+8,word3,word,3,help,help,,all
+8,word4,word,4,ambulance,ambulance,,all
+8,word5,word,5,bleed,bleed,,all
+8,word6,word,6,fall,fall,,all
+8,word7,word,7,shock,shock,,all
+8,word8,word,8,medical,medical,,all
+8,word9,word,9,sanitize,sanitize,,all
+8,word10,word,10,doctor,doctor,,all
+8,word11,word,11,accident,accident,,all
+8,word12,word,12,rescue,rescue,,all
+8,word13,word,13,emergency,emergency,,all
+8,word14,word,14,heart,heart,,all
+8,word15,word,15,break,break,,all
+8,sentences1,sentence,1,I need help.,I need help.,,all
+8,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+8,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+8,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+8,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+8,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+8,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+8,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+8,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+8,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+9,vowel1,vowel,1,[ae],,AE,all
+9,vowel2,vowel,2,[i],,IY,all
+9,vowel3,vowel,3,[schwa],,AH,all
+9,vowel4,vowel,4,[open-o],,AO,all
+9,vowel5,vowel,5,[u],,UW,all
+9,word1,word,1,order,order,,all
+9,word2,word,2,assist,assist,,all
+9,word3,word,3,help,help,,all
+9,word4,word,4,ambulance,ambulance,,all
+9,word5,word,5,bleed,bleed,,all
+9,word6,word,6,fall,fall,,all
+9,word7,word,7,shock,shock,,all
+9,word8,word,8,medical,medical,,all
+9,word9,word,9,sanitize,sanitize,,all
+9,word10,word,10,doctor,doctor,,all
+9,word11,word,11,accident,accident,,all
+9,word12,word,12,rescue,rescue,,all
+9,word13,word,13,emergency,emergency,,all
+9,word14,word,14,heart,heart,,all
+9,word15,word,15,break,break,,all
+9,sentences1,sentence,1,I need help.,I need help.,,all
+9,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+9,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+9,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+9,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+9,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+9,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+9,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+9,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+9,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+10,vowel1,vowel,1,[ae],,AE,all
+10,vowel2,vowel,2,[i],,IY,all
+10,vowel3,vowel,3,[schwa],,AH,all
+10,vowel4,vowel,4,[open-o],,AO,all
+10,vowel5,vowel,5,[u],,UW,all
+10,word1,word,1,order,order,,all
+10,word2,word,2,assist,assist,,all
+10,word3,word,3,help,help,,all
+10,word4,word,4,ambulance,ambulance,,all
+10,word5,word,5,bleed,bleed,,all
+10,word6,word,6,fall,fall,,all
+10,word7,word,7,shock,shock,,all
+10,word8,word,8,medical,medical,,all
+10,word9,word,9,sanitize,sanitize,,all
+10,word10,word,10,doctor,doctor,,all
+10,word11,word,11,accident,accident,,all
+10,word12,word,12,rescue,rescue,,all
+10,word13,word,13,emergency,emergency,,all
+10,word14,word,14,heart,heart,,all
+10,word15,word,15,break,break,,all
+10,sentences1,sentence,1,I need help.,I need help.,,all
+10,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+10,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+10,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+10,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+10,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+10,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+10,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+10,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+10,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+11,vowel1,vowel,1,[ae],,AE,all
+11,vowel2,vowel,2,[i],,IY,all
+11,vowel3,vowel,3,[schwa],,AH,all
+11,vowel4,vowel,4,[open-o],,AO,all
+11,vowel5,vowel,5,[u],,UW,all
+11,word1,word,1,order,order,,all
+11,word2,word,2,assist,assist,,all
+11,word3,word,3,help,help,,all
+11,word4,word,4,ambulance,ambulance,,all
+11,word5,word,5,bleed,bleed,,all
+11,word6,word,6,fall,fall,,all
+11,word7,word,7,shock,shock,,all
+11,word8,word,8,medical,medical,,all
+11,word9,word,9,sanitize,sanitize,,all
+11,word10,word,10,doctor,doctor,,all
+11,word11,word,11,accident,accident,,all
+11,word12,word,12,rescue,rescue,,all
+11,word13,word,13,emergency,emergency,,all
+11,word14,word,14,heart,heart,,all
+11,word15,word,15,break,break,,all
+11,sentences1,sentence,1,I need help.,I need help.,,all
+11,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+11,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+11,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+11,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+11,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+11,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+11,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+11,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+11,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+12,vowel1,vowel,1,[ae],,AE,all
+12,vowel2,vowel,2,[i],,IY,all
+12,vowel3,vowel,3,[schwa],,AH,all
+12,vowel4,vowel,4,[open-o],,AO,all
+12,vowel5,vowel,5,[u],,UW,all
+12,word1,word,1,order,order,,all
+12,word2,word,2,assist,assist,,all
+12,word3,word,3,help,help,,all
+12,word4,word,4,ambulance,ambulance,,all
+12,word5,word,5,bleed,bleed,,all
+12,word6,word,6,fall,fall,,all
+12,word7,word,7,shock,shock,,all
+12,word8,word,8,medical,medical,,all
+12,word9,word,9,sanitize,sanitize,,all
+12,word10,word,10,doctor,doctor,,all
+12,word11,word,11,accident,accident,,all
+12,word12,word,12,rescue,rescue,,all
+12,word13,word,13,emergency,emergency,,all
+12,word14,word,14,heart,heart,,all
+12,word15,word,15,break,break,,all
+12,sentences1,sentence,1,I need help.,I need help.,,all
+12,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+12,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+12,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+12,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+12,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+12,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+12,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+12,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+12,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+13,vowel1,vowel,1,[ae],,AE,all
+13,vowel2,vowel,2,[i],,IY,all
+13,vowel3,vowel,3,[schwa],,AH,all
+13,vowel4,vowel,4,[open-o],,AO,all
+13,vowel5,vowel,5,[u],,UW,all
+13,word1,word,1,order,order,,all
+13,word2,word,2,assist,assist,,all
+13,word3,word,3,help,help,,all
+13,word4,word,4,ambulance,ambulance,,all
+13,word5,word,5,bleed,bleed,,all
+13,word6,word,6,fall,fall,,all
+13,word7,word,7,shock,shock,,all
+13,word8,word,8,medical,medical,,all
+13,word9,word,9,sanitize,sanitize,,all
+13,word10,word,10,doctor,doctor,,all
+13,word11,word,11,accident,accident,,all
+13,word12,word,12,rescue,rescue,,all
+13,word13,word,13,emergency,emergency,,all
+13,word14,word,14,heart,heart,,all
+13,word15,word,15,break,break,,all
+13,sentences1,sentence,1,I need help.,I need help.,,all
+13,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+13,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+13,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+13,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+13,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+13,sentences7,sentence,7,I am having trouble breathing.,I am having trouble breathing.,,breathing
+13,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+13,sentences9,sentence,9,I think I'm having a heart attack.,I think I'm having a heart attack.,,breathing
+13,sentences10,sentence,10,My heart is failing.,My heart is failing.,,breathing
+14,vowel1,vowel,1,[ae],,AE,all
+14,vowel2,vowel,2,[i],,IY,all
+14,vowel3,vowel,3,[schwa],,AH,all
+14,vowel4,vowel,4,[open-o],,AO,all
+14,vowel5,vowel,5,[u],,UW,all
+14,word1,word,1,order,order,,all
+14,word2,word,2,assist,assist,,all
+14,word3,word,3,help,help,,all
+14,word4,word,4,ambulance,ambulance,,all
+14,word5,word,5,bleed,bleed,,all
+14,word6,word,6,fall,fall,,all
+14,word7,word,7,shock,shock,,all
+14,word8,word,8,medical,medical,,all
+14,word9,word,9,sanitize,sanitize,,all
+14,word10,word,10,doctor,doctor,,all
+14,word11,word,11,accident,accident,,all
+14,word12,word,12,rescue,rescue,,all
+14,word13,word,13,emergency,emergency,,all
+14,word14,word,14,heart,heart,,all
+14,word15,word,15,break,break,,all
+14,sentences1,sentence,1,I need help.,I need help.,,all
+14,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+14,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+14,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+14,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+14,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+14,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+14,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+14,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+14,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+15,vowel1,vowel,1,[ae],,AE,all
+15,vowel2,vowel,2,[i],,IY,all
+15,vowel3,vowel,3,[schwa],,AH,all
+15,vowel4,vowel,4,[open-o],,AO,all
+15,vowel5,vowel,5,[u],,UW,all
+15,word1,word,1,order,order,,all
+15,word2,word,2,assist,assist,,all
+15,word3,word,3,help,help,,all
+15,word4,word,4,ambulance,ambulance,,all
+15,word5,word,5,bleed,bleed,,all
+15,word6,word,6,fall,fall,,all
+15,word7,word,7,shock,shock,,all
+15,word8,word,8,medical,medical,,all
+15,word9,word,9,sanitize,sanitize,,all
+15,word10,word,10,doctor,doctor,,all
+15,word11,word,11,accident,accident,,all
+15,word12,word,12,rescue,rescue,,all
+15,word13,word,13,emergency,emergency,,all
+15,word14,word,14,heart,heart,,all
+15,word15,word,15,break,break,,all
+15,sentences1,sentence,1,I need help.,I need help.,,all
+15,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+15,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+15,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+15,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+15,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+15,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+15,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+15,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+15,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+16,vowel1,vowel,1,[ae],,AE,all
+16,vowel2,vowel,2,[i],,IY,all
+16,vowel3,vowel,3,[schwa],,AH,all
+16,vowel4,vowel,4,[open-o],,AO,all
+16,vowel5,vowel,5,[u],,UW,all
+16,word1,word,1,order,order,,all
+16,word2,word,2,assist,assist,,all
+16,word3,word,3,help,help,,all
+16,word4,word,4,ambulance,ambulance,,all
+16,word5,word,5,bleed,bleed,,all
+16,word6,word,6,fall,fall,,all
+16,word7,word,7,shock,shock,,all
+16,word8,word,8,medical,medical,,all
+16,word9,word,9,sanitize,sanitize,,all
+16,word10,word,10,doctor,doctor,,all
+16,word11,word,11,accident,accident,,all
+16,word12,word,12,rescue,rescue,,all
+16,word13,word,13,emergency,emergency,,all
+16,word14,word,14,heart,heart,,all
+16,word15,word,15,break,break,,all
+16,sentences1,sentence,1,I need help.,I need help.,,all
+16,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+16,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+16,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+16,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+16,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+16,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+16,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+16,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+16,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+17,vowel1,vowel,1,[ae],,AE,all
+17,vowel2,vowel,2,[i],,IY,all
+17,vowel3,vowel,3,[schwa],,AH,all
+17,vowel4,vowel,4,[open-o],,AO,all
+17,vowel5,vowel,5,[u],,UW,all
+17,word1,word,1,order,order,,all
+17,word2,word,2,assist,assist,,all
+17,word3,word,3,help,help,,all
+17,word4,word,4,ambulance,ambulance,,all
+17,word5,word,5,bleed,bleed,,all
+17,word6,word,6,fall,fall,,all
+17,word7,word,7,shock,shock,,all
+17,word8,word,8,medical,medical,,all
+17,word9,word,9,sanitize,sanitize,,all
+17,word10,word,10,doctor,doctor,,all
+17,word11,word,11,accident,accident,,all
+17,word12,word,12,rescue,rescue,,all
+17,word13,word,13,emergency,emergency,,all
+17,word14,word,14,heart,heart,,all
+17,word15,word,15,break,break,,all
+17,sentences1,sentence,1,I need help.,I need help.,,all
+17,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+17,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+17,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+17,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+17,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+17,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+17,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+17,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+17,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+18,vowel1,vowel,1,[ae],,AE,all
+18,vowel2,vowel,2,[i],,IY,all
+18,vowel3,vowel,3,[schwa],,AH,all
+18,vowel4,vowel,4,[open-o],,AO,all
+18,vowel5,vowel,5,[u],,UW,all
+18,word1,word,1,order,order,,all
+18,word2,word,2,assist,assist,,all
+18,word3,word,3,help,help,,all
+18,word4,word,4,ambulance,ambulance,,all
+18,word5,word,5,bleed,bleed,,all
+18,word6,word,6,fall,fall,,all
+18,word7,word,7,shock,shock,,all
+18,word8,word,8,medical,medical,,all
+18,word9,word,9,sanitize,sanitize,,all
+18,word10,word,10,doctor,doctor,,all
+18,word11,word,11,accident,accident,,all
+18,word12,word,12,rescue,rescue,,all
+18,word13,word,13,emergency,emergency,,all
+18,word14,word,14,heart,heart,,all
+18,word15,word,15,break,break,,all
+18,sentences1,sentence,1,I need help.,I need help.,,all
+18,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+18,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+18,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+18,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+18,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+18,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+18,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+18,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+18,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+19,vowel1,vowel,1,[ae],,AE,all
+19,vowel2,vowel,2,[i],,IY,all
+19,vowel3,vowel,3,[schwa],,AH,all
+19,vowel4,vowel,4,[open-o],,AO,all
+19,vowel5,vowel,5,[u],,UW,all
+19,word1,word,1,order,order,,all
+19,word2,word,2,assist,assist,,all
+19,word3,word,3,help,help,,all
+19,word4,word,4,ambulance,ambulance,,all
+19,word5,word,5,bleed,bleed,,all
+19,word6,word,6,fall,fall,,all
+19,word7,word,7,shock,shock,,all
+19,word8,word,8,medical,medical,,all
+19,word9,word,9,sanitize,sanitize,,all
+19,word10,word,10,doctor,doctor,,all
+19,word11,word,11,accident,accident,,all
+19,word12,word,12,rescue,rescue,,all
+19,word13,word,13,emergency,emergency,,all
+19,word14,word,14,heart,heart,,all
+19,word15,word,15,break,break,,all
+19,sentences1,sentence,1,I need help.,I need help.,,all
+19,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+19,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+19,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+19,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+19,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+19,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+19,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+19,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+19,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency
+20,vowel1,vowel,1,[ae],,AE,all
+20,vowel2,vowel,2,[i],,IY,all
+20,vowel3,vowel,3,[schwa],,AH,all
+20,vowel4,vowel,4,[open-o],,AO,all
+20,vowel5,vowel,5,[u],,UW,all
+20,word1,word,1,order,order,,all
+20,word2,word,2,assist,assist,,all
+20,word3,word,3,help,help,,all
+20,word4,word,4,ambulance,ambulance,,all
+20,word5,word,5,bleed,bleed,,all
+20,word6,word,6,fall,fall,,all
+20,word7,word,7,shock,shock,,all
+20,word8,word,8,medical,medical,,all
+20,word9,word,9,sanitize,sanitize,,all
+20,word10,word,10,doctor,doctor,,all
+20,word11,word,11,accident,accident,,all
+20,word12,word,12,rescue,rescue,,all
+20,word13,word,13,emergency,emergency,,all
+20,word14,word,14,heart,heart,,all
+20,word15,word,15,break,break,,all
+20,sentences1,sentence,1,I need help.,I need help.,,all
+20,sentences2,sentence,2,Call for an ambulance.,Call for an ambulance.,,all
+20,sentences3,sentence,3,The building's on fire.,The building's on fire.,,all
+20,sentences4,sentence,4,Can you smell smoke?,Can you smell smoke?,,all
+20,sentences5,sentence,5,Where's the fire escape?,Where's the fire escape?,,all
+20,sentences6,sentence,6,There's been an accident.,There's been an accident.,,all
+20,sentences7,sentence,7,Need emergency treatment at shock stage.,Need emergency treatment at shock stage.,,emergency
+20,sentences8,sentence,8,Is there a doctor here?,Is there a doctor here?,,all
+20,sentences9,sentence,9,He need a rescue for a heart attack.,He need a rescue for a heart attack.,,emergency
+20,sentences10,sentence,10,Don't worry about falling.,Don't worry about falling.,,emergency

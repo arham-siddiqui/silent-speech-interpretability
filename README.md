@@ -298,6 +298,27 @@ cosine from 0.381 to 0.386; see
 A modality-specific attention follow-up reaches only 56.8% and 0.378 cosine, so the
 multitask model remains selected. Its diffuse held-out weights are documented in
 [`reports/temporal_sensor_attention_audit.md`](reports/temporal_sensor_attention_audit.md).
+The published RVTALL prompts have now been recovered, reconciled with a cohort permutation
+in the local processed audio folders, and CTC-aligned. Speaker-disjoint phonetic occupancy
+probes find the strongest residual signal in the combined contactless sensors: macro
+`R2 = 0.511` versus `0.500` for class+position alone, with the largest gains for stops
+(`+0.037`), liquids (`+0.025`), silence (`+0.022`), and fricatives (`+0.019`). See
+[`reports/temporal_phonetic_probes.md`](reports/temporal_phonetic_probes.md).
+An alternate Wav2Vec2 teacher underperforms matched HuBERT transfer (47.9% versus 49.9%
+accuracy; 0.290 versus 0.381 temporal cosine), so HuBERT remains selected; see
+[`reports/audio_teacher_comparison.md`](reports/audio_teacher_comparison.md).
+
+Reproduce the tracked alignment and probe batch with:
+
+```bash
+pip install -e '.[audio-teachers,interpretability,alignment]'
+make audio-phonetic-batch
+make wav2vec2-teacher-comparison
+```
+
+The Make targets use `--local-files-only`; cache `facebook/wav2vec2-base-960h` before
+running them. Large generated targets and checkpoints stay ignored, while aggregate CSVs
+under `reports/tables/` are tracked.
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
@@ -311,10 +332,10 @@ modality ceilings and therefore the fusion ceiling.
 not enough to learn reliable modality weights. More speakers would enable proper
 gating to outperform the no-training baselines.
 
-**Phoneme-level decoding** — the relative-segment HuBERT student and temporal sensor
-states recover ordered speech structure. True phoneme probes still require the original
-prompt text plus forced alignment or external phonetic annotations; these are not present
-in the local RVTALL release.
+**Stronger phoneme alignment** — broad temporal phonetic probes are now complete using
+CTC word boundaries and uniformly interpolated ARPAbet phones. Exact acoustic phone
+boundaries still require a phone-level aligner or manually checked TextGrids. That sharper
+annotation is the next requirement before naming individual latent features as phonemes.
 
 **Modality-specific temporal attention** — the first attention branch underperforms the
 simpler multitask student and produces diffuse sensor/time weights. Keep it as a controlled

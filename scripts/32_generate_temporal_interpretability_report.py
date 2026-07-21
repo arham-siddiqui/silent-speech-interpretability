@@ -95,9 +95,10 @@ The project now has a strict supervised baseline, a real pooled audio teacher, c
 sparse bottleneck features, held-out feature exemplars, and a first temporal-teacher
 comparison. Temporal sensor states and measured lip-articulation probes are now complete.
 A validation-selected multitask temporal student recovers accuracy from 49.9% to 60.1%
-while retaining 0.386 ordered HuBERT cosine. The remaining interpretability gap is phoneme
-naming, which needs prompt text plus forced alignment or external phonetic annotations
-unavailable in the local release. A modality-attention follow-up underperforms the simpler
+while retaining 0.386 ordered HuBERT cosine. The later prompt-recovery and CTC-alignment
+batch adds broad phonetic occupancy probes; exact feature naming still needs acoustically
+resolved phone boundaries, which are unavailable in the local release. A modality-attention
+follow-up underperforms the simpler
 multitask student and is retained only as a controlled diagnostic.
 """
     Path("reports/temporal_interpretability_batch.md").write_text(report, encoding="utf-8")

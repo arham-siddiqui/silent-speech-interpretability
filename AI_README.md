@@ -21,11 +21,20 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
   reached 56.8% accuracy and 0.378 HuBERT cosine. Held-out weights remained diffuse
   (temporal entropy 0.880; modality entropy 0.917), explaining why the added routing
   did not improve the simpler multitask student. See `reports/temporal_sensor_attention_audit.md`.
-- The local release has no prompt text, TextGrids, or phoneme timestamps, so true forced
-  alignment remains blocked on obtaining transcript/annotation metadata.
-- Next decisive step: obtain prompt text or external alignments for phoneme probes. Keep
-  the 60.1% multitask model as the selected temporal-state student; do not promote the
-  modality-attention branch without a new regularization or alignment hypothesis.
+- Published speaker-aware prompts are recovered and audited. The local processed audio
+  folders use a cohort permutation relative to the paper's participant IDs; this is stored
+  in `metadata/rvtall_audio_prompt_cohorts.csv` rather than silently changing the source map.
+- CTC word alignment and broad four-segment phonetic occupancy probes are complete for 596
+  pairs. Contactless non-lip states add `+0.011` macro R2 beyond class+position, led by
+  stops (`+0.037`), liquids (`+0.025`), silence (`+0.022`), and fricatives (`+0.019`).
+  See `reports/temporal_phonetic_probes.md`. Phone intervals inside words are interpolated,
+  not exact acoustic boundaries.
+- Wav2Vec2 was tested as an alternate teacher and underperformed HuBERT: 47.9% versus
+  49.9% base temporal-student accuracy and 0.290 versus 0.381 true-order cosine. HuBERT
+  remains selected. See `reports/audio_teacher_comparison.md`.
+- Next decisive step: obtain phone-level forced alignment or manually audited TextGrids,
+  then repeat the residual probes and connect reliable phone targets to sparse-feature
+  causal ablations. Keep the 60.1% HuBERT multitask model selected.
 
 # Project snapshot
 

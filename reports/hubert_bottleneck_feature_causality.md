@@ -66,5 +66,6 @@ that fine-grained class decisions remain more distributed or redundant.
 
 This is evidence for causal contribution under feature ablation, not proof that a sparse
 feature corresponds to a human-named phoneme or articulator. Held-out exemplars and a
-relative-segment teacher provide stronger validation, but phoneme labels still require
-temporal sensor activations or external alignment annotations.
+relative-segment teacher provide stronger validation. Broad phonetic occupancy labels are
+now available in the temporal follow-up, but exact acoustic phone boundaries require
+stronger annotations.

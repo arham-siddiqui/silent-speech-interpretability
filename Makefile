@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison
 
 test:
 	python3 -m pytest -q
@@ -89,3 +89,23 @@ hubert-temporal-attention:
 	python3 scripts/39_analyze_temporal_attention.py
 	python3 scripts/36_probe_temporal_articulation.py
 	python3 scripts/37_generate_temporal_sensor_report.py
+
+prompt-manifest:
+	python3 scripts/43_audit_audio_prompt_cohorts.py --local-files-only
+	python3 scripts/40_build_prompt_manifest.py
+	python3 scripts/41_build_pronunciation_manifest.py
+
+phonetic-alignment: prompt-manifest
+	python3 scripts/42_align_audio_prompts.py --skip-vowels --local-files-only
+	python3 scripts/44_build_phonetic_segment_targets.py
+
+phonetic-probes: phonetic-alignment
+	python3 scripts/45_probe_temporal_phonetics.py
+	python3 scripts/46_generate_phonetic_probe_report.py
+
+audio-phonetic-batch: phonetic-probes
+
+wav2vec2-teacher-comparison:
+	python3 scripts/30_extract_temporal_hubert_targets.py --model-name facebook/wav2vec2-base-960h --local-files-only --output artifacts/teacher_targets/facebook_wav2vec2-base-960h_temporal4_targets.npz --audit-output reports/results/wav2vec2_temporal_target_audit.csv
+	python3 scripts/35_run_temporal_sensor_student_cv.py --teacher-targets artifacts/teacher_targets/facebook_wav2vec2-base-960h_temporal4_targets.npz --output-dir artifacts/students/wav2vec2_temporal_sensor_cv --output reports/results/wav2vec2_temporal_sensor_student_cv.csv --report-output artifacts/wav2vec2_temporal_sensor_alignment_draft.md
+	python3 scripts/47_generate_audio_teacher_comparison.py

@@ -1,0 +1,65 @@
+token,arpabet,arpabet_no_stress
+[ae],AE,AE
+[i],IY,IY
+[open-o],AO,AO
+[schwa],AH,AH
+[u],UW,UW
+a,AH0,AH
+about,AH0 B AW1 T,AH B AW T
+accident,AE1 K S AH0 D AH0 N T,AE K S AH D AH N T
+am,AE1 M,AE M
+ambulance,AE1 M B Y AH0 L AH0 N S,AE M B Y AH L AH N S
+an,AE1 N,AE N
+assist,AH0 S IH1 S T,AH S IH S T
+at,AE1 T,AE T
+attack,AH0 T AE1 K,AH T AE K
+been,B IH1 N,B IH N
+bleed,B L IY1 D,B L IY D
+bleeding,B L IY1 D IH0 NG,B L IY D IH NG
+break,B R EY1 K,B R EY K
+breathing,B R IY1 DH IH0 NG,B R IY DH IH NG
+building's,B IH1 L D IH0 NG Z,B IH L D IH NG Z
+call,K AO1 L,K AO L
+can,K AE1 N,K AE N
+care,K EH1 R,K EH R
+doctor,D AA1 K T ER0,D AA K T ER
+don't,D OW1 N T,D OW N T
+emergency,IH0 M ER1 JH AH0 N S IY0,IH M ER JH AH N S IY
+escape,IH0 S K EY1 P,IH S K EY P
+failing,F EY1 L IH0 NG,F EY L IH NG
+fall,F AO1 L,F AO L
+falling,F AA1 L IH0 NG,F AA L IH NG
+fire,F AY1 ER0,F AY ER
+for,F AO1 R,F AO R
+having,HH AE1 V IH0 NG,HH AE V IH NG
+he,HH IY1,HH IY
+heart,HH AA1 R T,HH AA R T
+help,HH EH1 L P,HH EH L P
+here,HH IY1 R,HH IY R
+i,AY1,AY
+i'm,AY1 M,AY M
+important,IH2 M P AO1 R T AH0 N T,IH M P AO R T AH N T
+is,IH1 Z,IH Z
+medical,M EH1 D AH0 K AH0 L,M EH D AH K AH L
+my,M AY1,M AY
+need,N IY1 D,N IY D
+on,AA1 N,AA N
+order,AO1 R D ER0,AO R D ER
+rescue,R EH1 S K Y UW0,R EH S K Y UW
+sanitize,S AE1 N IH0 T AY2 Z,S AE N IH T AY Z
+sanitized,S AE1 N IH0 T AY2 Z D,S AE N IH T AY Z D
+shock,SH AA1 K,SH AA K
+sickroom,S IH1 K R UW1 M,S IH K R UW M
+smell,S M EH1 L,S M EH L
+smoke,S M OW1 K,S M OW K
+staff,S T AE1 F,S T AE F
+stage,S T EY1 JH,S T EY JH
+the,DH AH0,DH AH
+there,DH EH1 R,DH EH R
+there's,DH EH1 R Z,DH EH R Z
+think,TH IH1 NG K,TH IH NG K
+treatment,T R IY1 T M AH0 N T,T R IY T M AH N T
+trouble,T R AH1 B AH0 L,T R AH B AH L
+where's,W EH1 R Z,W EH R Z
+worry,W ER1 IY0,W ER IY
+you,Y UW1,Y UW

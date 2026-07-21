@@ -9,9 +9,8 @@ encoders and tests them against both temporal HuBERT and measured lip articulati
 
 ## Data Boundary
 
-The local RVTALL release contains anonymous corpus identifiers (`word1`, `sentences3`,
-and similar) but no transcripts, TextGrids, or phoneme timestamps. Therefore this report
-does **not** claim forced phoneme alignment. Its articulatory targets are directly measured
+This report predates the prompt-recovery and CTC-alignment analysis in
+`reports/temporal_phonetic_probes.md`. Its articulatory targets are directly measured
 from normalized lip landmarks: inner-lip aperture, mouth width, and lip motion.
 
 ## Temporal Activation Audit
@@ -89,5 +88,5 @@ The non-lip contactless sensors do not improve average held-out articulation R2 
 ## Interpretation Boundary
 
 Relative-time pooling establishes ordered representational evidence, not frame-exact
-synchronization. A true phoneme study still requires the original prompt text plus forced
-alignment, or externally supplied phonetic/articulatory annotations.
+synchronization. The follow-up phonetic study uses aligned words and interpolated phones;
+exact acoustic phone boundaries still require stronger annotations.
