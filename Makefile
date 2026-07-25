@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis
 
 test:
 	python3 -m pytest -q
@@ -133,3 +133,12 @@ phone-boundary-audit:
 
 phone-boundary-import:
 	python3 scripts/54_import_phone_boundary_audit.py
+
+phone-boundary-analysis: phone-boundary-import
+	python3 scripts/49_build_phone_ctc_segment_targets.py --phone-intervals artifacts/forced_alignment/phone_ctc_intervals_audited.csv --output artifacts/forced_alignment/phone_ctc_sentence_targets_audited.npz --report-output reports/results/phone_ctc_target_audit_manually_audited.md
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/phone_ctc_sentence_targets_audited.npz --minimum-confidence 0 --output reports/results/phone_ctc_sentence_probe_results_audited.csv --summary-output reports/results/phone_ctc_sentence_probe_summary_audited.csv
+	python3 scripts/49_build_phone_ctc_segment_targets.py --phone-intervals artifacts/forced_alignment/phone_ctc_intervals_audit_matched_uncorrected.csv --output artifacts/forced_alignment/phone_ctc_sentence_targets_audit_matched_uncorrected.npz --report-output reports/results/phone_ctc_target_audit_matched_uncorrected.md
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/phone_ctc_sentence_targets_audit_matched_uncorrected.npz --minimum-confidence 0 --output reports/results/phone_ctc_sentence_probe_results_audit_matched_uncorrected.csv --summary-output reports/results/phone_ctc_sentence_probe_summary_audit_matched_uncorrected.csv
+	python3 scripts/49_build_phone_ctc_segment_targets.py --phone-intervals artifacts/forced_alignment/uniform_phone_intervals_audit_matched.csv --output artifacts/forced_alignment/uniform_sentence_targets_audit_matched.npz --report-output reports/results/uniform_sentence_target_audit_manually_matched.md
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/uniform_sentence_targets_audit_matched.npz --minimum-confidence 0 --output reports/results/uniform_sentence_probe_results_audit_matched.csv --summary-output reports/results/uniform_sentence_probe_summary_audit_matched.csv
+	python3 scripts/55_generate_phone_boundary_audit_report.py

@@ -21,8 +21,17 @@ def main() -> None:
     parser.add_argument("--audit-dir", default="artifacts/phone_boundary_audit")
     parser.add_argument("--metadata", default="metadata/phone_boundary_audit_set.csv")
     parser.add_argument("--source", default="artifacts/forced_alignment/phone_ctc_intervals.csv")
+    parser.add_argument("--uniform-source", default="artifacts/forced_alignment/interpolated_phone_intervals.csv")
     parser.add_argument("--allow-incomplete", action="store_true")
     parser.add_argument("--output", default="artifacts/forced_alignment/phone_ctc_intervals_audited.csv")
+    parser.add_argument(
+        "--uncorrected-output",
+        default="artifacts/forced_alignment/phone_ctc_intervals_audit_matched_uncorrected.csv",
+    )
+    parser.add_argument(
+        "--uniform-output",
+        default="artifacts/forced_alignment/uniform_phone_intervals_audit_matched.csv",
+    )
     parser.add_argument("--report-output", default="reports/phone_boundary_audit_results.md")
     args = parser.parse_args()
 
@@ -33,6 +42,7 @@ def main() -> None:
             f"Manual audit is incomplete: {len(incomplete)} / {len(metadata)} recordings remain unreviewed"
         )
     source = pd.read_csv(args.source).fillna("")
+    original_source = source.copy()
     source["boundary_review_status"] = "not_audited"
     source["boundary_review_notes"] = ""
     review_dir = Path(args.audit_dir) / "reviews"
@@ -74,6 +84,21 @@ def main() -> None:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     source.to_csv(output, index=False)
+    excluded_pairs = {
+        (str(row.user_id), str(row.group_name))
+        for row in metadata[metadata.review_status.eq("excluded")].itertuples(index=False)
+    }
+
+    def retain_nonexcluded(frame: pd.DataFrame) -> pd.DataFrame:
+        pairs = zip(frame.user_id.astype(str), frame.group_name.astype(str), strict=True)
+        return frame.loc[[pair not in excluded_pairs for pair in pairs]].copy()
+
+    uncorrected_output = Path(args.uncorrected_output)
+    uncorrected_output.parent.mkdir(parents=True, exist_ok=True)
+    retain_nonexcluded(original_source).to_csv(uncorrected_output, index=False)
+    uniform_output = Path(args.uniform_output)
+    uniform_output.parent.mkdir(parents=True, exist_ok=True)
+    retain_nonexcluded(pd.read_csv(args.uniform_source).fillna("")).to_csv(uniform_output, index=False)
 
     counts = metadata.review_status.value_counts().to_dict()
     nonzero = np.asarray([shift for shift in shifts if shift > 1e-6])

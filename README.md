@@ -355,11 +355,16 @@ make phone-boundary-prepare
 make phone-boundary-audit
 ```
 
-After all 40 clips are marked accepted, corrected, or excluded, run
-`make phone-boundary-import`. The importer refuses incomplete audits by default and reads
-reviewed Praat TextGrids when present. Until that listening pass is complete, the evidence
-supports coarse ordered phonetic occupancy but not exact phone tracking or
-one-feature/one-phoneme claims.
+The completed listening audit accepted 29 recordings, corrected 5, and excluded 6.
+Manual correction changed mean residual R2 by `+0.0000` on the same 175 retained
+sentences; audited timing still trails matched uniform timing by `-0.0025`. All-modality
+and contactless residual R2 remain positive at `+0.0337` and `+0.0303`. See
+[`reports/phone_boundary_audit_results.md`](reports/phone_boundary_audit_results.md).
+
+Reproduce the post-audit import and matched probes with `make phone-boundary-analysis`.
+The importer refuses incomplete audits and reads reviewed Praat TextGrids when present.
+The supported claim is therefore coarse ordered phonetic occupancy, not exact phone
+tracking or one-feature/one-phoneme selectivity.
 
 **Modality-specific temporal attention** — the first attention branch underperforms the
 simpler multitask student and produces diffuse sensor/time weights. Keep it as a controlled

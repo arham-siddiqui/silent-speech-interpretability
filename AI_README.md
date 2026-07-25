@@ -43,14 +43,14 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
   1/5 folds at K=50 and overlap with content features is below chance expectation.
 - Current interpretation boundary: claim coarse ordered phonetic occupancy, not exact
   phone tracking or individual phoneme neurons.
-- A deterministic 40-recording manual boundary audit is prepared across all 20 speakers
-  and all 10 sentence classes. The local reviewer supports waveform playback, draggable
-  phone boundaries, explicit accepted/corrected/excluded decisions, and Praat TextGrid
-  interchange. Start it with `make phone-boundary-audit`; tracked sampling and decisions
-  are in `metadata/phone_boundary_audit_set.csv`. `make phone-boundary-import` intentionally
-  fails until all 40 recordings have a decision.
-- The next decisive evidence is the completed listening audit, rerunning the sentence
-  probes with audited intervals, and then external-cohort replication.
+- The balanced 40-recording manual boundary audit is complete across all 20 speakers and
+  all 10 sentence classes: 29 accepted, 5 corrected, and 6 excluded. Correction changes
+  mean residual R2 by `+0.0000` on the exact same 175 retained sentences; audited timing
+  still trails matched uniform timing by `-0.0025`. All-modalities and contactless gains
+  remain `+0.0337` and `+0.0303`. See `reports/phone_boundary_audit_results.md`.
+- Manual validation therefore closes the internal timing question: retain the coarse
+  ordered phonetic occupancy claim, reject exact phone tracking and individual phoneme
+  neuron claims, and proceed to external-cohort replication.
 
 # Project snapshot
 

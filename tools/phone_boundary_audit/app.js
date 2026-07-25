@@ -4,6 +4,7 @@ const state = {
   current: null,
   audioBuffer: null,
   dragging: null,
+  playheadFrame: null,
 };
 
 const elements = {
@@ -224,6 +225,35 @@ function drawTimeline() {
     context.fillText(`${second}s`, x, height - 14);
   }
   context.textAlign = "left";
+  drawPlayhead(context, width);
+}
+
+function drawPlayhead(context, width) {
+  if (!state.current || !Number.isFinite(elements.audio.currentTime)) return;
+  const time = Math.min(elements.audio.currentTime, state.current.duration);
+  const x = timeToX(time, width);
+  context.strokeStyle = "#cf3347";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(x, 14);
+  context.lineTo(x, 264);
+  context.stroke();
+  context.fillStyle = "#cf3347";
+  context.beginPath();
+  context.moveTo(x - 6, 14);
+  context.lineTo(x + 6, 14);
+  context.lineTo(x, 22);
+  context.closePath();
+  context.fill();
+}
+
+function animatePlayhead() {
+  drawTimeline();
+  if (!elements.audio.paused && !elements.audio.ended) {
+    state.playheadFrame = requestAnimationFrame(animatePlayhead);
+  } else {
+    state.playheadFrame = null;
+  }
 }
 
 function nearestBoundary(time, width) {
@@ -266,7 +296,12 @@ elements.canvas.addEventListener("pointerdown", (event) => {
   const rect = elements.canvas.getBoundingClientRect();
   const time = xToTime(event.clientX - rect.left, rect.width);
   state.dragging = nearestBoundary(time, rect.width);
-  if (state.dragging) elements.canvas.setPointerCapture(event.pointerId);
+  if (state.dragging) {
+    elements.canvas.setPointerCapture(event.pointerId);
+  } else {
+    elements.audio.currentTime = time;
+    drawTimeline();
+  }
 });
 
 elements.canvas.addEventListener("pointermove", (event) => {
@@ -288,6 +323,15 @@ elements.canvas.addEventListener("pointerup", (event) => {
   state.dragging = null;
   if (elements.canvas.hasPointerCapture(event.pointerId)) elements.canvas.releasePointerCapture(event.pointerId);
 });
+
+elements.audio.addEventListener("play", () => {
+  if (state.playheadFrame === null) {
+    state.playheadFrame = requestAnimationFrame(animatePlayhead);
+  }
+});
+for (const eventName of ["pause", "ended", "timeupdate", "seeked", "loadedmetadata"]) {
+  elements.audio.addEventListener(eventName, drawTimeline);
+}
 
 async function saveDecision(status) {
   if (!state.current) return;
