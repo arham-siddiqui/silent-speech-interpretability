@@ -19,12 +19,31 @@ PHONE_MANNER = {
     **{phone: "glide" for phone in "W Y".split()},
 }
 
+ARPABET_TO_IPA = {
+    "AA": "ɑː", "AE": "æ", "AO": "ɔː", "AW": "aʊ", "AY": "aɪ",
+    "EH": "ɛ", "ER": "ɚ", "EY": "eɪ", "IH": "ɪ", "IY": "iː",
+    "OW": "oʊ", "OY": "ɔɪ", "UH": "ʊ", "UW": "uː",
+    "B": "b", "CH": "tʃ", "D": "d", "DH": "ð", "F": "f", "G": "ɡ",
+    "HH": "h", "JH": "dʒ", "K": "k", "L": "l", "M": "m", "N": "n",
+    "NG": "ŋ", "P": "p", "R": "ɹ", "S": "s", "SH": "ʃ", "T": "t",
+    "TH": "θ", "V": "v", "W": "w", "Y": "j", "Z": "z", "ZH": "ʒ",
+}
+
 
 def phone_manner(phone: str) -> str:
     normalized = re.sub(r"\d+$", "", phone)
     if normalized not in PHONE_MANNER:
         raise KeyError(f"Unknown ARPAbet phone: {phone}")
     return PHONE_MANNER[normalized]
+
+
+def arpabet_to_ipa(phone: str) -> str:
+    normalized = re.sub(r"\d+$", "", phone)
+    if normalized == "AH":
+        return "ə" if phone.endswith(("0", "2")) else "ʌ"
+    if normalized not in ARPABET_TO_IPA:
+        raise KeyError(f"Unknown ARPAbet phone: {phone}")
+    return ARPABET_TO_IPA[normalized]
 
 
 def interval_occupancy(

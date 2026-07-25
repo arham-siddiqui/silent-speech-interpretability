@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phone Boundary Audit</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Phone Boundary Audit</h1>
+      <p id="progress">Loading audit set</p>
+    </div>
+    <div class="header-controls">
+      <label>
+        Status
+        <select id="status-filter">
+          <option value="all">All</option>
+          <option value="unreviewed">Unreviewed</option>
+          <option value="accepted">Accepted</option>
+          <option value="corrected">Corrected</option>
+          <option value="excluded">Excluded</option>
+        </select>
+      </label>
+      <label>
+        Quality
+        <select id="quality-filter">
+          <option value="all">All</option>
+          <option value="high">High</option>
+          <option value="primary">Primary</option>
+          <option value="borderline">Borderline</option>
+          <option value="fallback">Fallback</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <ol id="item-list"></ol>
+    </aside>
+    <section class="workspace">
+      <div class="recording-head">
+        <div>
+          <p class="identifier" id="identifier"></p>
+          <h2 id="transcript"></h2>
+        </div>
+        <div id="quality-badge" class="badge"></div>
+      </div>
+
+      <dl class="metrics">
+        <div><dt>Phone error</dt><dd id="phone-error"></dd></div>
+        <div><dt>CTC confidence</dt><dd id="confidence"></dd></div>
+        <div><dt>Fallback</dt><dd id="fallback"></dd></div>
+        <div><dt>Duration</dt><dd id="duration"></dd></div>
+      </dl>
+
+      <audio id="audio" controls preload="auto"></audio>
+
+      <div class="timeline-shell">
+        <canvas id="timeline" aria-label="Editable audio, word, and phone timeline"></canvas>
+        <div id="hover-readout">Time: --</div>
+      </div>
+
+      <div class="edit-bar">
+        <button type="button" id="previous">Previous</button>
+        <button type="button" id="reset">Reset boundaries</button>
+        <button type="button" id="next">Next</button>
+      </div>
+
+      <label class="notes">
+        Review notes
+        <textarea id="notes" rows="3" placeholder="Optional evidence or correction rationale"></textarea>
+      </label>
+
+      <div class="decision-bar">
+        <button type="button" class="accept" data-status="accepted">Accept unchanged</button>
+        <button type="button" class="correct" data-status="corrected">Save correction</button>
+        <button type="button" class="exclude" data-status="excluded">Exclude</button>
+        <span id="save-state" role="status"></span>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

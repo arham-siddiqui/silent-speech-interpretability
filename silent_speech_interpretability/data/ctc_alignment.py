@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -75,7 +76,7 @@ def ctc_viterbi_align(log_probs: np.ndarray, target_ids: list[int], blank_id: in
     return spans
 
 
-def levenshtein_distance(left: str, right: str) -> int:
+def levenshtein_distance(left: Sequence, right: Sequence) -> int:
     previous = list(range(len(right) + 1))
     for left_index, left_value in enumerate(left, start=1):
         current = [left_index]
@@ -92,4 +93,8 @@ def levenshtein_distance(left: str, right: str) -> int:
 
 
 def character_error_rate(reference: str, hypothesis: str) -> float:
+    return levenshtein_distance(reference, hypothesis) / max(len(reference), 1)
+
+
+def sequence_error_rate(reference: Sequence, hypothesis: Sequence) -> float:
     return levenshtein_distance(reference, hypothesis) / max(len(reference), 1)

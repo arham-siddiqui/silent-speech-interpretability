@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import
 
 test:
 	python3 -m pytest -q
@@ -109,3 +109,27 @@ wav2vec2-teacher-comparison:
 	python3 scripts/30_extract_temporal_hubert_targets.py --model-name facebook/wav2vec2-base-960h --local-files-only --output artifacts/teacher_targets/facebook_wav2vec2-base-960h_temporal4_targets.npz --audit-output reports/results/wav2vec2_temporal_target_audit.csv
 	python3 scripts/35_run_temporal_sensor_student_cv.py --teacher-targets artifacts/teacher_targets/facebook_wav2vec2-base-960h_temporal4_targets.npz --output-dir artifacts/students/wav2vec2_temporal_sensor_cv --output reports/results/wav2vec2_temporal_sensor_student_cv.csv --report-output artifacts/wav2vec2_temporal_sensor_alignment_draft.md
 	python3 scripts/47_generate_audio_teacher_comparison.py
+
+phone-ctc-alignment: phonetic-alignment
+	python3 scripts/48_align_audio_phones.py --local-files-only
+	python3 scripts/49_build_phone_ctc_segment_targets.py
+	python3 scripts/49_build_phone_ctc_segment_targets.py --phone-intervals artifacts/forced_alignment/interpolated_phone_intervals.csv --output artifacts/forced_alignment/uniform_sentence_targets_matched.npz --report-output reports/results/uniform_sentence_target_audit_matched.md
+	python3 scripts/49_build_phone_ctc_segment_targets.py --minimum-confidence 0.02 --maximum-phone-error 1.0 --maximum-fallback-fraction 0.5 --output artifacts/forced_alignment/phone_ctc_sentence_targets_lenient.npz --report-output reports/results/phone_ctc_target_audit_lenient.md
+	python3 scripts/49_build_phone_ctc_segment_targets.py --minimum-confidence 0.15 --maximum-phone-error 0.5 --minimum-center-in-word 0.5 --maximum-fallback-fraction 0.25 --output artifacts/forced_alignment/phone_ctc_sentence_targets_strict_cv.npz --report-output reports/results/phone_ctc_target_audit_strict_cv.md
+
+phone-ctc-probes: phone-ctc-alignment
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/phone_ctc_sentence_targets.npz --minimum-confidence 0 --output reports/results/phone_ctc_sentence_probe_results.csv --summary-output reports/results/phone_ctc_sentence_probe_summary.csv
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/uniform_sentence_targets_matched.npz --minimum-confidence 0 --output reports/results/uniform_sentence_probe_results_matched.csv --summary-output reports/results/uniform_sentence_probe_summary_matched.csv
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/phone_ctc_sentence_targets_lenient.npz --minimum-confidence 0 --output reports/results/phone_ctc_sentence_probe_results_lenient.csv --summary-output reports/results/phone_ctc_sentence_probe_summary_lenient.csv
+	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/phone_ctc_sentence_targets_strict_cv.npz --minimum-confidence 0 --output reports/results/phone_ctc_sentence_probe_results_strict_cv.csv --summary-output reports/results/phone_ctc_sentence_probe_summary_strict_cv.csv
+	python3 scripts/50_link_sparse_features_to_phones.py
+	python3 scripts/51_generate_phone_ctc_report.py
+
+phone-boundary-prepare:
+	python3 scripts/52_prepare_phone_boundary_audit.py
+
+phone-boundary-audit:
+	python3 scripts/53_serve_phone_boundary_audit.py
+
+phone-boundary-import:
+	python3 scripts/54_import_phone_boundary_audit.py

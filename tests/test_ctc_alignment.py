@@ -1,6 +1,6 @@
 import numpy as np
 
-from silent_speech_interpretability.data.ctc_alignment import character_error_rate, ctc_viterbi_align
+from silent_speech_interpretability.data.ctc_alignment import character_error_rate, ctc_viterbi_align, sequence_error_rate
 
 
 def test_ctc_viterbi_alignment_handles_repeated_tokens():
@@ -15,3 +15,4 @@ def test_ctc_viterbi_alignment_handles_repeated_tokens():
 def test_character_error_rate():
     assert character_error_rate("HELP", "HEP") == 0.25
     assert character_error_rate("SAME", "SAME") == 0.0
+    assert sequence_error_rate(["h", "ɛ", "l", "p"], ["h", "ɛ", "p"]) == 0.25

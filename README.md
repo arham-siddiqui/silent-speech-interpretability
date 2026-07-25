@@ -307,6 +307,13 @@ probes find the strongest residual signal in the combined contactless sensors: m
 An alternate Wav2Vec2 teacher underperforms matched HuBERT transfer (47.9% versus 49.9%
 accuracy; 0.290 versus 0.381 temporal cosine), so HuBERT remains selected; see
 [`reports/audio_teacher_comparison.md`](reports/audio_teacher_comparison.md).
+Direct IPA phone-CTC alignment now covers all 596 paired recordings and 4,854 canonical
+phone intervals. On 178 quality-controlled sentences, all modalities add `+0.032 R2` and
+the non-lip contactless sensors add `+0.029 R2` beyond class+position; the gains strengthen
+to `+0.038` and `+0.034` under the strict fold-valid gate. Exact within-word phone timing
+does not beat a same-pairs uniform-boundary control, and sparse phone-feature ablations are
+not stable across folds. See
+[`reports/phone_ctc_interpretability.md`](reports/phone_ctc_interpretability.md).
 
 Reproduce the tracked alignment and probe batch with:
 
@@ -314,11 +321,12 @@ Reproduce the tracked alignment and probe batch with:
 pip install -e '.[audio-teachers,interpretability,alignment]'
 make audio-phonetic-batch
 make wav2vec2-teacher-comparison
+make phone-ctc-probes
 ```
 
-The Make targets use `--local-files-only`; cache `facebook/wav2vec2-base-960h` before
-running them. Large generated targets and checkpoints stay ignored, while aggregate CSVs
-under `reports/tables/` are tracked.
+The Make targets use `--local-files-only`; cache `facebook/wav2vec2-base-960h` and
+`facebook/wav2vec2-lv-60-espeak-cv-ft` before running them. Large generated targets and
+checkpoints stay ignored, while aggregate CSVs under `reports/tables/` are tracked.
 
 **Retrain UWB encoder fully** — the v2 UWB training was killed early. A fully converged
 UWB v2 with DANN + attention would likely lift both individual UWB accuracy and fusion
@@ -332,10 +340,26 @@ modality ceilings and therefore the fusion ceiling.
 not enough to learn reliable modality weights. More speakers would enable proper
 gating to outperform the no-training baselines.
 
-**Stronger phoneme alignment** — broad temporal phonetic probes are now complete using
-CTC word boundaries and uniformly interpolated ARPAbet phones. Exact acoustic phone
-boundaries still require a phone-level aligner or manually checked TextGrids. That sharper
-annotation is the next requirement before naming individual latent features as phonemes.
+**Manual phone-boundary validation** — direct phone-CTC midpoint boundaries are now
+complete and quality-controlled. A deterministic manual audit package now samples 40
+sentences across all 20 speakers and all 10 sentence classes, including every sentence
+alignment with fallback spans. See
+[`reports/phone_boundary_audit_plan.md`](reports/phone_boundary_audit_plan.md) and the
+tracked decision sheet
+[`metadata/phone_boundary_audit_set.csv`](metadata/phone_boundary_audit_set.csv).
+
+Prepare the package once and launch the local waveform/TextGrid reviewer with:
+
+```bash
+make phone-boundary-prepare
+make phone-boundary-audit
+```
+
+After all 40 clips are marked accepted, corrected, or excluded, run
+`make phone-boundary-import`. The importer refuses incomplete audits by default and reads
+reviewed Praat TextGrids when present. Until that listening pass is complete, the evidence
+supports coarse ordered phonetic occupancy but not exact phone tracking or
+one-feature/one-phoneme claims.
 
 **Modality-specific temporal attention** — the first attention branch underperforms the
 simpler multitask student and produces diffuse sensor/time weights. Keep it as a controlled

@@ -32,9 +32,25 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
 - Wav2Vec2 was tested as an alternate teacher and underperformed HuBERT: 47.9% versus
   49.9% base temporal-student accuracy and 0.290 versus 0.381 true-order cosine. HuBERT
   remains selected. See `reports/audio_teacher_comparison.md`.
-- Next decisive step: obtain phone-level forced alignment or manually audited TextGrids,
-  then repeat the residual probes and connect reliable phone targets to sparse-feature
-  causal ablations. Keep the 60.1% HuBERT multitask model selected.
+- Direct IPA phone-CTC alignment is complete for all 596 recordings (4,854 phone
+  intervals). The balanced primary analysis uses 178 sentences: all modalities add
+  `+0.032 R2` and non-lip contactless sensors add `+0.029 R2` beyond class+position.
+  Strict fold-valid results strengthen to `+0.038` and `+0.034`. See
+  `reports/phone_ctc_interpretability.md`.
+- Exact phone boundaries do not improve macro residual R2 over a same-pairs uniform timing
+  control (`-0.002` mean direct-minus-uniform gain). Existing sparse HuBERT features weakly
+  recover phone timing (`+0.010 R2`), but top-feature ablations are significant in only
+  1/5 folds at K=50 and overlap with content features is below chance expectation.
+- Current interpretation boundary: claim coarse ordered phonetic occupancy, not exact
+  phone tracking or individual phoneme neurons.
+- A deterministic 40-recording manual boundary audit is prepared across all 20 speakers
+  and all 10 sentence classes. The local reviewer supports waveform playback, draggable
+  phone boundaries, explicit accepted/corrected/excluded decisions, and Praat TextGrid
+  interchange. Start it with `make phone-boundary-audit`; tracked sampling and decisions
+  are in `metadata/phone_boundary_audit_set.csv`. `make phone-boundary-import` intentionally
+  fails until all 40 recordings have a decision.
+- The next decisive evidence is the completed listening audit, rerunning the sentence
+  probes with audited intervals, and then external-cohort replication.
 
 # Project snapshot
 
