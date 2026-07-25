@@ -315,6 +315,19 @@ does not beat a same-pairs uniform-boundary control, and sparse phone-feature ab
 not stable across folds. See
 [`reports/phone_ctc_interpretability.md`](reports/phone_ctc_interpretability.md).
 
+**External radar replication** — the selected HuBERT teacher/student method now has an
+independent cross-session replication on the Wagner et al. stepped-frequency radar
+command-word corpus. The audited set contains 3,000 paired radar/audio samples spanning
+2 subjects, 3 sessions, and 50 German commands. With each recording session held out in
+turn, the radar-only student reaches **27.8%** mean accuracy (2% chance), **0.323**
+true-order HuBERT cosine versus **-0.008** reversed, and a **+0.123** order margin after
+removing train-only command prototypes. See
+[`reports/external_radar_corpus_audit.md`](reports/external_radar_corpus_audit.md) and
+[`reports/external_radar_hubert_replication.md`](reports/external_radar_hubert_replication.md).
+This is evidence of cross-session replication under a new lab, language, sensor, and
+speaker cohort; with only two external subjects, it is not broad speaker-generalization
+evidence.
+
 Reproduce the tracked alignment and probe batch with:
 
 ```bash
@@ -322,6 +335,7 @@ pip install -e '.[audio-teachers,interpretability,alignment]'
 make audio-phonetic-batch
 make wav2vec2-teacher-comparison
 make phone-ctc-probes
+make external-radar-replication
 ```
 
 The Make targets use `--local-files-only`; cache `facebook/wav2vec2-base-960h` and

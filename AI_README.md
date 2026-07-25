@@ -51,6 +51,16 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
 - Manual validation therefore closes the internal timing question: retain the coarse
   ordered phonetic occupancy claim, reject exact phone tracking and individual phoneme
   neuron claims, and proceed to external-cohort replication.
+- External replication is now complete on the Wagner et al. radar command-word corpus:
+  3,000 paired samples, 2 subjects, 3 sessions, and 50 German commands. Three
+  session-held-out folds reach 27.8% mean radar-only accuracy (2% chance), 0.323
+  true-order HuBERT cosine versus -0.008 reversed, and +0.123 order margin on the
+  stricter within-command residual targets. This supports independent cross-session
+  replication, not broad speaker generalization. See
+  `reports/external_radar_hubert_replication.md`.
+- The reproducible external pipeline is `make external-radar-replication`; the 1.43 GB
+  archive, extracted 5 GB corpus, HuBERT targets, radar features, and checkpoints remain
+  ignored, while the audit, report, and aggregate CSVs are tracked.
 
 # Project snapshot
 

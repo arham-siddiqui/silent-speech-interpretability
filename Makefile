@@ -1,4 +1,8 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis external-radar-fetch external-radar-extract external-radar-audit external-radar-features external-radar-hubert-pilot external-radar-replication
+
+EXTERNAL_RADAR_DIR := artifacts/external/radar_command_words
+EXTERNAL_RADAR_ARCHIVE := $(EXTERNAL_RADAR_DIR)/wagner-2022-scientific-reports-supplement.zip
+EXTERNAL_RADAR_ARCHIVE_BYTES := 1426657701
 
 test:
 	python3 -m pytest -q
@@ -142,3 +146,34 @@ phone-boundary-analysis: phone-boundary-import
 	python3 scripts/49_build_phone_ctc_segment_targets.py --phone-intervals artifacts/forced_alignment/uniform_phone_intervals_audit_matched.csv --output artifacts/forced_alignment/uniform_sentence_targets_audit_matched.npz --report-output reports/results/uniform_sentence_target_audit_manually_matched.md
 	python3 scripts/45_probe_temporal_phonetics.py --targets artifacts/forced_alignment/uniform_sentence_targets_audit_matched.npz --minimum-confidence 0 --output reports/results/uniform_sentence_probe_results_audit_matched.csv --summary-output reports/results/uniform_sentence_probe_summary_audit_matched.csv
 	python3 scripts/55_generate_phone_boundary_audit_report.py
+
+external-radar-fetch:
+	mkdir -p $(EXTERNAL_RADAR_DIR)
+	@if [ ! -f $(EXTERNAL_RADAR_ARCHIVE) ] || [ "$$(wc -c < $(EXTERNAL_RADAR_ARCHIVE) | tr -d ' ')" -ne "$(EXTERNAL_RADAR_ARCHIVE_BYTES)" ]; then \
+		curl -L -C - --retry 5 -o $(EXTERNAL_RADAR_ARCHIVE) https://www.vocaltractlab.de/supplements/wagner-2022-scientific-reports-supplement.zip; \
+	else \
+		echo "External radar archive is already complete."; \
+	fi
+	@test "$$(wc -c < $(EXTERNAL_RADAR_ARCHIVE) | tr -d ' ')" -eq "$(EXTERNAL_RADAR_ARCHIVE_BYTES)"
+
+external-radar-extract: external-radar-fetch
+	mkdir -p $(EXTERNAL_RADAR_DIR)/extracted
+	@if [ ! -f $(EXTERNAL_RADAR_DIR)/extracted/.complete ] || [ $(EXTERNAL_RADAR_ARCHIVE) -nt $(EXTERNAL_RADAR_DIR)/extracted/.complete ]; then \
+		unzip -q -o $(EXTERNAL_RADAR_ARCHIVE) -d $(EXTERNAL_RADAR_DIR)/extracted; \
+		touch $(EXTERNAL_RADAR_DIR)/extracted/.complete; \
+	else \
+		echo "External radar archive is already extracted."; \
+	fi
+
+external-radar-audit: external-radar-extract
+	python3 scripts/56_audit_external_radar_corpus.py
+
+external-radar-features: external-radar-audit
+	python3 scripts/57_extract_external_radar_features.py
+
+external-radar-hubert-pilot: external-radar-audit
+	python3 scripts/58_extract_external_hubert_targets.py --local-files-only --limit 20 --output artifacts/external/radar_command_words/hubert_temporal4_targets_pilot20.npz --audit-output artifacts/external/radar_command_words/hubert_target_audit_pilot20.csv
+
+external-radar-replication: external-radar-features
+	python3 scripts/58_extract_external_hubert_targets.py --local-files-only
+	python3 scripts/59_run_external_radar_student.py
