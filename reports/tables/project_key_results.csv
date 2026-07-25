@@ -1,0 +1,6 @@
+track,evaluation,metric,value,chance,status,source
+Supervised baseline,True encoder-disjoint RVTALL CV,accuracy,0.639,0.03333333333333333,supported,reports/true_encoder_cv_results.md
+Audio teacher/student,Speaker-disjoint pooled HuBERT student,accuracy,0.64,0.03333333333333333,supported,reports/hubert_teacher_student_cv.md
+Ordered representation,Temporal silent-sensor to HuBERT transfer,true_order_cosine,0.381,,supported,reports/temporal_sensor_interpretability.md
+External session replication,Three-seed held-out-session radar,accuracy,0.2872222222222222,0.02,supported,reports/external_radar_generalization.md
+External speaker transfer,Three-seed leave-one-subject-out radar,accuracy,0.0299999999999999,0.02,negative,reports/external_radar_generalization.md

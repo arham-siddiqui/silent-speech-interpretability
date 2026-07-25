@@ -1,8 +1,17 @@
 # Silent Speech Decoding — Project Overview
 
-**Goal**: Decode silent speech (intended but unvocalized utterances) across 30 classes —
-5 vowels, 15 words, 10 sentences — using five sensor modalities simultaneously.
-No microphone. No vocalization. Speaker-independent generalization required.
+**Goal**: Decode 30 speech classes — 5 vowels, 15 words, and 10 sentences — using
+contactless / microphone-free sensor inference. Audio may provide training-only teacher
+targets; dataset vocalization conditions are reported rather than assumed.
+
+## Final Deliverables
+
+- [Final research report](reports/final_project_report.md)
+- [Consolidated findings](reports/project_final_summary.md)
+- [Professor demo notebook](notebooks/professor_demo.ipynb)
+- [External generalization report](reports/external_radar_generalization.md)
+
+Regenerate the compact tracked package with `make final-package`.
 
 ---
 
@@ -20,7 +29,7 @@ recorded simultaneously across six sensor modalities:
 | UWB radar | 7.5 GHz CIR | Range-time matrix, 2 antennas |
 | mmWave radar | 77 GHz FMCW | Range-Doppler map |
 | Laser speckle | 1D photodiode | Raw time-series signal |
-| Audio | Microphone | Not used (silent speech task) |
+| Audio | Microphone | Training/evaluation teacher targets only; excluded from inference |
 
 **Train/val/test split — by speaker, not by sample:**
 - Train: users 1–16 (16 speakers)
@@ -335,7 +344,7 @@ The full project-level evidence and claim boundaries are consolidated in
 Reproduce the tracked alignment and probe batch with:
 
 ```bash
-pip install -e '.[audio-teachers,interpretability,alignment]'
+pip install -e '.[audio-teachers,interpretability,alignment,reporting]'
 make audio-phonetic-batch
 make wav2vec2-teacher-comparison
 make phone-ctc-probes

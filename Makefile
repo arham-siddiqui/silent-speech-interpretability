@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis external-radar-fetch external-radar-extract external-radar-audit external-radar-features external-radar-hubert-pilot external-radar-replication external-radar-validation-batch
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis external-radar-fetch external-radar-extract external-radar-audit external-radar-features external-radar-hubert-pilot external-radar-replication external-radar-validation-batch final-package
 
 EXTERNAL_RADAR_DIR := artifacts/external/radar_command_words
 EXTERNAL_RADAR_ARCHIVE := $(EXTERNAL_RADAR_DIR)/wagner-2022-scientific-reports-supplement.zip
@@ -190,3 +190,9 @@ external-radar-validation-batch: external-radar-features
 	fi
 	python3 scripts/60_run_external_validation_batch.py
 	python3 scripts/61_generate_project_final_report.py
+
+final-package:
+	python3 scripts/60_run_external_validation_batch.py --report-only
+	python3 scripts/61_generate_project_final_report.py
+	python3 scripts/62_generate_final_figures.py
+	python3 scripts/63_generate_final_project_report.py

@@ -64,8 +64,11 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
 - The reproducible external pipeline is `make external-radar-replication`; the 1.43 GB
   archive, extracted 5 GB corpus, HuBERT targets, radar features, and checkpoints remain
   ignored, while the audit, report, and aggregate CSVs are tracked.
-- The full project conclusion and evidence map are in `reports/project_final_summary.md`.
-  The next research step is source-only speaker-invariant radar normalization/domain
+- The polished professor-facing narrative is `reports/final_project_report.md`; the
+  compact evidence map is `reports/project_final_summary.md`, and the runnable walkthrough
+  is `notebooks/professor_demo.ipynb`. Regenerate all tracked packaging with
+  `make final-package`.
+- The next research step is source-only speaker-invariant radar normalization/domain
   adversarial training, followed by evaluation on a larger external speaker cohort.
 
 # Project snapshot

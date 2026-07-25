@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
@@ -26,6 +27,10 @@ def main() -> None:
         "--output",
         default="reports/project_final_summary.md",
     )
+    parser.add_argument(
+        "--table-output",
+        default="reports/tables/project_key_results.csv",
+    )
     args = parser.parse_args()
 
     summary = pd.read_csv(args.external_summary)
@@ -34,6 +39,59 @@ def main() -> None:
     session_residual = _metric(summary, "session", "residual_order_margin_reversed")
     subject_accuracy = _metric(summary, "subject", "accuracy")
     subject_order = _metric(summary, "subject", "order_margin_reversed")
+
+    key_results = pd.DataFrame(
+        [
+            {
+                "track": "Supervised baseline",
+                "evaluation": "True encoder-disjoint RVTALL CV",
+                "metric": "accuracy",
+                "value": 0.639,
+                "chance": 1 / 30,
+                "status": "supported",
+                "source": "reports/true_encoder_cv_results.md",
+            },
+            {
+                "track": "Audio teacher/student",
+                "evaluation": "Speaker-disjoint pooled HuBERT student",
+                "metric": "accuracy",
+                "value": 0.640,
+                "chance": 1 / 30,
+                "status": "supported",
+                "source": "reports/hubert_teacher_student_cv.md",
+            },
+            {
+                "track": "Ordered representation",
+                "evaluation": "Temporal silent-sensor to HuBERT transfer",
+                "metric": "true_order_cosine",
+                "value": 0.381,
+                "chance": np.nan,
+                "status": "supported",
+                "source": "reports/temporal_sensor_interpretability.md",
+            },
+            {
+                "track": "External session replication",
+                "evaluation": "Three-seed held-out-session radar",
+                "metric": "accuracy",
+                "value": session_accuracy["mean"],
+                "chance": 1 / 50,
+                "status": "supported",
+                "source": "reports/external_radar_generalization.md",
+            },
+            {
+                "track": "External speaker transfer",
+                "evaluation": "Three-seed leave-one-subject-out radar",
+                "metric": "accuracy",
+                "value": subject_accuracy["mean"],
+                "chance": 1 / 50,
+                "status": "negative",
+                "source": "reports/external_radar_generalization.md",
+            },
+        ]
+    )
+    table_output = Path(args.table_output)
+    table_output.parent.mkdir(parents=True, exist_ok=True)
+    key_results.to_csv(table_output, index=False)
 
     report = f"""# Silent Speech Interpretability: Consolidated Findings
 
