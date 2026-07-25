@@ -319,14 +319,18 @@ not stable across folds. See
 independent cross-session replication on the Wagner et al. stepped-frequency radar
 command-word corpus. The audited set contains 3,000 paired radar/audio samples spanning
 2 subjects, 3 sessions, and 50 German commands. With each recording session held out in
-turn, the radar-only student reaches **27.8%** mean accuracy (2% chance), **0.323**
-true-order HuBERT cosine versus **-0.008** reversed, and a **+0.123** order margin after
-removing train-only command prototypes. See
+turn across three seeds, the radar-only student reaches **28.7%** mean accuracy
+(empirical held-out-session interval 19.9–37.0%; 2% chance), **0.327** true-order
+HuBERT cosine, and a **+0.122** order margin after removing train-only command
+prototypes. In the stricter leave-one-subject-out test, accuracy collapses to **3.0%**
+and temporal order margin to **-0.012**. The current external radar representation
+therefore transfers across sessions, not reliably across unseen speakers. S32 alone
+retains 28.2% session accuracy, while S12 and temporal-delta-only features reach 14.5%
+and 16.6%. See
 [`reports/external_radar_corpus_audit.md`](reports/external_radar_corpus_audit.md) and
-[`reports/external_radar_hubert_replication.md`](reports/external_radar_hubert_replication.md).
-This is evidence of cross-session replication under a new lab, language, sensor, and
-speaker cohort; with only two external subjects, it is not broad speaker-generalization
-evidence.
+[`reports/external_radar_generalization.md`](reports/external_radar_generalization.md).
+The full project-level evidence and claim boundaries are consolidated in
+[`reports/project_final_summary.md`](reports/project_final_summary.md).
 
 Reproduce the tracked alignment and probe batch with:
 
@@ -336,6 +340,7 @@ make audio-phonetic-batch
 make wav2vec2-teacher-comparison
 make phone-ctc-probes
 make external-radar-replication
+make external-radar-validation-batch
 ```
 
 The Make targets use `--local-files-only`; cache `facebook/wav2vec2-base-960h` and

@@ -8,8 +8,10 @@ import numpy as np
 from silent_speech_interpretability.data.external_radar import (
     MAX_FREQUENCY_POINTS,
     discover_external_radar_corpus,
+    make_external_split_specs,
     radar_segment_features,
     read_radar_binary,
+    select_radar_feature_set,
 )
 
 
@@ -71,3 +73,46 @@ def test_discover_external_radar_corpus_pairs_by_stem(tmp_path: Path) -> None:
     assert manifest.loc[0, "class_id"] == 1
     assert manifest.loc[0, "repetition"] == 3
     assert manifest.loc[0, "label"] == "kommando"
+
+
+def test_select_radar_feature_set_preserves_expected_families() -> None:
+    features = np.arange(2 * 4 * 8, dtype=np.float32).reshape(2, 4, 8)
+
+    np.testing.assert_array_equal(select_radar_feature_set(features, "all"), features)
+    np.testing.assert_array_equal(select_radar_feature_set(features, "s12"), features[:, :, :4])
+    np.testing.assert_array_equal(select_radar_feature_set(features, "s32"), features[:, :, 4:])
+    np.testing.assert_array_equal(
+        select_radar_feature_set(features, "magnitude"),
+        features[:, :, [0, 1, 4, 5]],
+    )
+    np.testing.assert_array_equal(
+        select_radar_feature_set(features, "delta"),
+        features[:, :, [2, 3, 6, 7]],
+    )
+
+
+def test_external_subject_splits_never_expose_test_subject() -> None:
+    users = np.repeat(["S001", "S002"], 6)
+    sessions = np.tile(np.repeat(["SES01", "SES02", "SES03"], 2), 2)
+
+    specs = make_external_split_specs(users, sessions, protocol="subject")
+
+    assert len(specs) == 2
+    for spec in specs:
+        train_users = set(users[spec["train_mask"]])
+        val_users = set(users[spec["val_mask"]])
+        test_users = set(users[spec["test_mask"]])
+        assert train_users == val_users == {spec["train_user"]}
+        assert test_users == {spec["test_user"]}
+        assert train_users.isdisjoint(test_users)
+        assert set(sessions[spec["val_mask"]]) == {"SES03"}
+
+
+def test_external_session_splits_cover_each_sample_once_as_test() -> None:
+    users = np.repeat(["S001", "S002"], 3)
+    sessions = np.tile(["SES01", "SES02", "SES03"], 2)
+
+    specs = make_external_split_specs(users, sessions, protocol="session")
+
+    test_counts = np.stack([spec["test_mask"] for spec in specs]).sum(axis=0)
+    np.testing.assert_array_equal(test_counts, np.ones(len(users), dtype=np.int64))

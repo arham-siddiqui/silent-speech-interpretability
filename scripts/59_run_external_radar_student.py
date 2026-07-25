@@ -15,6 +15,10 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 
+from silent_speech_interpretability.data.external_radar import (
+    make_external_split_specs,
+    select_radar_feature_set,
+)
 from silent_speech_interpretability.models.students.temporal_sensor_student import TemporalSensorStudent
 from silent_speech_interpretability.models.teachers.teacher_targets import load_teacher_targets
 
@@ -188,6 +192,28 @@ def main() -> None:
     parser.add_argument("--bottleneck-dim", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
+        "--seeds",
+        default=None,
+        help="Comma-separated seeds; overrides --seed when provided",
+    )
+    parser.add_argument("--protocol", choices=["session", "subject"], default="session")
+    parser.add_argument(
+        "--feature-set",
+        choices=["all", "s12", "s32", "magnitude", "delta"],
+        default="all",
+    )
+    parser.add_argument("--subject-val-session", default="SES03")
+    parser.add_argument(
+        "--no-residual-control",
+        action="store_true",
+        help="Skip the second within-command residual student",
+    )
+    parser.add_argument(
+        "--no-save-checkpoints",
+        action="store_true",
+        help="Do not retain model checkpoints for sweep runs",
+    )
+    parser.add_argument(
         "--output-dir",
         default="artifacts/external/radar_command_words/students",
     )
@@ -213,7 +239,7 @@ def main() -> None:
         raise ValueError(f"Teacher targets are missing {len(missing)} radar samples")
 
     order = np.asarray([target_index[sample_id] for sample_id in radar_ids])
-    features = radar["features"].astype(np.float32)
+    features = select_radar_feature_set(radar["features"], args.feature_set)
     labels = radar["class_ids"].astype(np.int64)
     teacher_labels = np.asarray(teacher["labels"])[order].astype(np.int64)
     if not np.array_equal(labels, teacher_labels):
@@ -221,156 +247,205 @@ def main() -> None:
     segments, target_dim = teacher["target_shape"]
     targets = np.asarray(teacher["targets"])[order].reshape(-1, segments, target_dim)
     sessions = radar["session_ids"].astype(str)
-    unique_sessions = sorted(np.unique(sessions))
-    if len(unique_sessions) != 3:
-        raise ValueError(f"Expected three sessions, found {unique_sessions}")
+    users = radar["user_ids"].astype(str)
+    seeds = (
+        [int(value) for value in args.seeds.split(",") if value.strip()]
+        if args.seeds is not None
+        else [args.seed]
+    )
+    if not seeds:
+        raise ValueError("At least one training seed is required")
+
+    split_specs = make_external_split_specs(
+        users,
+        sessions,
+        protocol=args.protocol,
+        subject_val_session=args.subject_val_session,
+    )
 
     device = torch.device(args.device)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     started = time.perf_counter()
-    for fold, test_session in enumerate(unique_sessions):
-        val_session = unique_sessions[(fold + 1) % len(unique_sessions)]
-        train_session = next(
-            session for session in unique_sessions if session not in {test_session, val_session}
-        )
-        train_mask = sessions == train_session
-        val_mask = sessions == val_session
-        test_mask = sessions == test_session
+    total_runs = len(split_specs) * len(seeds)
+    completed_runs = 0
+    for requested_seed in seeds:
+        for split in split_specs:
+            fold = int(split["fold"])
+            train_mask = split["train_mask"]
+            val_mask = split["val_mask"]
+            test_mask = split["test_mask"]
+            train_session = str(split["train_session"])
+            val_session = str(split["val_session"])
+            test_session = str(split["test_session"])
 
-        input_mean = features[train_mask].mean(axis=(0, 1), keepdims=True)
-        input_std = features[train_mask].std(axis=(0, 1), keepdims=True) + 1e-6
-        teacher_center = targets[train_mask].mean(axis=0, keepdims=True)
-        centered_targets = targets - teacher_center
-        class_prototypes = {
-            label: centered_targets[train_mask & (labels == label)].mean(axis=0)
-            for label in np.unique(labels[train_mask])
-        }
-        residual_targets = np.stack(
-            [
-                target - class_prototypes[label]
-                for target, label in zip(centered_targets, labels, strict=True)
-            ]
-        )
-
-        def prepared(
-            mask: np.ndarray, target_values: np.ndarray
-        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-            return (
-                (features[mask] - input_mean) / input_std,
-                target_values[mask],
-                labels[mask],
+            input_mean = features[train_mask].mean(axis=(0, 1), keepdims=True)
+            input_std = features[train_mask].std(axis=(0, 1), keepdims=True) + 1e-6
+            teacher_center = targets[train_mask].mean(axis=0, keepdims=True)
+            centered_targets = targets - teacher_center
+            class_prototypes = {
+                label: centered_targets[train_mask & (labels == label)].mean(axis=0)
+                for label in np.unique(labels[train_mask])
+            }
+            residual_targets = np.stack(
+                [
+                    target - class_prototypes[label]
+                    for target, label in zip(centered_targets, labels, strict=True)
+                ]
             )
 
-        train = prepared(train_mask, centered_targets)
-        val = prepared(val_mask, centered_targets)
-        test = prepared(test_mask, centered_targets)
-        seed = args.seed + fold
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        model = TemporalSensorStudent(
-            input_dim=features.shape[2],
-            target_dim=target_dim,
-            hidden_dim=args.hidden_dim,
-            bottleneck_dim=args.bottleneck_dim,
-            num_classes=int(labels.max()) + 1,
-            num_segments=segments,
-        )
-        model, best_epoch = _train(
-            model,
-            train,
-            val,
-            device=device,
-            max_epochs=args.max_epochs,
-            batch_size=args.batch_size,
-            seed=seed,
-        )
-        metrics = _metrics(model, *test, device)
-        metrics["class_prototype_cosine"] = _class_prototype_cosine(
-            train[1], train[2], test[1], test[2]
-        )
-        np.random.seed(seed + 1000)
-        torch.manual_seed(seed + 1000)
-        residual_model = TemporalSensorStudent(
-            input_dim=features.shape[2],
-            target_dim=target_dim,
-            hidden_dim=args.hidden_dim,
-            bottleneck_dim=args.bottleneck_dim,
-            num_classes=int(labels.max()) + 1,
-            num_segments=segments,
-        )
-        residual_model, residual_best_epoch = _train(
-            residual_model,
-            prepared(train_mask, residual_targets),
-            prepared(val_mask, residual_targets),
-            device=device,
-            max_epochs=args.max_epochs,
-            batch_size=args.batch_size,
-            seed=seed + 1000,
-        )
-        residual_metrics = _metrics(
-            residual_model, *prepared(test_mask, residual_targets), device
-        )
-        metrics.update(
-            {
-                "residual_best_epoch": residual_best_epoch,
-                "residual_segment_cosine": residual_metrics["segment_cosine"],
-                "residual_reversed_segment_cosine": residual_metrics[
-                    "reversed_segment_cosine"
-                ],
-                "residual_order_margin_reversed": residual_metrics[
-                    "order_margin_reversed"
-                ],
-                "residual_target_mse": residual_metrics["target_mse"],
-            }
-        )
-        rows.append(
-            {
-                "fold": fold,
-                "train_session": train_session,
-                "val_session": val_session,
-                "test_session": test_session,
-                "best_epoch": best_epoch,
-                "num_train": int(train_mask.sum()),
-                "num_val": int(val_mask.sum()),
-                "num_test": int(test_mask.sum()),
-                **metrics,
-            }
-        )
-        torch.save(
-            {
-                "state_dict": model.state_dict(),
-                "input_mean": input_mean,
-                "input_std": input_std,
-                "teacher_center": teacher_center,
-                "train_session": train_session,
-                "val_session": val_session,
-                "test_session": test_session,
-            },
-            output_dir / f"session_fold_{fold}.pt",
-        )
-        torch.save(
-            {
-                "state_dict": residual_model.state_dict(),
-                "input_mean": input_mean,
-                "input_std": input_std,
-                "teacher_center": teacher_center,
-                "class_prototypes": class_prototypes,
-                "train_session": train_session,
-                "val_session": val_session,
-                "test_session": test_session,
-            },
-            output_dir / f"session_fold_{fold}_class_residual.pt",
-        )
-        elapsed = time.perf_counter() - started
-        remaining = elapsed / (fold + 1) * (len(unique_sessions) - fold - 1)
-        print(
-            f"EXTERNAL_STUDENT fold={fold} test={test_session} "
-            f"accuracy={metrics['accuracy']:.3f} cosine={metrics['segment_cosine']:.3f} "
-            f"estimated_remaining_seconds={remaining:.1f}",
-            flush=True,
-        )
+            def prepared(
+                mask: np.ndarray, target_values: np.ndarray
+            ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+                return (
+                    (features[mask] - input_mean) / input_std,
+                    target_values[mask],
+                    labels[mask],
+                )
+
+            train = prepared(train_mask, centered_targets)
+            val = prepared(val_mask, centered_targets)
+            test = prepared(test_mask, centered_targets)
+            model_seed = requested_seed + fold
+            np.random.seed(model_seed)
+            torch.manual_seed(model_seed)
+            model = TemporalSensorStudent(
+                input_dim=features.shape[2],
+                target_dim=target_dim,
+                hidden_dim=args.hidden_dim,
+                bottleneck_dim=args.bottleneck_dim,
+                num_classes=int(labels.max()) + 1,
+                num_segments=segments,
+            )
+            model, best_epoch = _train(
+                model,
+                train,
+                val,
+                device=device,
+                max_epochs=args.max_epochs,
+                batch_size=args.batch_size,
+                seed=model_seed,
+            )
+            metrics = _metrics(model, *test, device)
+            metrics["class_prototype_cosine"] = _class_prototype_cosine(
+                train[1], train[2], test[1], test[2]
+            )
+
+            residual_model = None
+            if args.no_residual_control:
+                metrics.update(
+                    {
+                        "residual_best_epoch": np.nan,
+                        "residual_segment_cosine": np.nan,
+                        "residual_reversed_segment_cosine": np.nan,
+                        "residual_order_margin_reversed": np.nan,
+                        "residual_target_mse": np.nan,
+                    }
+                )
+            else:
+                residual_seed = model_seed + 1000
+                np.random.seed(residual_seed)
+                torch.manual_seed(residual_seed)
+                residual_model = TemporalSensorStudent(
+                    input_dim=features.shape[2],
+                    target_dim=target_dim,
+                    hidden_dim=args.hidden_dim,
+                    bottleneck_dim=args.bottleneck_dim,
+                    num_classes=int(labels.max()) + 1,
+                    num_segments=segments,
+                )
+                residual_model, residual_best_epoch = _train(
+                    residual_model,
+                    prepared(train_mask, residual_targets),
+                    prepared(val_mask, residual_targets),
+                    device=device,
+                    max_epochs=args.max_epochs,
+                    batch_size=args.batch_size,
+                    seed=residual_seed,
+                )
+                residual_metrics = _metrics(
+                    residual_model, *prepared(test_mask, residual_targets), device
+                )
+                metrics.update(
+                    {
+                        "residual_best_epoch": residual_best_epoch,
+                        "residual_segment_cosine": residual_metrics["segment_cosine"],
+                        "residual_reversed_segment_cosine": residual_metrics[
+                            "reversed_segment_cosine"
+                        ],
+                        "residual_order_margin_reversed": residual_metrics[
+                            "order_margin_reversed"
+                        ],
+                        "residual_target_mse": residual_metrics["target_mse"],
+                    }
+                )
+
+            rows.append(
+                {
+                    "protocol": args.protocol,
+                    "feature_set": args.feature_set,
+                    "seed": requested_seed,
+                    "model_seed": model_seed,
+                    "fold": fold,
+                    "train_user": split["train_user"],
+                    "test_user": split["test_user"],
+                    "train_session": train_session,
+                    "val_session": val_session,
+                    "test_session": test_session,
+                    "best_epoch": best_epoch,
+                    "num_train": int(train_mask.sum()),
+                    "num_val": int(val_mask.sum()),
+                    "num_test": int(test_mask.sum()),
+                    **metrics,
+                }
+            )
+            if not args.no_save_checkpoints:
+                checkpoint_stem = (
+                    f"{args.protocol}_{args.feature_set}_seed_{requested_seed}_fold_{fold}"
+                )
+                torch.save(
+                    {
+                        "state_dict": model.state_dict(),
+                        "input_mean": input_mean,
+                        "input_std": input_std,
+                        "teacher_center": teacher_center,
+                        "train_session": train_session,
+                        "val_session": val_session,
+                        "test_session": test_session,
+                        "train_user": split["train_user"],
+                        "test_user": split["test_user"],
+                    },
+                    output_dir / f"{checkpoint_stem}.pt",
+                )
+                if residual_model is not None:
+                    torch.save(
+                        {
+                            "state_dict": residual_model.state_dict(),
+                            "input_mean": input_mean,
+                            "input_std": input_std,
+                            "teacher_center": teacher_center,
+                            "class_prototypes": class_prototypes,
+                            "train_session": train_session,
+                            "val_session": val_session,
+                            "test_session": test_session,
+                            "train_user": split["train_user"],
+                            "test_user": split["test_user"],
+                        },
+                        output_dir / f"{checkpoint_stem}_class_residual.pt",
+                    )
+
+            completed_runs += 1
+            elapsed = time.perf_counter() - started
+            remaining = elapsed / completed_runs * (total_runs - completed_runs)
+            print(
+                f"EXTERNAL_STUDENT protocol={args.protocol} feature={args.feature_set} "
+                f"seed={requested_seed} fold={fold} test={test_session} "
+                f"test_user={split['test_user']} accuracy={metrics['accuracy']:.3f} "
+                f"cosine={metrics['segment_cosine']:.3f} "
+                f"estimated_remaining_seconds={remaining:.1f}",
+                flush=True,
+            )
 
     results = pd.DataFrame(rows)
     results_path = Path(args.results_output)

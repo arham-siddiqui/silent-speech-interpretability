@@ -51,16 +51,22 @@ Here’s a crisp hand-off you can paste into any LLM to get them up to speed fas
 - Manual validation therefore closes the internal timing question: retain the coarse
   ordered phonetic occupancy claim, reject exact phone tracking and individual phoneme
   neuron claims, and proceed to external-cohort replication.
-- External replication is now complete on the Wagner et al. radar command-word corpus:
-  3,000 paired samples, 2 subjects, 3 sessions, and 50 German commands. Three
-  session-held-out folds reach 27.8% mean radar-only accuracy (2% chance), 0.323
-  true-order HuBERT cosine versus -0.008 reversed, and +0.123 order margin on the
-  stricter within-command residual targets. This supports independent cross-session
-  replication, not broad speaker generalization. See
-  `reports/external_radar_hubert_replication.md`.
+- External replication is complete on the Wagner et al. radar command-word corpus:
+  3,000 paired samples, 2 subjects, 3 sessions, and 50 German commands. Three-seed
+  session-held-out evaluation reaches 28.7% radar-only accuracy (19.9–37.0% empirical
+  held-out-session interval; 2% chance), 0.327 HuBERT cosine, and +0.122 residual order
+  margin. True leave-one-subject-out transfer fails at 3.0% accuracy and -0.012 order
+  margin. The supported claim is external session replication, not external speaker
+  generalization. See `reports/external_radar_generalization.md`.
+- External ablations show S32 carries most standalone performance (28.2%); magnitude-only
+  reaches 27.1%, delta-only 16.6%, and S12 14.5%. Speaker-specific radar geometry is the
+  main unresolved technical limitation.
 - The reproducible external pipeline is `make external-radar-replication`; the 1.43 GB
   archive, extracted 5 GB corpus, HuBERT targets, radar features, and checkpoints remain
   ignored, while the audit, report, and aggregate CSVs are tracked.
+- The full project conclusion and evidence map are in `reports/project_final_summary.md`.
+  The next research step is source-only speaker-invariant radar normalization/domain
+  adversarial training, followed by evaluation on a larger external speaker cohort.
 
 # Project snapshot
 

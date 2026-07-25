@@ -197,3 +197,97 @@ def radar_segment_features(
     frame_features = np.concatenate(per_frame, axis=1)
     segments = np.array_split(frame_features, num_segments, axis=0)
     return np.stack([segment.mean(axis=0) for segment in segments]).astype(np.float32)
+
+
+def select_radar_feature_set(features: np.ndarray, feature_set: str) -> np.ndarray:
+    """Select from [S12 magnitude, S12 delta, S32 magnitude, S32 delta] columns."""
+    features = np.asarray(features, dtype=np.float32)
+    if features.ndim != 3 or features.shape[2] % 4 != 0:
+        raise ValueError("Radar features must have shape [samples, segments, 4 * bands]")
+    width = features.shape[2] // 4
+    columns = {
+        "all": np.arange(4 * width),
+        "s12": np.arange(2 * width),
+        "s32": np.arange(2 * width, 4 * width),
+        "magnitude": np.concatenate([np.arange(width), np.arange(2 * width, 3 * width)]),
+        "delta": np.concatenate([np.arange(width, 2 * width), np.arange(3 * width, 4 * width)]),
+    }
+    if feature_set not in columns:
+        raise ValueError(f"Unknown feature set {feature_set!r}; choose from {sorted(columns)}")
+    return features[:, :, columns[feature_set]].astype(np.float32)
+
+
+def make_external_split_specs(
+    user_ids: np.ndarray,
+    session_ids: np.ndarray,
+    *,
+    protocol: str,
+    subject_val_session: str = "SES03",
+) -> list[dict[str, object]]:
+    """Create disjoint session- or subject-held-out external evaluation masks."""
+    users = np.asarray(user_ids).astype(str)
+    sessions = np.asarray(session_ids).astype(str)
+    if users.shape != sessions.shape or users.ndim != 1:
+        raise ValueError("user_ids and session_ids must be aligned one-dimensional arrays")
+    unique_sessions = sorted(np.unique(sessions))
+    unique_users = sorted(np.unique(users))
+    if len(unique_sessions) != 3:
+        raise ValueError(f"Expected three sessions, found {unique_sessions}")
+    if subject_val_session not in unique_sessions:
+        raise ValueError(f"Unknown subject validation session: {subject_val_session}")
+
+    specs: list[dict[str, object]] = []
+    if protocol == "session":
+        for fold, test_session in enumerate(unique_sessions):
+            val_session = unique_sessions[(fold + 1) % len(unique_sessions)]
+            train_session = next(
+                session
+                for session in unique_sessions
+                if session not in {test_session, val_session}
+            )
+            specs.append(
+                {
+                    "fold": fold,
+                    "train_mask": sessions == train_session,
+                    "val_mask": sessions == val_session,
+                    "test_mask": sessions == test_session,
+                    "train_session": train_session,
+                    "val_session": val_session,
+                    "test_session": test_session,
+                    "train_user": "ALL",
+                    "test_user": "ALL",
+                }
+            )
+    elif protocol == "subject":
+        if len(unique_users) != 2:
+            raise ValueError(f"Expected two subjects for subject transfer, found {unique_users}")
+        for fold, test_user in enumerate(unique_users):
+            train_user = next(user for user in unique_users if user != test_user)
+            source_mask = users == train_user
+            specs.append(
+                {
+                    "fold": fold,
+                    "train_mask": source_mask & (sessions != subject_val_session),
+                    "val_mask": source_mask & (sessions == subject_val_session),
+                    "test_mask": users == test_user,
+                    "train_session": "+".join(
+                        session for session in unique_sessions if session != subject_val_session
+                    ),
+                    "val_session": subject_val_session,
+                    "test_session": "ALL",
+                    "train_user": train_user,
+                    "test_user": test_user,
+                }
+            )
+    else:
+        raise ValueError("protocol must be 'session' or 'subject'")
+
+    for spec in specs:
+        train_mask = spec["train_mask"]
+        val_mask = spec["val_mask"]
+        test_mask = spec["test_mask"]
+        if not train_mask.any() or not val_mask.any() or not test_mask.any():
+            raise ValueError(f"Empty split in fold {spec['fold']}")
+        if (train_mask & val_mask).any() or (train_mask & test_mask).any() or (val_mask & test_mask).any():
+            raise ValueError(f"Overlapping split in fold {spec['fold']}")
+    return specs

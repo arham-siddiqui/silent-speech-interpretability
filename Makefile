@@ -1,4 +1,4 @@
-.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis external-radar-fetch external-radar-extract external-radar-audit external-radar-features external-radar-hubert-pilot external-radar-replication
+.PHONY: test manifest baseline cv cleanup hubert-student-cv hubert-interpretability hubert-feature-causality hubert-temporal-interpretability hubert-temporal-sensors hubert-temporal-multitask hubert-temporal-attention prompt-manifest phonetic-alignment phonetic-probes audio-phonetic-batch wav2vec2-teacher-comparison phone-ctc-alignment phone-ctc-probes phone-boundary-prepare phone-boundary-audit phone-boundary-import phone-boundary-analysis external-radar-fetch external-radar-extract external-radar-audit external-radar-features external-radar-hubert-pilot external-radar-replication external-radar-validation-batch
 
 EXTERNAL_RADAR_DIR := artifacts/external/radar_command_words
 EXTERNAL_RADAR_ARCHIVE := $(EXTERNAL_RADAR_DIR)/wagner-2022-scientific-reports-supplement.zip
@@ -175,5 +175,18 @@ external-radar-hubert-pilot: external-radar-audit
 	python3 scripts/58_extract_external_hubert_targets.py --local-files-only --limit 20 --output artifacts/external/radar_command_words/hubert_temporal4_targets_pilot20.npz --audit-output artifacts/external/radar_command_words/hubert_target_audit_pilot20.csv
 
 external-radar-replication: external-radar-features
-	python3 scripts/58_extract_external_hubert_targets.py --local-files-only
+	@if [ ! -f $(EXTERNAL_RADAR_DIR)/hubert_temporal4_targets.npz ]; then \
+		python3 scripts/58_extract_external_hubert_targets.py --local-files-only; \
+	else \
+		echo "External HuBERT targets are already extracted."; \
+	fi
 	python3 scripts/59_run_external_radar_student.py
+
+external-radar-validation-batch: external-radar-features
+	@if [ ! -f $(EXTERNAL_RADAR_DIR)/hubert_temporal4_targets.npz ]; then \
+		python3 scripts/58_extract_external_hubert_targets.py --local-files-only; \
+	else \
+		echo "External HuBERT targets are already extracted."; \
+	fi
+	python3 scripts/60_run_external_validation_batch.py
+	python3 scripts/61_generate_project_final_report.py
